@@ -1,0 +1,21 @@
+name: mango
+version: 0.1.0
+
+authors:
+  - Alex Ling <hkalexling@gmail.com>
+
+targets:
+  mango:
+    main: src/mango.cr
+
+crystal: 0.32.1
+
+license: MIT
+
+dependencies:
+  kemal:
+    github: kemalcr/kemal
+  kemal-basic-auth:
+    github: kemalcr/kemal-basic-auth
+  sqlite3:
+    github: crystal-lang/crystal-sqlite3
