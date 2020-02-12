@@ -1,5 +1,6 @@
 require "zip"
 require "mime"
+require "json"
 
 class Image
 	property data : Bytes
@@ -12,13 +13,21 @@ end
 
 class Entry
 	property zip_path : String
+	property book_title : String
 	property title : String
 	property size : String
+	property pages : Int32
+	property cover_url : String
 
-	def initialize(path : String)
+	JSON.mapping zip_path: String, book_title: String, title: String, \
+		size: String, pages: Int32, cover_url: String
+
+	def initialize(path, @book_title)
 		@zip_path = path
 		@title = File.basename path, ".zip"
 		@size = (File.size path).humanize_bytes
+		@pages = Zip::File.new(path).entries.size
+		@cover_url = "/api/page/#{@book_title}/#{title}/0"
 	end
 	def read_page(page_num)
 		Zip::File.open @zip_path do |file|
@@ -40,32 +49,27 @@ class Entry
 			end
 		end
 	end
-	def get_cover()
-		read_page 0
-	end
 end
 
 class Title
-	property dir : String
-	property entries : Array(Entry)
-	property title : String
+	JSON.mapping dir: String, entries: Array(Entry), title: String
 
 	def initialize(dir : String)
 		@dir = dir
 		@title = File.basename dir
 		@entries = (Dir.entries dir)
 			.select! { |path| (File.extname path) == ".zip" }
-			.map { |path| Entry.new File.join dir, path }
+			.map { |path| Entry.new File.join(dir, path), @title }
 			.sort { |a, b| a.title <=> b.title }
 	end
-	def get_cover()
-		@entries[0].get_cover
+	def get_entry(name)
+		@entries.find { |e| e.title == name }
 	end
+
 end
 
 class Library
-	property dir : String
-	property titles : Array(Title)
+	JSON.mapping dir: String, titles: Array(Title)
 
 	def initialize(dir : String)
 		@dir = dir
@@ -76,5 +80,8 @@ class Library
 			.select! { |path| File.directory? File.join dir, path }
 			.map { |path| Title.new File.join dir, path }
 			.select! { |title| !title.entries.empty? }
+	end
+	def get_title(name)
+		@titles.find { |t| t.title == name }
 	end
 end

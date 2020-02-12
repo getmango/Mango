@@ -1,0 +1,18 @@
+<div class="uk-child-width-1-4@m" uk-grid>
+  <%- titles.each do |t| -%>
+    <div>
+      <a class="acard" href="/book/<%= t.title %>">
+        <div class="uk-card uk-card-default">
+            <div class="uk-card-media-top">
+              <img src="<%= t.entries[0].cover_url %>" alt="">
+            </div>
+            <div class="uk-card-body">
+              <div class="uk-card-badge uk-label">Badge</div>
+              <h3 class="uk-card-title"><%= t.title %></h3>
+              <p><%= t.entries.size %> entries</p>
+            </div>
+        </div>
+      </a>
+    </div>
+  <%- end -%>
+</div>

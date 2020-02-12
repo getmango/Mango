@@ -1,0 +1,16 @@
+<h2 class=uk-title><%= title.title %></h2>
+<div class="uk-child-width-1-4@m" uk-grid>
+  <%- title.entries.each do |e| -%>
+    <div>
+        <div class="uk-card uk-card-default">
+            <div class="uk-card-media-top">
+              <img src="<%= e.cover_url %>" alt="">
+            </div>
+            <div class="uk-card-body">
+              <div class="uk-card-badge uk-label">Badge</div>
+              <h3 class="uk-card-title"><%= e.title %></h3>
+            </div>
+        </div>
+    </div>
+  <%- end -%>
+</div>
