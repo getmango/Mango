@@ -1,8 +1,9 @@
 .uk-card-body {
 	padding: 20px;
 }
-.uk-card-media-top img {
+.uk-card-media-top {
 	max-height: 350px;
+	overflow: hidden;
 }
 .acard:hover {
 	text-decoration: none;
