@@ -26,7 +26,12 @@ class Entry
 		@zip_path = path
 		@title = File.basename path, ".zip"
 		@size = (File.size path).humanize_bytes
-		@pages = Zip::File.new(path).entries.size
+		@pages = Zip::File.new(path).entries
+			.select { |e|
+				["image/jpeg", "image/png"].includes? \
+				MIME.from_filename? e.filename
+			}
+			.size
 		@cover_url = "/api/page/#{@book_title}/#{title}/0"
 	end
 	def read_page(page_num)

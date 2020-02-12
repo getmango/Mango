@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html style="background-color:black;">
+  <head>
+    <meta charset="utf-8">
+    <meta name="X-UA-Compatible" content="IE=edge">
+    <title>Mango</title>
+    <meta name="description" content="Mango Manga Server">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.3.1/dist/css/uikit.min.css" />
+    <link rel="stylesheet" href="/css/mango.css" />
+  </head>
+
+  <body>
+    <div class="uk-section uk-section-default uk-section-small" style="background-color:black;">
+      <div class="uk-container uk-container-small">
+        <%- urls.each do |url| -%>
+        <img class="uk-align-center" data-src="<%= url %>" data-width data-height uk-img>
+        <%- end -%>
+        <%- if next_url -%>
+        <a class="next-url" href="<%= next_url %>"></a>
+        <%- end -%>
+      </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.3.1/dist/js/uikit.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.3.1/dist/js/uikit-icons.min.js"></script>
+    <script src="https://unpkg.com/infinite-scroll@3/dist/infinite-scroll.pkgd.min.js"></script>
+    <script>
+      $(function() {
+        $('.uk-container').infiniteScroll({
+          path: '.next-url',
+          append: '.uk-container',
+          history: 'replace'
+        });
+      });
+    </script>
+  </body>
+</html>
