@@ -1,0 +1,34 @@
+<table class="uk-table uk-table-divider">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Admin Access</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <%- users.each do |u| -%>
+	<tr>
+		<td><%= u[0] %></td>
+		<td><%= u[1] %></td>
+		<td>
+			<a href="/admin/user/edit?username=<%= u[0] %>&admin=<%= u[1] %>" uk-icon="file-edit"></a>
+			<%- if u[0] != username %>
+			<a href="#" onclick="remove('<%= u[0] %>');return false;" uk-icon="trash"></a>
+			<%- end %>
+		</td>
+	</tr>
+    <%- end -%>
+  </tbody>
+</table>
+
+<a href="/admin/user/edit" class="uk-button uk-button-primary">New User</a>
+
+
+<% content_for "script" do %>
+<script>
+	function remove(username) {
+		alert(username);
+	}
+</script>
+<% end %>

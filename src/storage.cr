@@ -70,4 +70,62 @@ class Storage
 			end
 		end
 	end
+
+	def verify_admin(token)
+		DB.open "sqlite3://#{@path}" do |db|
+			begin
+				return db.query_one "select admin from users where " \
+					"token = (?)", token, as: Bool
+			rescue e : SQLite3::Exception | DB::Error
+				return false
+			end
+		end
+	end
+
+	def list_users()
+		results = Array(Tuple(String, Bool)).new
+		DB.open "sqlite3://#{@path}" do |db|
+			db.query "select username, admin from users" do |rs|
+				rs.each do
+					results << {rs.read(String), rs.read(Bool)}
+				end
+			end
+		end
+		results
+	end
+
+	def new_user(username, password, admin)
+		admin = (admin ? 1 : 0)
+		DB.open "sqlite3://#{@path}" do |db|
+			hash = hash_password password
+			db.exec "insert into users values (?, ?, ?, ?)",
+				username, hash, "", admin
+		end
+	end
+
+	def update_user(original_username, username, password, admin)
+		admin = (admin ? 1 : 0)
+		DB.open "sqlite3://#{@path}" do |db|
+			if password.size == 0
+				db.exec "update users set username = (?), admin = (?) "\
+					"where username = (?)",\
+					username, admin, original_username
+			else
+				hash = hash_password password
+				db.exec "update users set username = (?), admin = (?),"\
+					"password = (?) where username = (?)",\
+					username, admin, hash, original_username
+			end
+		end
+	end
+
+	def logout(token)
+		DB.open "sqlite3://#{@path}" do |db|
+			begin
+				db.exec "update users set token = (?) where token = (?)", \
+					"", token
+			rescue
+			end
+		end
+	end
 end

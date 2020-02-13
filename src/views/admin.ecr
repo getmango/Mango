@@ -1,0 +1,24 @@
+<ul class="uk-list uk-list-large uk-list-divider">
+  <li data-url="/admin/info">Server Info</li>
+  <li data-url="/admin/user">User Managerment</li>
+  <li onclick="scan()">Scan Library Files</li>
+</ul>
+
+<hr class="uk-divider-icon">
+<a class="uk-button uk-button-danger" href="/logout">Log Out</a>
+
+<% content_for "script" do %>
+<script>
+  function scan() {
+    alert("scan");
+  }
+  $(function() {
+    $('li').click(function() {
+      url = $(this).attr('data-url');
+      if (url) {
+        $(location).attr('href', url)
+      }
+    });
+  });
+</script>
+<% end %>

@@ -8,3 +8,6 @@
 .acard:hover {
 	text-decoration: none;
 }
+.uk-list li {
+	cursor: pointer;
+}

@@ -13,13 +13,17 @@ class AuthHandler < Kemal::Handler
 	def call(env)
 		return call_next(env) if exclude_match?(env)
 
-		env.request.cookies.each do |c|
-			next if c.name != "token"
-			if @storage.verify_token c.value
-				return call_next env
+		cookie = env.request.cookies.find { |c| c.name == "token" }
+		if cookie.nil? || ! @storage.verify_token cookie.value
+			return env.redirect "/login"
+		end
+
+		if env.request.path.starts_with? "/admin"
+			unless storage.verify_admin cookie.value
+				env.response.status_code = 401
 			end
 		end
 
-		env.redirect "/login"
+		call_next env
 	end
 end
