@@ -8,6 +8,8 @@ config = Config.load
 library = Library.new config.library_path
 storage = Storage.new config.db_path
 
+imgs_each_page = 5
+
 macro layout(name)
 	render "src/views/#{{{name}}}.ecr", "src/views/layout.ecr"
 end
@@ -32,17 +34,26 @@ def hash_to_query(hash)
 end
 
 get "/" do |env|
-	titles = library.titles
-	layout "index"
+	begin
+		titles = library.titles
+		username = (get_username env).not_nil!
+		percentage = titles.map &.load_percetage username
+		layout "index"
+	rescue
+		env.response.status_code = 500
+	end
 end
 
 get "/book/:title" do |env|
-	title = library.get_title env.params.url["title"]
-	if title.nil?
+	begin
+		title = (library.get_title env.params.url["title"]).not_nil!
+		username = (get_username env).not_nil!
+		percentage = title.entries.map { |e| title.load_percetage username,\
+								   e.title }
+		layout "title"
+	rescue
 		env.response.status_code = 404
-		next
 	end
-	layout "title"
 end
 
 get "/admin" do |env|
@@ -148,20 +159,33 @@ get "/reader/:title/:entry" do |env|
 	begin
 		title = (library.get_title env.params.url["title"]).not_nil!
 		entry = (title.get_entry env.params.url["entry"]).not_nil!
-		env.redirect "/reader/#{title.title}/#{entry.title}/0"
-	rescue
+
+		# load progress
+		username = get_username env
+		entry_page = title.load_progress username, entry.title
+		# we go above 1 * `imgs_each_page` pages. the infinite scroll library
+		# perloads a few pages in advance, and the user might not have actually
+		# read it
+		page = [(entry_page // imgs_each_page) - 1, 0].max
+
+		env.redirect "/reader/#{title.title}/#{entry.title}/#{page}"
+	rescue e
+		pp e
 		env.response.status_code = 404
 	end
 end
 
 get "/reader/:title/:entry/:page" do |env|
-	imgs_each_page = 5
 	# here each :page contains `imgs_each_page` images
 	begin
 		title = (library.get_title env.params.url["title"]).not_nil!
 		entry = (title.get_entry env.params.url["entry"]).not_nil!
 		page = env.params.url["page"].to_i
 		raise "" if page * imgs_each_page >= entry.pages
+
+		# save progress
+		username = (get_username env).not_nil!
+		title.save_progress username, entry.title, page * imgs_each_page
 
 		urls = ((page * imgs_each_page)...\
 			[entry.pages, (page + 1) * imgs_each_page].min) \

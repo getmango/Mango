@@ -1,7 +1,7 @@
 <h2 class=uk-title><%= title.title %></h2>
 <p class="uk-text-meta"><%= title.entries.size %> entries found</p>
 <div class="uk-child-width-1-4@m" uk-grid>
-  <%- title.entries.each do |e| -%>
+  <%- title.entries.each_with_index do |e, i| -%>
     <div>
       <a class="acard" href="/reader/<%= title.title %>/<%= e.title %>">
         <div class="uk-card uk-card-default">
@@ -9,7 +9,7 @@
               <img src="<%= e.cover_url %>" alt="">
             </div>
             <div class="uk-card-body">
-              <div class="uk-card-badge uk-label">Badge</div>
+              <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
               <h3 class="uk-card-title"><%= e.title %></h3>
             </div>
         </div>
