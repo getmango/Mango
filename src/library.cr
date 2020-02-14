@@ -63,8 +63,9 @@ class Title
 		@dir = dir
 		@title = File.basename dir
 		@entries = (Dir.entries dir)
-			.select! { |path| (File.extname path) == ".zip" }
+			.select { |path| (File.extname path) == ".zip" }
 			.map { |path| Entry.new File.join(dir, path), @title }
+			.select { |e| e.pages > 0 }
 			.sort { |a, b| a.title <=> b.title }
 	end
 	def get_entry(name)
@@ -145,9 +146,9 @@ class Library
 			Dir.mkdir_p dir
 		end
 		@titles = (Dir.entries dir)
-			.select! { |path| File.directory? File.join dir, path }
+			.select { |path| File.directory? File.join dir, path }
 			.map { |path| Title.new File.join dir, path }
-			.select! { |title| !title.entries.empty? }
+			.select { |title| !title.entries.empty? }
 	end
 	def get_title(name)
 		@titles.find { |t| t.title == name }
