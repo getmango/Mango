@@ -1,6 +1,15 @@
 require "kemal"
 require "./storage"
 
+def request_path_startswith(env, ary)
+	ary.each do |prefix|
+		if env.request.path.starts_with? prefix
+			return true
+		end
+	end
+	return false
+end
+
 class AuthHandler < Kemal::Handler
 	exclude ["/login"]
 	exclude ["/login"], "POST"
@@ -18,9 +27,9 @@ class AuthHandler < Kemal::Handler
 			return env.redirect "/login"
 		end
 
-		if env.request.path.starts_with? "/admin"
+		if request_path_startswith env, ["/admin", "/api/admin"]
 			unless storage.verify_admin cookie.value
-				env.response.status_code = 401
+				return env.response.status_code = 401
 			end
 		end
 

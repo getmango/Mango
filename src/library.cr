@@ -79,7 +79,7 @@ class Library
 	def initialize(dir : String)
 		@dir = dir
 		unless Dir.exists? dir
-			abort "ERROR: The library directory #{dir} does not exist"
+			Dir.mkdir_p dir
 		end
 		@titles = (Dir.entries dir)
 			.select! { |path| File.directory? File.join dir, path }

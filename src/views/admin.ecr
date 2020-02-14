@@ -1,7 +1,13 @@
 <ul class="uk-list uk-list-large uk-list-divider">
   <li data-url="/admin/info">Server Info</li>
   <li data-url="/admin/user">User Managerment</li>
-  <li onclick="scan()">Scan Library Files</li>
+  <li onclick="if(!scanning){scan()}">
+    <span id="scan">Scan Library Files</span>
+    <span id="scan-status" style="float:right;">
+      <div uk-spinner hidden></div>
+      <span hidden style="cursor:auto;"></span>
+    </span>
+  </li>
 </ul>
 
 <hr class="uk-divider-icon">
@@ -9,8 +15,22 @@
 
 <% content_for "script" do %>
 <script>
+  var scanning = false
   function scan() {
-    alert("scan");
+    scanning = true
+    $('#scan-status > div').removeAttr('hidden');
+    $('#scan-status > span').attr('hidden', '');
+    var color = $('#scan').css('color');
+    $('#scan').css('color', 'gray');
+    $.post('/api/admin/scan', function (data) {
+      var ms = data.milliseconds;
+      var titles = data.titles;
+      $('#scan-status > span').text('Scanned ' + titles + ' titles in ' + ms + 'ms');
+      $('#scan-status > span').removeAttr('hidden');
+      $('#scan').css('color', color);
+      $('#scan-status > div').attr('hidden', '');
+      scanning = false;
+    });
   }
   $(function() {
     $('li').click(function() {

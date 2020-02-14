@@ -8,7 +8,6 @@ config = Config.load
 library = Library.new config.library_path
 storage = Storage.new config.db_path
 
-
 macro layout(name)
 	render "src/views/#{{{name}}}.ecr", "src/views/layout.ecr"
 end
@@ -23,11 +22,14 @@ macro get_username(env)
 	storage.verify_token cookie.value
 end
 
-def hash_to_query(hash)
-	hash.map { |k, v| "#{k}=#{v}" }
-		.join("&")
+macro send_json(env, json)
+	{{env}}.response.content_type = "application/json"
+	{{json}}
 end
 
+def hash_to_query(hash)
+	hash.map { |k, v| "#{k}=#{v}" }.join("&")
+end
 
 get "/" do |env|
 	titles = library.titles
@@ -53,6 +55,7 @@ get "/admin/user" do |env|
 	layout "user"
 end
 
+
 get "/admin/user/edit" do |env|
 	username = env.params.query["username"]?
 	admin = env.params.query["admin"]?
@@ -76,8 +79,15 @@ post "/admin/user/edit" do |env|
 		if username.size < 3
 			raise "Username should contain at least 3 characters"
 		end
+		if (username =~ /^[A-Za-z0-9_]+$/).nil?
+			raise "Username should contain alphanumeric characters "\
+				"and underscores only"
+		end
 		if password.size < 6
 			raise "Password should contain at least 6 characters"
+		end
+		if (password =~ /^[[:ascii:]]+$/).nil?
+			raise "password should contain ASCII characters only"
 		end
 
 		storage.new_user username, password, admin
@@ -104,8 +114,18 @@ post "/admin/user/edit/:original_username" do |env|
 		if username.size < 3
 			raise "Username should contain at least 3 characters"
 		end
-		if password.size != 0 && password.size < 6
-			raise "Password should contain at least 6 characters"
+		if (username =~ /^[A-Za-z0-9_]+$/).nil?
+			raise "Username should contain alphanumeric characters "\
+				"and underscores only"
+		end
+
+		if password.size != 0
+			if password.size < 6
+				raise "Password should contain at least 6 characters"
+			end
+			if (password =~ /^[[:ascii:]]+$/).nil?
+				raise "password should contain ASCII characters only"
+			end
 		end
 
 		storage.update_user original_username, username, password, admin
@@ -121,14 +141,13 @@ post "/admin/user/edit/:original_username" do |env|
 	end
 end
 
+
 get "/reader/:title/:entry" do |env|
 	# We should save the reading progress, and ask the user if she wants to
 	# start over or resume. For now we just start from page 0
 	begin
-		title = library.get_title env.params.url["title"]
-		raise "" if title.nil?
-		entry = title.get_entry env.params.url["entry"]
-		raise "" if entry.nil?
+		title = (library.get_title env.params.url["title"]).not_nil!
+		entry = (title.get_entry env.params.url["entry"]).not_nil!
 		env.redirect "/reader/#{title.title}/#{entry.title}/0"
 	rescue
 		env.response.status_code = 404
@@ -139,10 +158,8 @@ get "/reader/:title/:entry/:page" do |env|
 	imgs_each_page = 5
 	# here each :page contains `imgs_each_page` images
 	begin
-		title = library.get_title env.params.url["title"]
-		raise "" if title.nil?
-		entry = title.get_entry env.params.url["entry"]
-		raise "" if entry.nil?
+		title = (library.get_title env.params.url["title"]).not_nil!
+		entry = (title.get_entry env.params.url["entry"]).not_nil!
 		page = env.params.url["page"].to_i
 		raise "" if page * imgs_each_page >= entry.pages
 
@@ -163,8 +180,7 @@ end
 
 get "/logout" do |env|
 	begin
-		cookie = env.request.cookies.find { |c| c.name == "token" }
-		raise "" if cookie.nil?
+		cookie = env.request.cookies.find { |c| c.name == "token" }.not_nil!
 		storage.logout cookie.value
 	rescue
 	ensure
@@ -176,8 +192,7 @@ post "/login" do |env|
 	begin
 		username = env.params.body["username"]
 		password = env.params.body["password"]
-		token = storage.verify_user username, password
-		raise "" if token.nil?
+		token = storage.verify_user(username, password).not_nil!
 
 		cookie = HTTP::Cookie.new "token", token
 		env.response.cookies << cookie
@@ -215,8 +230,7 @@ get "/api/book/:title" do |env|
 		t = library.get_title title
 		raise "Title `#{title}` not found" if t.nil?
 
-		env.response.content_type = "application/json"
-		t.to_json
+		send_json env, t.to_json
 	rescue e
 		STDERR.puts e
 		env.response.status_code = 500
@@ -225,8 +239,26 @@ get "/api/book/:title" do |env|
 end
 
 get "/api/book" do |env|
-	env.response.content_type = "application/json"
-	library.to_json
+	send_json env, library.to_json
+end
+
+post "/api/admin/scan" do |env|
+	start = Time.utc
+	library = Library.new config.library_path
+	ms = (Time.utc - start).total_milliseconds
+	send_json env, \
+		{"milliseconds" => ms, "titles" => library.titles.size}.to_json
+end
+
+post "/api/admin/user/delete/:username" do |env|
+	begin
+		username = env.params.url["username"]
+		storage.delete_user username
+	rescue e
+		send_json env, {"success" => false, "error" => e.message}.to_json
+	else
+		send_json env, {"success" => true}.to_json
+	end
 end
 
 add_handler AuthHandler.new storage

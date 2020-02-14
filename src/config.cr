@@ -9,10 +9,10 @@ class Config
 	property port = 9000
 
 	@[YAML::Field(key: "library_path")]
-	property library_path = File.expand_path "~/mango-library", home: true
+	property library_path = File.expand_path "~/mango/library", home: true
 
 	@[YAML::Field(key: "db_path")]
-	property db_path = File.expand_path "~/mango-library/mango.db", home: true
+	property db_path = File.expand_path "~/mango/mango.db", home: true
 
 	def self.load
 		cfg_path = File.expand_path "~/.config/mango/config.yml", home: true
@@ -22,7 +22,7 @@ class Config
 		puts "The config file #{cfg_path} does not exist." \
 			"Do you want mango to dump the default config there? [Y/n]"
 		input = gets
-		if !input.nil? && input.downcase == "n"
+		if input && input.downcase == "n"
 			abort "Aborting..."
 		end
 		default = self.allocate

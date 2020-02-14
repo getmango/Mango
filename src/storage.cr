@@ -20,6 +20,10 @@ class Storage
 
 	def initialize(path)
 		@path = path
+		dir = File.dirname path
+		unless Dir.exists? dir
+			Dir.mkdir_p dir
+		end
 		DB.open "sqlite3://#{path}" do |db|
 			begin
 				db.exec "create table users" \
@@ -34,7 +38,7 @@ class Storage
 				random_pw = random_str
 				hash = hash_password random_pw
 				db.exec "insert into users values (?, ?, ?, ?)",
-					"admin", hash, "", 1
+					"admin", hash, nil, 1
 				puts "Initial user created. You can log in with " \
 					"#{{"username" => "admin", "password" => random_pw}}"
 			end
@@ -99,7 +103,7 @@ class Storage
 		DB.open "sqlite3://#{@path}" do |db|
 			hash = hash_password password
 			db.exec "insert into users values (?, ?, ?, ?)",
-				username, hash, "", admin
+				username, hash, nil, admin
 		end
 	end
 
@@ -119,11 +123,17 @@ class Storage
 		end
 	end
 
+	def delete_user(username)
+		DB.open "sqlite3://#{@path}" do |db|
+			db.exec "delete from users where username = (?)", username
+		end
+	end
+
 	def logout(token)
 		DB.open "sqlite3://#{@path}" do |db|
 			begin
 				db.exec "update users set token = (?) where token = (?)", \
-					"", token
+					nil, token
 			rescue
 			end
 		end
