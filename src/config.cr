@@ -20,7 +20,7 @@ class Config
 			return self.from_yaml File.read cfg_path
 		end
 		puts "The config file #{cfg_path} does not exist." \
-			"Do you want mango to dump the default config there? [Y/n]"
+			" Do you want mango to dump the default config there? [Y/n]"
 		input = gets
 		if input && input.downcase == "n"
 			abort "Aborting..."
