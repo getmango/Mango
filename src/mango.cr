@@ -162,36 +162,35 @@ get "/reader/:title/:entry" do |env|
 
 		# load progress
 		username = get_username env
-		entry_page = title.load_progress username, entry.title
-		# we go above 1 * `imgs_each_page` pages. the infinite scroll library
+		page = title.load_progress username, entry.title
+		# we go back `imgs_each_page` pages. the infinite scroll library
 		# perloads a few pages in advance, and the user might not have actually
-		# read it
-		page = [(entry_page // imgs_each_page) - 1, 0].max
+		# read them
+		page = [page - imgs_each_page, 0].max
 
 		env.redirect "/reader/#{title.title}/#{entry.title}/#{page}"
-	rescue e
-		pp e
+	rescue
 		env.response.status_code = 404
 	end
 end
 
 get "/reader/:title/:entry/:page" do |env|
-	# here each :page contains `imgs_each_page` images
 	begin
 		title = (library.get_title env.params.url["title"]).not_nil!
 		entry = (title.get_entry env.params.url["entry"]).not_nil!
 		page = env.params.url["page"].to_i
-		raise "" if page * imgs_each_page >= entry.pages
+		raise "" if page >= entry.pages
 
 		# save progress
 		username = (get_username env).not_nil!
-		title.save_progress username, entry.title, page * imgs_each_page
+		title.save_progress username, entry.title, page
 
-		urls = ((page * imgs_each_page)...\
-			[entry.pages, (page + 1) * imgs_each_page].min) \
+		urls = (page...[entry.pages, page + imgs_each_page].min)
 			.map { |idx| "/api/page/#{title.title}/#{entry.title}/#{idx}" }
-		next_url = "/reader/#{title.title}/#{entry.title}/#{page + 1}"
-		next_url = nil if (page + 1) * imgs_each_page >= entry.pages
+		next_page = page + imgs_each_page
+		next_url = next_page >= entry.pages ? nil :
+			"/reader/#{title.title}/#{entry.title}/#{next_page}"
+
 		render "src/views/reader.ecr"
 	rescue
 		env.response.status_code = 404

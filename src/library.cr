@@ -99,8 +99,7 @@ class Title
 		page / entry_obj.pages
 	end
 	def load_percetage(username)
-		read_pages = 0
-		total_pages = 0
+		read_pages = total_pages = 0
 		@entries.each do |e|
 			read_pages += load_progress username, e.title
 			total_pages += e.pages
