@@ -19,9 +19,10 @@ macro send_img(env, img)
 end
 
 macro get_username(env)
-	cookie = {{env}}.request.cookies.find { |c| c.name == "token" }
-	next if cookie.nil?
-	storage.verify_token cookie.value
+	# if the request gets here, its has gone through the auth handler, and
+	# we can be sure that a valid token exists, so we can use not_nil! here
+	cookie = {{env}}.request.cookies.find { |c| c.name == "token" }.not_nil!
+	(storage.verify_token cookie.value).not_nil!
 end
 
 macro send_json(env, json)
@@ -36,7 +37,7 @@ end
 get "/" do |env|
 	begin
 		titles = library.titles
-		username = (get_username env).not_nil!
+		username = get_username env
 		percentage = titles.map &.load_percetage username
 		layout "index"
 	rescue
@@ -47,7 +48,7 @@ end
 get "/book/:title" do |env|
 	begin
 		title = (library.get_title env.params.url["title"]).not_nil!
-		username = (get_username env).not_nil!
+		username = get_username env
 		percentage = title.entries.map { |e| title.load_percetage username,\
 								   e.title }
 		layout "title"
@@ -182,7 +183,7 @@ get "/reader/:title/:entry/:page" do |env|
 		raise "" if page >= entry.pages
 
 		# save progress
-		username = (get_username env).not_nil!
+		username = get_username env
 		title.save_progress username, entry.title, page
 
 		urls = (page...[entry.pages, page + imgs_each_page].min)
