@@ -295,5 +295,8 @@ end
 
 add_handler AuthHandler.new storage
 
+{% if flag?(:release) %}
+	Kemal.config.env = "production"
+{% end %}
 Kemal.config.port = config.port
 Kemal.run
