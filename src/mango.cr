@@ -8,7 +8,7 @@ config = Config.load
 library = Library.new config.library_path
 storage = Storage.new config.db_path
 
-imgs_each_page = 5
+IMGS_PER_PAGE = 5
 
 macro layout(name)
 	render "src/views/#{{{name}}}.ecr", "src/views/layout.ecr"
@@ -163,11 +163,11 @@ get "/reader/:title/:entry" do |env|
 
 		# load progress
 		username = get_username env
-		page = title.load_progress username, entry.title
-		# we go back `imgs_each_page` pages. the infinite scroll library
+		page = (title.load_progress username, entry.title) - 1
+		# we go back 2 * `IMGS_PER_PAGE` pages. the infinite scroll library
 		# perloads a few pages in advance, and the user might not have actually
 		# read them
-		page = [page - imgs_each_page, 0].max
+		page = [page - 2 * IMGS_PER_PAGE, 0].max
 
 		env.redirect "/reader/#{title.title}/#{entry.title}/#{page}"
 	rescue
@@ -184,13 +184,21 @@ get "/reader/:title/:entry/:page" do |env|
 
 		# save progress
 		username = get_username env
-		title.save_progress username, entry.title, page
+		title.save_progress username, entry.title, page + 1
 
-		urls = (page...[entry.pages, page + imgs_each_page].min)
-			.map { |idx| "/api/page/#{title.title}/#{entry.title}/#{idx}" }
-		next_page = page + imgs_each_page
+		pages = (page...[entry.pages, page + IMGS_PER_PAGE].min)
+		urls = pages.map { |idx|
+			"/api/page/#{title.title}/#{entry.title}/#{idx}" }
+		reader_urls = pages.map { |idx|
+			"/reader/#{title.title}/#{entry.title}/#{idx}" }
+		next_page = page + IMGS_PER_PAGE
 		next_url = next_page >= entry.pages ? nil :
 			"/reader/#{title.title}/#{entry.title}/#{next_page}"
+		exit_url = "/book/#{title.title}"
+
+		pp "requesting #{page}"
+		pp "serving #{urls}"
+		pp "next url #{next_url}"
 
 		render "src/views/reader.ecr"
 	rescue
