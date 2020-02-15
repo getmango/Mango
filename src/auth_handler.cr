@@ -1,14 +1,6 @@
 require "kemal"
 require "./storage"
-
-def request_path_startswith(env, ary)
-	ary.each do |prefix|
-		if env.request.path.starts_with? prefix
-			return true
-		end
-	end
-	return false
-end
+require "./util"
 
 class AuthHandler < Kemal::Handler
 	exclude ["/login"]

@@ -3,6 +3,7 @@ require "./config"
 require "./library"
 require "./storage"
 require "./auth_handler"
+require "./static"
 require "./util"
 
 class Server
@@ -276,6 +277,11 @@ class Server
 		end
 
 		add_handler AuthHandler.new @storage
+		{% if flag?(:release) %}
+			# when building for relase, embed the static files in binary
+			serve_static false
+			add_handler StaticHandler.new
+		{% end %}
 	end
 
 	def start

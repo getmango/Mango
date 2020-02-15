@@ -23,3 +23,12 @@ end
 def hash_to_query(hash)
 	hash.map { |k, v| "#{k}=#{v}" }.join("&")
 end
+
+def request_path_startswith(env, ary)
+	ary.each do |prefix|
+		if env.request.path.starts_with? prefix
+			return true
+		end
+	end
+	return false
+end
