@@ -57,12 +57,12 @@ $('#page-select').change(function(){
 	jumpTo(parseInt($('#page-select').val()));
 });
 function showControl(idx) {
-	$('#page-select').val(idx + 1);
+	$('#page-select').val(idx);
 	UIkit.modal($('#modal-sections')).show();
 }
 function jumpTo(page) {
 	var ary = window.location.pathname.split('/');
-	ary[ary.length - 1] = page - 1;
+	ary[ary.length - 1] = page;
 	ary.shift(); // remove leading `/`
 	ary.unshift(window.location.origin);
 	window.location.replace(ary.join('/'));

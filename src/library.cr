@@ -32,7 +32,7 @@ class Entry
 				MIME.from_filename? e.filename
 			}
 			.size
-		@cover_url = "/api/page/#{@book_title}/#{title}/0"
+		@cover_url = "/api/page/#{@book_title}/#{title}/1"
 	end
 	def read_page(page_num)
 		Zip::File.open @zip_path do |file|
@@ -42,7 +42,7 @@ class Entry
 					MIME.from_filename? e.filename
 				}
 				.sort { |a, b| a.filename <=> b.filename }
-				.[page_num]
+				.[page_num - 1]
 			page.open do |io|
 				slice = Bytes.new page.uncompressed_size
 				bytes_read = io.read_fully? slice

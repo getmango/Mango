@@ -163,11 +163,11 @@ get "/reader/:title/:entry" do |env|
 
 		# load progress
 		username = get_username env
-		page = (title.load_progress username, entry.title) - 1
+		page = title.load_progress username, entry.title
 		# we go back 2 * `IMGS_PER_PAGE` pages. the infinite scroll library
 		# perloads a few pages in advance, and the user might not have actually
 		# read them
-		page = [page - 2 * IMGS_PER_PAGE, 0].max
+		page = [page - 2 * IMGS_PER_PAGE, 1].max
 
 		env.redirect "/reader/#{title.title}/#{entry.title}/#{page}"
 	rescue
@@ -180,19 +180,19 @@ get "/reader/:title/:entry/:page" do |env|
 		title = (library.get_title env.params.url["title"]).not_nil!
 		entry = (title.get_entry env.params.url["entry"]).not_nil!
 		page = env.params.url["page"].to_i
-		raise "" if page >= entry.pages
+		raise "" if page > entry.pages
 
 		# save progress
 		username = get_username env
-		title.save_progress username, entry.title, page + 1
+		title.save_progress username, entry.title, page
 
-		pages = (page...[entry.pages, page + IMGS_PER_PAGE].min)
+		pages = (page...[entry.pages + 1, page + IMGS_PER_PAGE].min)
 		urls = pages.map { |idx|
 			"/api/page/#{title.title}/#{entry.title}/#{idx}" }
 		reader_urls = pages.map { |idx|
 			"/reader/#{title.title}/#{entry.title}/#{idx}" }
 		next_page = page + IMGS_PER_PAGE
-		next_url = next_page >= entry.pages ? nil :
+		next_url = next_page > entry.pages ? nil :
 			"/reader/#{title.title}/#{entry.title}/#{next_page}"
 		exit_url = "/book/#{title.title}"
 
