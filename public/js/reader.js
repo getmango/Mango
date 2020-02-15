@@ -38,7 +38,7 @@ $(function() {
 					$.get(lastURL);
 					return;
 				}
-				$('#hidden').load(nextURL + ' .uk-container', function(res, status, xhr){
+				$('#hidden').load(encodeURI(nextURL) + ' .uk-container', function(res, status, xhr){
 					if (status === 'error') console.log(xhr.statusText);
 					if (status === 'success') {
 						console.log(nextURL + ' loaded');
