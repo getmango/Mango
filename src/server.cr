@@ -36,8 +36,8 @@ class Server
 			begin
 				title = (@library.get_title env.params.url["title"]).not_nil!
 				username = get_username env
-				percentage = title.entries.map { |e| title.load_percetage username,\
-									 e.title }
+				percentage = title.entries.map { |e|
+					title.load_percetage username, e.title }
 				layout "title"
 			rescue
 				env.response.status_code = 404
@@ -72,7 +72,8 @@ class Server
 			begin
 				username = env.params.body["username"]
 				password = env.params.body["password"]
-				# if `admin` is unchecked, the body hash would not contain `admin`
+				# if `admin` is unchecked, the body hash
+				# 	would not contain `admin`
 				admin = !env.params.body["admin"]?.nil?
 
 				if username.size < 3
@@ -106,7 +107,8 @@ class Server
 			begin
 				username = env.params.body["username"]
 				password = env.params.body["password"]
-				# if `admin` is unchecked, the body hash would not contain `admin`
+				# if `admin` is unchecked, the body
+				#	hash would not contain `admin`
 				admin = !env.params.body["admin"]?.nil?
 				original_username = env.params.url["original_username"]
 
@@ -127,7 +129,8 @@ class Server
 					end
 				end
 
-				@storage.update_user original_username, username, password, admin
+				@storage.update_user \
+					original_username, username, password, admin
 
 				env.redirect "/admin/user"
 			rescue e
@@ -142,8 +145,6 @@ class Server
 
 
 		get "/reader/:title/:entry" do |env|
-			# We should save the reading progress, and ask the user if she wants to
-			# start over or resume. For now we just start from page 0
 			begin
 				title = (@library.get_title env.params.url["title"]).not_nil!
 				entry = (title.get_entry env.params.url["entry"]).not_nil!
@@ -151,9 +152,9 @@ class Server
 				# load progress
 				username = get_username env
 				page = title.load_progress username, entry.title
-				# we go back 2 * `IMGS_PER_PAGE` pages. the infinite scroll @library
-				# perloads a few pages in advance, and the user might not have actually
-				# read them
+				# we go back 2 * `IMGS_PER_PAGE` pages. the infinite scroll
+				# 	library perloads a few pages in advance, and the user
+				# 	might not have actually read them
 				page = [page - 2 * IMGS_PER_PAGE, 1].max
 
 				env.redirect "/reader/#{title.title}/#{entry.title}/#{page}"
@@ -195,7 +196,8 @@ class Server
 
 		get "/logout" do |env|
 			begin
-				cookie = env.request.cookies.find { |c| c.name == "token" }.not_nil!
+				cookie = env.request.cookies
+					.find { |c| c.name == "token" }.not_nil!
 				@storage.logout cookie.value
 			rescue
 			ensure
@@ -228,7 +230,8 @@ class Server
 				e = t.get_entry entry
 				raise "Entry `#{entry}` of `#{title}` not found" if e.nil?
 				img = e.read_page page
-				raise "Failed to load page #{page} of `#{title}/#{entry}`" if img.nil?
+				raise "Failed to load page #{page} of `#{title}/#{entry}`"\
+					if img.nil?
 
 				send_img env, img
 			rescue e
@@ -261,8 +264,10 @@ class Server
 			start = Time.utc
 			@library = Library.new @config.@library_path
 			ms = (Time.utc - start).total_milliseconds
-			send_json env, \
-				{"milliseconds" => ms, "titles" => @library.titles.size}.to_json
+			send_json env, {
+				"milliseconds" => ms,
+				"titles" => @library.titles.size
+			}.to_json
 		end
 
 		post "/api/admin/user/delete/:username" do |env|
@@ -270,7 +275,10 @@ class Server
 				username = env.params.url["username"]
 				@storage.delete_user username
 			rescue e
-				send_json env, {"success" => false, "error" => e.message}.to_json
+				send_json env, {
+					"success" => false,
+					"error" => e.message
+				}.to_json
 			else
 				send_json env, {"success" => true}.to_json
 			end
