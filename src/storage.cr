@@ -48,11 +48,13 @@ class Storage
 	def verify_user(username, password)
 		DB.open "sqlite3://#{@path}" do |db|
 			begin
-				hash = db.query_one "select password from users where " \
-					"username = (?)", username, as: String
+				hash, token = db.query_one "select password, token from "\
+					"users where username = (?)", \
+					username, as: {String, String?}
 				unless verify_password hash, password
 					return nil
 				end
+				return token if token
 				token = random_str
 				db.exec "update users set token = (?) where username = (?)",
 					token, username
