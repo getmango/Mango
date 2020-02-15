@@ -29,7 +29,7 @@ class AuthHandler < Kemal::Handler
 
 		if request_path_startswith env, ["/admin", "/api/admin"]
 			unless storage.verify_admin cookie.value
-				return env.response.status_code = 401
+				env.response.status_code = 403
 			end
 		end
 

@@ -34,6 +34,11 @@ def hash_to_query(hash)
 	hash.map { |k, v| "#{k}=#{v}" }.join("&")
 end
 
+error 403 do |env|
+	message = "You are not authorized to visit #{env.request.path}"
+	layout "message"
+end
+
 get "/" do |env|
 	begin
 		titles = library.titles
@@ -195,10 +200,6 @@ get "/reader/:title/:entry/:page" do |env|
 		next_url = next_page > entry.pages ? nil :
 			"/reader/#{title.title}/#{entry.title}/#{next_page}"
 		exit_url = "/book/#{title.title}"
-
-		pp "requesting #{page}"
-		pp "serving #{urls}"
-		pp "next url #{next_url}"
 
 		render "src/views/reader.ecr"
 	rescue
