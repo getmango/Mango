@@ -2,7 +2,7 @@ require "zip"
 require "mime"
 require "json"
 
-class Image
+struct Image
 	property data : Bytes
 	property mime : String
 	property filename : String
