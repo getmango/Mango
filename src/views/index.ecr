@@ -1,6 +1,6 @@
 <h2 class=uk-title>Library</h2>
 <p class="uk-text-meta"><%= titles.size %> titles found</p>
-<div class="uk-child-width-1-4@m" uk-grid>
+<div class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
   <%- titles.each_with_index do |t, i| -%>
     <div>
       <a class="acard" href="/book/<%= t.title %>">
