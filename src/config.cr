@@ -13,7 +13,7 @@ class Config
 	property db_path = File.expand_path "~/mango/mango.db", home: true
 
 	@[YAML::Field(key: "scan_interval_minutes")]
-	property scan_interval = 5
+	property scan_interval : Int32 = 5
 
 	def self.load
 		cfg_path = File.expand_path "~/.config/mango/config.yml", home: true

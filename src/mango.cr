@@ -4,7 +4,7 @@ require "./library"
 require "./storage"
 
 config = Config.load
-library = Library.new config.library_path
+library = Library.new config.library_path, config.scan_interval
 storage = Storage.new config.db_path
 
 server = Server.new config, library, storage

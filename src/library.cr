@@ -142,13 +142,24 @@ class TitleInfo
 end
 
 class Library
-	JSON.mapping dir: String, titles: Array(Title)
+	JSON.mapping dir: String, titles: Array(Title), scan_interval: Int32
 
-	def initialize(@dir)
+	def initialize(@dir, @scan_interval)
 		# explicitly initialize @titles to bypass the compiler check. it will
-		#	be filled with actuall Titles in the `scan` call below
+		#	be filled with actual Titles in the `scan` call below
 		@titles = [] of Title
-		scan
+
+		return scan if @scan_interval < 1
+		spawn do
+			loop do
+				start = Time.local
+				puts "#{start} Starting periodic scan"
+				scan
+				ms = (Time.local - start).total_milliseconds
+				puts "Scanned #{@titles.size} titles in #{ms}ms"
+				sleep @scan_interval * 60
+			end
+		end
 	end
 	def get_title(name)
 		@titles.find { |t| t.title == name }
