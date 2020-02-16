@@ -1,19 +1,47 @@
+<div id="alert"></div>
 <h2 class=uk-title><%= title.title %></h2>
 <p class="uk-text-meta"><%= title.entries.size %> entries found</p>
 <div class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
   <%- title.entries.each_with_index do |e, i| -%>
     <div>
-      <a class="acard" href="/reader/<%= title.title %>/<%= e.title %>">
-        <div class="uk-card uk-card-default">
-            <div class="uk-card-media-top">
-              <img src="<%= e.cover_url %>" alt="">
-            </div>
-            <div class="uk-card-body">
-              <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
-              <h3 class="uk-card-title"><%= e.title %></h3>
-            </div>
-        </div>
+      <a class="acard">
+        <div class="uk-card uk-card-default" onclick="showModal('<%= e.title %>', '<%= e.zip_path %>', '<%= e.pages %>', <%= (percentage[i] * 100).round(1) %>, '<%= title.title %>', '<%= e.title %>')">
+          <div class="uk-card-media-top">
+            <img src="<%= e.cover_url %>" alt="">
+          </div>
+          <div class="uk-card-body">
+            <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
+            <h3 class="uk-card-title"><%= e.title %></h3>
+          </div>
+      </div>
       </a>
     </div>
   <%- end -%>
 </div>
+
+<div id="modal" class="uk-flex-top" uk-modal>
+  <div class="uk-modal-dialog uk-margin-auto-vertical">
+    <button class="uk-modal-close-default" type="button" uk-close></button>
+    <div class="uk-modal-header">
+      <h3 class="uk-modal-title" id="modal-title"></h3>
+      <p class="uk-text-meta" id="path-text" style="margin-bottom:0"></p>
+      <p class="uk-text-meta" id="pages-text" style="margin-top:0"></p>
+    </div>
+    <div class="uk-modal-body">
+      <p>Read</p>
+      <p uk-margin>
+        <a id="beginning-btn" class="uk-button uk-button-default">From beginning</a>
+        <a id="continue-btn" class="uk-button uk-button-primary"></a>
+      </p>
+      <p>Progress</p>
+      <p uk-margin>
+        <button id="read-btn" class="uk-button uk-button-default">Mark as read (100%)</button>
+        <button id="unread-btn" class="uk-button uk-button-default">Mark as unread (0%)</button>
+      </p>
+    </div>
+  </div>
+</div>
+
+<% content_for "script" do %>
+<script src="/js/title.js"></script>
+<% end %>

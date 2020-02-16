@@ -287,6 +287,25 @@ class Server
 			end
 		end
 
+		post "/api/progress/:title/:entry/:page" do |env|
+			begin
+				username = get_username env
+				title = (@library.get_title env.params.url["title"]).not_nil!
+				entry = (title.get_entry env.params.url["entry"]).not_nil!
+				page = env.params.url["page"].to_i
+
+				raise "incorrect page value" if page < 0 || page > entry.pages
+				title.save_progress username, entry.title, page
+			rescue e
+				send_json env, {
+					"success" => false,
+					"error" => e.message
+				}.to_json
+			else
+				send_json env, {"success" => true}.to_json
+			end
+		end
+
 		add_handler AuthHandler.new @storage
 		{% if flag?(:release) %}
 			# when building for relase, embed the static files in binary

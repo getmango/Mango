@@ -40,28 +40,16 @@
   <input type="submit" value="Save" class="uk-button uk-button-primary">
 </form>
 
-
 <% content_for "script" do %>
 <script>
-  $(function(){
-    var target = '/admin/user/edit';
-    <%- if !new_user -%>
-      target += '/<%= username %>';
-    <%- end -%>
-    $('form').attr('action', target);
-
-    function alert(level, text) {
-      hideAlert();
-      var html = '<div class="uk-alert-' + level + '" uk-alert><a class="uk-alert-close" uk-close></a><p>' + text + '</p></div>';
-      $('#alert').append(html);
-    }
-    function hideAlert() {
-      $('#alert').empty();
-    }
-
+  var username;
+  var error;
+  <%- if !new_user -%>
+    username = '/<%= username %>';
+  <%- end -%>
     <%- if error -%>
-      alert('danger', '<%= error %>');
-    <%- end -%>
-  });
+    error = '<%= error %>';
+  <%- end -%>
 </script>
+<script src="/js/user-edit.js"></script>
 <% end %>
