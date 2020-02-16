@@ -3,7 +3,7 @@ require "./config"
 require "./library"
 require "./storage"
 require "./auth_handler"
-require "./static"
+require "./static_handler"
 require "./util"
 
 class Server
@@ -53,9 +53,9 @@ class Server
 
 		get "/admin/user/edit" do |env|
 			username = env.params.query["username"]?
-				admin = env.params.query["admin"]?
-				if admin
-					admin = admin == "true"
+			admin = env.params.query["admin"]?
+			if admin
+				admin = admin == "true"
 			end
 			error = env.params.query["error"]?
 				current_user = get_username env

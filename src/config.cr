@@ -1,6 +1,4 @@
 require "yaml"
-require "uuid"
-require "base64"
 
 class Config
 	include YAML::Serializable
