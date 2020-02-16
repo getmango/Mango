@@ -3,16 +3,14 @@ require "./storage"
 require "./util"
 
 class AuthHandler < Kemal::Handler
-	exclude ["/login"]
-	exclude ["/login"], "POST"
-
 	property storage : Storage
 
 	def initialize(@storage)
 	end
 
 	def call(env)
-		return call_next(env) if exclude_match?(env)
+		return call_next(env) \
+			if request_path_startswith env, ["/login", "/logout"]
 
 		cookie = env.request.cookies.find { |c| c.name == "token" }
 		if cookie.nil? || ! @storage.verify_token cookie.value
