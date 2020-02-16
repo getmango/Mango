@@ -36,6 +36,7 @@ $(function() {
 					var lastURL = $('img').last().attr('id');
 					// load the reader URL for the last page to update reading progrss to 100%
 					$.get(lastURL);
+					$('#next-btn').removeAttr('hidden');
 					return;
 				}
 				$('#hidden').load(encodeURI(nextURL) + ' .uk-container', function(res, status, xhr){
@@ -71,6 +72,6 @@ function replaceHistory(url) {
 	history.replaceState(null, "", url);
 	console.log('reading ' + url);
 }
-function exit(url) {
+function redirect(url) {
 	window.location.replace(url);
 }

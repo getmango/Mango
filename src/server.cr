@@ -168,7 +168,7 @@ class Server
 				title = (@library.get_title env.params.url["title"]).not_nil!
 				entry = (title.get_entry env.params.url["entry"]).not_nil!
 				page = env.params.url["page"].to_i
-				raise "" if page > entry.pages
+				raise "" if page > entry.pages || page <= 0
 
 				# save progress
 				username = get_username env
@@ -183,6 +183,9 @@ class Server
 				next_url = next_page > entry.pages ? nil :
 					"/reader/#{title.title}/#{entry.title}/#{next_page}"
 				exit_url = "/book/#{title.title}"
+				next_entry = title.next_entry entry
+				next_entry_url = next_entry.nil? ? nil : \
+					"/reader/#{title.title}/#{next_entry.title}"
 
 				render "src/views/reader.ecr"
 			rescue

@@ -106,6 +106,11 @@ class Title
 		end
 		read_pages / total_pages
 	end
+	def next_entry(current_entry_obj)
+		idx = @entries.index current_entry_obj
+		return nil if idx.nil? || idx == @entries.size - 1
+		@entries[idx + 1]
+	end
 end
 
 class TitleInfo

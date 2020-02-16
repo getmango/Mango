@@ -20,6 +20,11 @@
           <a class="next-url" href="<%= next_url %>"></a>
           <%- end -%>
       </div>
+      <%- if next_entry_url -%>
+      <button id="next-btn" class="uk-align-center uk-button uk-button-primary" hidden onclick="redirect('<%= next_entry_url %>')">Next Entry</button>
+      <%- else -%>
+      <button id="next-btn" class="uk-align-center uk-button uk-button-primary" hidden onclick="redirect('<%= exit_url %>')">Exit Reader</button>
+      <%- end -%>
     </div>
 
     <div id="hidden" hidden></div>
@@ -43,7 +48,7 @@
           </div>
         </div>
         <div class="uk-modal-footer uk-text-right">
-          <button class="uk-button uk-button-danger" type="button" onclick="exit('<%= exit_url %>')">Exit Reader</button>
+          <button class="uk-button uk-button-danger" type="button" onclick="redirect('<%= exit_url %>')">Exit Reader</button>
         </div>
       </div>
     </div>
