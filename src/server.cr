@@ -11,10 +11,7 @@ class Server
 	property library : Library
 	property storage : Storage
 
-	def initialize
-		@config = Config.load
-		@library = Library.new @config.@library_path
-		@storage = Storage.new @config.db_path
+	def initialize(@config, @library, @storage)
 
 		error 403 do |env|
 			message = "You are not authorized to visit #{env.request.path}"
@@ -53,7 +50,6 @@ class Server
 			username = get_username env
 			layout "user"
 		end
-
 
 		get "/admin/user/edit" do |env|
 			username = env.params.query["username"]?
@@ -322,6 +318,3 @@ class Server
 		Kemal.run
 	end
 end
-
-server = Server.new
-server.start
