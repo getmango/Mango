@@ -3,9 +3,7 @@ require "./storage"
 require "./util"
 
 class AuthHandler < Kemal::Handler
-	property storage : Storage
-
-	def initialize(@storage)
+	def initialize(@storage : Storage)
 	end
 
 	def call(env)
@@ -18,7 +16,7 @@ class AuthHandler < Kemal::Handler
 		end
 
 		if request_path_startswith env, ["/admin", "/api/admin"]
-			unless storage.verify_admin cookie.value
+			unless @storage.verify_admin cookie.value
 				env.response.status_code = 403
 			end
 		end

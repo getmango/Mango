@@ -4,16 +4,21 @@ class Config
 	include YAML::Serializable
 
 	@[YAML::Field(key: "port")]
-	property port = 9000
+	property port : Int32 = 9000
 
 	@[YAML::Field(key: "library_path")]
-	property library_path = File.expand_path "~/mango/library", home: true
+	property library_path : String = \
+		File.expand_path "~/mango/library", home: true
 
 	@[YAML::Field(key: "db_path")]
-	property db_path = File.expand_path "~/mango/mango.db", home: true
+	property db_path : String = \
+		File.expand_path "~/mango/mango.db", home: true
 
 	@[YAML::Field(key: "scan_interval_minutes")]
 	property scan_interval : Int32 = 5
+
+	@[YAML::Field(key: "log_level")]
+	property log_level : String = "info"
 
 	def self.load
 		cfg_path = File.expand_path "~/.config/mango/config.yml", home: true

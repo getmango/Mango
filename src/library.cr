@@ -7,18 +7,12 @@ class Image
 	property mime : String
 	property filename : String
 	property size : Int32
+
 	def initialize(@data, @mime, @filename, @size)
 	end
 end
 
 class Entry
-	property zip_path : String
-	property book_title : String
-	property title : String
-	property size : String
-	property pages : Int32
-	property cover_url : String
-
 	JSON.mapping zip_path: String, book_title: String, title: String, \
 		size: String, pages: Int32, cover_url: String
 
@@ -144,7 +138,7 @@ end
 class Library
 	JSON.mapping dir: String, titles: Array(Title), scan_interval: Int32
 
-	def initialize(@dir, @scan_interval)
+	def initialize(@dir, @scan_interval, logger)
 		# explicitly initialize @titles to bypass the compiler check. it will
 		#	be filled with actual Titles in the `scan` call below
 		@titles = [] of Title
@@ -152,11 +146,11 @@ class Library
 		return scan if @scan_interval < 1
 		spawn do
 			loop do
+				logger.info "Starting periodic scan"
 				start = Time.local
-				puts "#{start} Starting periodic scan"
 				scan
 				ms = (Time.local - start).total_milliseconds
-				puts "Scanned #{@titles.size} titles in #{ms}ms"
+				logger.info "Scanned #{@titles.size} titles in #{ms}ms"
 				sleep @scan_interval * 60
 			end
 		end

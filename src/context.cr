@@ -1,17 +1,20 @@
 require "./config"
 require "./library"
 require "./storage"
-require "logger"
+require "./logger"
 
 class Context
 	property config : Config
 	property library : Library
 	property storage : Storage
+	property logger : MLogger
 
-	def initialize
-		@config = Config.load
-		@library = Library.new @config.library_path, @config.scan_interval
-		@storage = Storage.new @config.db_path
+	def initialize(@config, @logger, @library, @storage)
 	end
 
+	{% for lvl in LEVELS %}
+		def {{lvl.id}}(msg)
+			@logger.{{lvl.id}} msg
+		end
+	{% end %}
 end

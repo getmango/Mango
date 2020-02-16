@@ -16,10 +16,7 @@ def random_str
 end
 
 class Storage
-	property path : String
-
-	def initialize(path)
-		@path = path
+	def initialize(@path : String, @logger : MLogger)
 		dir = File.dirname path
 		unless Dir.exists? dir
 			Dir.mkdir_p dir
@@ -39,7 +36,7 @@ class Storage
 				hash = hash_password random_pw
 				db.exec "insert into users values (?, ?, ?, ?)",
 					"admin", hash, nil, 1
-				puts "Initial user created. You can log in with " \
+				@logger.info "Initial user created. You can log in with " \
 					"#{{"username" => "admin", "password" => random_pw}}"
 			end
 		end

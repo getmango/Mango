@@ -9,11 +9,7 @@ class FS
 end
 
 class StaticHandler < Kemal::Handler
-	property dirs : Array(String)
-
-	def initialize
-		@dirs = ["/css", "/js"]
-	end
+	@dirs = ["/css", "/js"]
 
 	def call(env)
 		if request_path_startswith env, @dirs

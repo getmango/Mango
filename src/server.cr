@@ -2,12 +2,11 @@ require "kemal"
 require "./context"
 require "./auth_handler"
 require "./static_handler"
+require "./log_handler"
 require "./util"
 
 class Server
-	property context : Context
-
-	def initialize(@context)
+	def initialize(@context : Context)
 
 		error 403 do |env|
 			message = "You are not authorized to visit #{env.request.path}"
@@ -87,7 +86,7 @@ class Server
 
 				env.redirect "/admin/user"
 			rescue e
-				puts e.message
+				@context.error e.message
 				redirect_url = URI.new \
 					path: "/admin/user/edit",\
 					query: hash_to_query({"error" => e.message})
@@ -127,7 +126,7 @@ class Server
 
 				env.redirect "/admin/user"
 			rescue e
-				puts e.message
+				@context.error e.message
 				redirect_url = URI.new \
 					path: "/admin/user/edit",\
 					query: hash_to_query({"username" => original_username, \
@@ -234,7 +233,7 @@ class Server
 
 				send_img env, img
 			rescue e
-				STDERR.puts e
+				@context.error e.message
 				env.response.status_code = 500
 				e.message
 			end
@@ -249,7 +248,7 @@ class Server
 
 				send_json env, t.to_json
 			rescue e
-				STDERR.puts e
+				@context.error e.message
 				env.response.status_code = 500
 				e.message
 			end
@@ -303,6 +302,8 @@ class Server
 			end
 		end
 
+		Kemal.config.logging = false
+		add_handler LogHandler.new @context.logger
 		add_handler AuthHandler.new @context.storage
 		{% if flag?(:release) %}
 			# when building for relase, embed the static files in binary
