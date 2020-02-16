@@ -144,17 +144,22 @@ end
 class Library
 	JSON.mapping dir: String, titles: Array(Title)
 
-	def initialize(dir : String)
-		@dir = dir
-		unless Dir.exists? dir
-			Dir.mkdir_p dir
-		end
-		@titles = (Dir.entries dir)
-			.select { |path| File.directory? File.join dir, path }
-			.map { |path| Title.new File.join dir, path }
-			.select { |title| !title.entries.empty? }
+	def initialize(@dir)
+		# explicitly initialize @titles to bypass the compiler check. it will
+		#	be filled with actuall Titles in the `scan` call below
+		@titles = [] of Title
+		scan
 	end
 	def get_title(name)
 		@titles.find { |t| t.title == name }
+	end
+	def scan
+		unless Dir.exists? @dir
+			Dir.mkdir_p @dir
+		end
+		@titles = (Dir.entries @dir)
+			.select { |path| File.directory? File.join @dir, path }
+			.map { |path| Title.new File.join @dir, path }
+			.select { |title| !title.entries.empty? }
 	end
 end

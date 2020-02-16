@@ -265,7 +265,7 @@ class Server
 
 		post "/api/admin/scan" do |env|
 			start = Time.utc
-			@library = Library.new @config.@library_path
+			@library.scan
 			ms = (Time.utc - start).total_milliseconds
 			send_json env, {
 				"milliseconds" => ms,
