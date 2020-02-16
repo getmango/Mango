@@ -11,7 +11,7 @@ def verify_password(hash, pw)
 	(Crypto::Bcrypt::Password.new hash).verify pw
 end
 
-def random_str()
+def random_str
 	Base64.strict_encode UUID.random().to_s
 end
 
@@ -88,7 +88,7 @@ class Storage
 		end
 	end
 
-	def list_users()
+	def list_users
 		results = Array(Tuple(String, Bool)).new
 		DB.open "sqlite3://#{@path}" do |db|
 			db.query "select username, admin from users" do |rs|
