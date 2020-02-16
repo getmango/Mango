@@ -1,11 +1,6 @@
 require "./server"
-require "./config"
-require "./library"
-require "./storage"
+require "./context"
 
-config = Config.load
-library = Library.new config.library_path, config.scan_interval
-storage = Storage.new config.db_path
-
-server = Server.new config, library, storage
+context = Context.new
+server = Server.new context
 server.start

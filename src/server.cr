@@ -1,17 +1,13 @@
 require "kemal"
-require "./config"
-require "./library"
-require "./storage"
+require "./context"
 require "./auth_handler"
 require "./static_handler"
 require "./util"
 
 class Server
-	property config : Config
-	property library : Library
-	property storage : Storage
+	property context : Context
 
-	def initialize(@config, @library, @storage)
+	def initialize(@context)
 
 		error 403 do |env|
 			message = "You are not authorized to visit #{env.request.path}"
@@ -20,7 +16,7 @@ class Server
 
 		get "/" do |env|
 			begin
-				titles = @library.titles
+				titles = @context.library.titles
 				username = get_username env
 				percentage = titles.map &.load_percetage username
 				layout "index"
@@ -31,7 +27,8 @@ class Server
 
 		get "/book/:title" do |env|
 			begin
-				title = (@library.get_title env.params.url["title"]).not_nil!
+				title = (@context.library.get_title env.params.url["title"])
+					.not_nil!
 				username = get_username env
 				percentage = title.entries.map { |e|
 					title.load_percetage username, e.title }
@@ -46,7 +43,7 @@ class Server
 		end
 
 		get "/admin/user" do |env|
-			users = @storage.list_users
+			users = @context.storage.list_users
 			username = get_username env
 			layout "user"
 		end
@@ -86,7 +83,7 @@ class Server
 					raise "password should contain ASCII characters only"
 				end
 
-				@storage.new_user username, password, admin
+				@context.storage.new_user username, password, admin
 
 				env.redirect "/admin/user"
 			rescue e
@@ -125,7 +122,7 @@ class Server
 					end
 				end
 
-				@storage.update_user \
+				@context.storage.update_user \
 					original_username, username, password, admin
 
 				env.redirect "/admin/user"
@@ -142,7 +139,8 @@ class Server
 
 		get "/reader/:title/:entry" do |env|
 			begin
-				title = (@library.get_title env.params.url["title"]).not_nil!
+				title = (@context.library.get_title env.params.url["title"])
+					.not_nil!
 				entry = (title.get_entry env.params.url["entry"]).not_nil!
 
 				# load progress
@@ -161,7 +159,8 @@ class Server
 
 		get "/reader/:title/:entry/:page" do |env|
 			begin
-				title = (@library.get_title env.params.url["title"]).not_nil!
+				title = (@context.library.get_title env.params.url["title"])
+					.not_nil!
 				entry = (title.get_entry env.params.url["entry"]).not_nil!
 				page = env.params.url["page"].to_i
 				raise "" if page > entry.pages || page <= 0
@@ -197,7 +196,7 @@ class Server
 			begin
 				cookie = env.request.cookies
 					.find { |c| c.name == "token" }.not_nil!
-				@storage.logout cookie.value
+				@context.storage.logout cookie.value
 			rescue
 			ensure
 				env.redirect "/login"
@@ -208,7 +207,8 @@ class Server
 			begin
 				username = env.params.body["username"]
 				password = env.params.body["password"]
-				token = @storage.verify_user(username, password).not_nil!
+				token = @context.storage.verify_user(username, password)
+					.not_nil!
 
 				cookie = HTTP::Cookie.new "token", token
 				env.response.cookies << cookie
@@ -224,7 +224,7 @@ class Server
 				entry = env.params.url["entry"]
 				page = env.params.url["page"].to_i
 
-				t = @library.get_title title
+				t = @context.library.get_title title
 				raise "Title `#{title}` not found" if t.nil?
 				e = t.get_entry entry
 				raise "Entry `#{entry}` of `#{title}` not found" if e.nil?
@@ -244,7 +244,7 @@ class Server
 			begin
 				title = env.params.url["title"]
 
-				t = @library.get_title title
+				t = @context.library.get_title title
 				raise "Title `#{title}` not found" if t.nil?
 
 				send_json env, t.to_json
@@ -256,23 +256,23 @@ class Server
 		end
 
 		get "/api/book" do |env|
-			send_json env, @library.to_json
+			send_json env, @context.library.to_json
 		end
 
 		post "/api/admin/scan" do |env|
 			start = Time.utc
-			@library.scan
+			@context.library.scan
 			ms = (Time.utc - start).total_milliseconds
 			send_json env, {
 				"milliseconds" => ms,
-				"titles" => @library.titles.size
+				"titles" => @context.library.titles.size
 			}.to_json
 		end
 
 		post "/api/admin/user/delete/:username" do |env|
 			begin
 				username = env.params.url["username"]
-				@storage.delete_user username
+				@context.storage.delete_user username
 			rescue e
 				send_json env, {
 					"success" => false,
@@ -286,7 +286,8 @@ class Server
 		post "/api/progress/:title/:entry/:page" do |env|
 			begin
 				username = get_username env
-				title = (@library.get_title env.params.url["title"]).not_nil!
+				title = (@context.library.get_title env.params.url["title"])
+					.not_nil!
 				entry = (title.get_entry env.params.url["entry"]).not_nil!
 				page = env.params.url["page"].to_i
 
@@ -302,7 +303,7 @@ class Server
 			end
 		end
 
-		add_handler AuthHandler.new @storage
+		add_handler AuthHandler.new @context.storage
 		{% if flag?(:release) %}
 			# when building for relase, embed the static files in binary
 			serve_static false
@@ -314,7 +315,7 @@ class Server
 		{% if flag?(:release) %}
 			Kemal.config.env = "production"
 		{% end %}
-		Kemal.config.port = @config.port
+		Kemal.config.port = @context.config.port
 		Kemal.run
 	end
 end
