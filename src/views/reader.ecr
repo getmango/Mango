@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html style="background-color:black;">
+<html class="reader-bg">
   <head>
     <meta charset="utf-8">
     <meta name="X-UA-Compatible" content="IE=edge">
@@ -11,7 +11,7 @@
   </head>
 
   <body>
-    <div class="uk-section uk-section-default uk-section-small" style="background-color:black;">
+    <div class="uk-section uk-section-default uk-section-small reader-bg">
       <div class="uk-container uk-container-small">
           <%- urls.each_with_index do |url, i| -%>
           <img class="uk-align-center" data-src="<%= url %>" data-width data-height uk-img id="<%= reader_urls[i] %>" onclick="showControl(<%= pages.to_a[i] %>);">

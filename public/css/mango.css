@@ -11,3 +11,9 @@
 .uk-list li {
 	cursor: pointer;
 }
+.reader-bg {
+	background-color: black;
+}
+#scan-status {
+	cursor: auto;
+}
