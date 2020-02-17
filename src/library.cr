@@ -18,7 +18,7 @@ class Entry
 
 	def initialize(path, @book_title)
 		@zip_path = path
-		@title = File.basename path, ".zip"
+		@title = File.basename path, File.extname path
 		@size = (File.size path).humanize_bytes
 		@pages = Zip::File.new(path).entries
 			.select { |e|
@@ -57,7 +57,7 @@ class Title
 		@dir = dir
 		@title = File.basename dir
 		@entries = (Dir.entries dir)
-			.select { |path| (File.extname path) == ".zip" }
+			.select { |path| [".zip", ".cbz"].includes? File.extname path }
 			.map { |path| Entry.new File.join(dir, path), @title }
 			.select { |e| e.pages > 0 }
 			.sort { |a, b| a.title <=> b.title }

@@ -17,3 +17,6 @@
 #scan-status {
 	cursor: auto;
 }
+.uk-card-title {
+	word-wrap: break-word;
+}
