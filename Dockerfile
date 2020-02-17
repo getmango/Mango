@@ -8,5 +8,11 @@ RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources
 
 RUN apt-get update && apt-get install -y nodejs yarn libsqlite3-dev
 
-RUN git clone https://github.com/hkalexling/Mango
-RUN cd Mango && make && make install
+WORKDIR /Mango
+
+COPY . .
+COPY package*.json .
+
+RUN make && make install
+
+CMD ["mango"]
