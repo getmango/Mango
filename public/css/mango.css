@@ -20,3 +20,6 @@
 .uk-card-title {
 	word-wrap: break-word;
 }
+.uk-logo > img {
+	max-height: 90px;
+}

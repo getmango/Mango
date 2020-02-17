@@ -13,7 +13,7 @@ class FS
 end
 
 class StaticHandler < Kemal::Handler
-	@dirs = ["/css", "/js"]
+	@dirs = ["/css", "/js", "/img", "/favicon.ico"]
 
 	def call(env)
 		if request_path_startswith env, @dirs

@@ -14,4 +14,14 @@ gulp.task('minify-css', () => {
 		.pipe(gulp.dest('dist/css'));
 });
 
-gulp.task('default', gulp.parallel('minify-js', 'minify-css'));
+gulp.task('img', () => {
+	return gulp.src('public/img/*')
+		.pipe(gulp.dest('dist/img'));
+});
+
+gulp.task('favicon', () => {
+	return gulp.src('public/favicon.ico')
+		.pipe(gulp.dest('dist'));
+});
+
+gulp.task('default', gulp.parallel('minify-js', 'minify-css', 'img', 'favicon'));
