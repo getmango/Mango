@@ -146,7 +146,6 @@ class Library
 		return scan if @scan_interval < 1
 		spawn do
 			loop do
-				@logger.info "Starting periodic scan"
 				start = Time.local
 				scan
 				ms = (Time.local - start).total_milliseconds
