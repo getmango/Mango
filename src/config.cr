@@ -20,8 +20,9 @@ class Config
 	@[YAML::Field(key: "log_level")]
 	property log_level : String = "info"
 
-	def self.load
-		cfg_path = File.expand_path "~/.config/mango/config.yml", home: true
+	def self.load(path : String?)
+		path = "~/.config/mango/config.yml" if path.nil?
+		cfg_path = File.expand_path path, home: true
 		if File.exists? cfg_path
 			return self.from_yaml File.read cfg_path
 		end
