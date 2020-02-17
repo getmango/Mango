@@ -5,7 +5,11 @@ require "./util"
 
 class FS
 	extend BakedFileSystem
-	bake_folder "../dist"
+	{% if read_file? "./dist" %}
+		bake_folder "../dist"
+	{% else %}
+		bake_folder "../public"
+	{% end %}
 end
 
 class StaticHandler < Kemal::Handler

@@ -1,12 +1,19 @@
-build:
+all: uglify | build
+
+uglify:
 	yarn
 	yarn uglify
-	shards install
+
+build: libs
 	crystal build src/mango.cr --release --progress
+
+libs:
+	shards install
+
 run:
 	crystal run src/mango.cr --error-trace
+
 clean:
-	rm mango
 	rm -rf dist
 	rm yarn.lock
 	rm -rf node_modules
