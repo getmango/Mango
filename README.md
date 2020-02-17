@@ -14,6 +14,12 @@ Mango is a self-hosted manga server and reader. Its features include
 
 ### Docker
 
+1. Make sure you have docker installed and running
+2. Clone the repository
+3. `docker build -t mango:mango .`
+4. `docker run -td --name mango -p 9000:9000 -v /path/to/your/mango/library:/root/mango/library mango:mango`
+5. Now the docker container is up and running. You can get into it using `docker exec -it mango /bin/bash` and then start Mango using the command `mango`
+
 ### Build from source
 
 1. Make sure you have Crystal, Node and Yarn installed
@@ -71,22 +77,18 @@ On the first run, Mango would log the default username and a randomly generated 
 
 ## Screenshots
 
-Library
+Library:
 
 ![library screenshot](./.github/screenshots/library.png)
 
-Title
+Title:
 
 ![title screenshot](./.github/screenshots/title.png)
 
-Reader
+Reader:
 
 ![reader screenshot](./.github/screenshots/reader.png)
 
-Mobile UI
+Mobile UI:
 
 ![mobile screenshot](./.github/screenshots/mobile.png)
-
-## Contributors
-
-- [Alex Ling](https://github.com/your-github-user) - creator and maintainer
