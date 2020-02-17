@@ -1,3 +1,6 @@
+PREFIX=/usr/local
+INSTALL_DIR=$(PREFIX)/bin
+
 all: uglify | build
 
 uglify:
@@ -13,7 +16,16 @@ libs:
 run:
 	crystal run src/mango.cr --error-trace
 
-clean:
+install:
+	cp mango $(INSTALL_DIR)/mango
+
+uninstall:
+	rm -f $(INSTALL_DIR)/mango
+
+cleandist:
 	rm -rf dist
-	rm yarn.lock
+	rm -f yarn.lock
 	rm -rf node_modules
+
+clean:
+	rm -f mango
