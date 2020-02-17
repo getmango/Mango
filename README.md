@@ -18,7 +18,8 @@ Mango is a self-hosted manga server and reader. Its features include
 2. Clone the repository
 3. `docker build -t mango:mango .`
 4. `docker run -td --name mango -p 9000:9000 -v /path/to/your/mango/library:/root/mango/library mango:mango`
-5. Now the docker container is up and running. You can get into it using `docker exec -it mango /bin/bash` and then start Mango using the command `mango`
+5. or you can directly run it with `docker-compose up` (You should create your own docker-compose.yml configuration file before running it)
+6. Now the docker container is up and running. You can visit at `http://127.0.0.1:9000`.
 
 ### Build from source
 

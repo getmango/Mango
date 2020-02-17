@@ -7,3 +7,4 @@ node_modules
 yarn.lock
 dist
 mango
+docker-compose.yml
