@@ -52,4 +52,8 @@ class MLogger
 			@logger.{{lvl.id}} msg
 		end
 	{% end %}
+
+	def to_json(json : JSON::Builder)
+		json.string self
+	end
 end

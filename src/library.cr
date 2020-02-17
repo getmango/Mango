@@ -136,9 +136,9 @@ class TitleInfo
 end
 
 class Library
-	JSON.mapping dir: String, titles: Array(Title), scan_interval: Int32
+	JSON.mapping dir: String, titles: Array(Title), scan_interval: Int32, logger: MLogger
 
-	def initialize(@dir, @scan_interval, logger)
+	def initialize(@dir, @scan_interval, @logger)
 		# explicitly initialize @titles to bypass the compiler check. it will
 		#	be filled with actual Titles in the `scan` call below
 		@titles = [] of Title
@@ -146,11 +146,11 @@ class Library
 		return scan if @scan_interval < 1
 		spawn do
 			loop do
-				logger.info "Starting periodic scan"
+				@logger.info "Starting periodic scan"
 				start = Time.local
 				scan
 				ms = (Time.local - start).total_milliseconds
-				logger.info "Scanned #{@titles.size} titles in #{ms}ms"
+				@logger.info "Scanned #{@titles.size} titles in #{ms}ms"
 				sleep @scan_interval * 60
 			end
 		end
@@ -160,11 +160,15 @@ class Library
 	end
 	def scan
 		unless Dir.exists? @dir
+			@logger.info "The library directory #{@dir} does not exist. " \
+				"Attempting to create it"
 			Dir.mkdir_p @dir
 		end
 		@titles = (Dir.entries @dir)
 			.select { |path| File.directory? File.join @dir, path }
 			.map { |path| Title.new File.join @dir, path }
 			.select { |title| !title.entries.empty? }
+		@logger.debug "Scan completed"
+		@logger.debug "Scanned library: \n#{self.to_pretty_json}"
 	end
 end

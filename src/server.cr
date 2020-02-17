@@ -14,14 +14,10 @@ class Server
 		end
 
 		get "/" do |env|
-			begin
-				titles = @context.library.titles
-				username = get_username env
-				percentage = titles.map &.load_percetage username
-				layout "index"
-			rescue
-				env.response.status_code = 500
-			end
+			titles = @context.library.titles
+			username = get_username env
+			percentage = titles.map &.load_percetage username
+			layout "index"
 		end
 
 		get "/book/:title" do |env|
@@ -32,7 +28,8 @@ class Server
 				percentage = title.entries.map { |e|
 					title.load_percetage username, e.title }
 				layout "title"
-			rescue
+			rescue e
+				@context.error e
 				env.response.status_code = 404
 			end
 		end
@@ -86,7 +83,7 @@ class Server
 
 				env.redirect "/admin/user"
 			rescue e
-				@context.error e.message
+				@context.error e
 				redirect_url = URI.new \
 					path: "/admin/user/edit",\
 					query: hash_to_query({"error" => e.message})
@@ -126,7 +123,7 @@ class Server
 
 				env.redirect "/admin/user"
 			rescue e
-				@context.error e.message
+				@context.error e
 				redirect_url = URI.new \
 					path: "/admin/user/edit",\
 					query: hash_to_query({"username" => original_username, \
@@ -151,7 +148,8 @@ class Server
 				page = [page - 2 * IMGS_PER_PAGE, 1].max
 
 				env.redirect "/reader/#{title.title}/#{entry.title}/#{page}"
-			rescue
+			rescue e
+				@context.error e
 				env.response.status_code = 404
 			end
 		end
@@ -182,7 +180,8 @@ class Server
 					"/reader/#{title.title}/#{next_entry.title}"
 
 				render "src/views/reader.ecr"
-			rescue
+			rescue e
+				@context.error e
 				env.response.status_code = 404
 			end
 		end
@@ -196,7 +195,8 @@ class Server
 				cookie = env.request.cookies
 					.find { |c| c.name == "token" }.not_nil!
 				@context.storage.logout cookie.value
-			rescue
+			rescue e
+				@context.error "Error when attempting to log out: #{e}"
 			ensure
 				env.redirect "/login"
 			end
@@ -233,7 +233,7 @@ class Server
 
 				send_img env, img
 			rescue e
-				@context.error e.message
+				@context.error e
 				env.response.status_code = 500
 				e.message
 			end
@@ -248,7 +248,7 @@ class Server
 
 				send_json env, t.to_json
 			rescue e
-				@context.error e.message
+				@context.error e
 				env.response.status_code = 500
 				e.message
 			end
@@ -273,6 +273,7 @@ class Server
 				username = env.params.url["username"]
 				@context.storage.delete_user username
 			rescue e
+				@context.error e
 				send_json env, {
 					"success" => false,
 					"error" => e.message
@@ -293,6 +294,7 @@ class Server
 				raise "incorrect page value" if page < 0 || page > entry.pages
 				title.save_progress username, entry.title, page
 			rescue e
+				@context.error e
 				send_json env, {
 					"success" => false,
 					"error" => e.message
@@ -307,12 +309,14 @@ class Server
 		add_handler AuthHandler.new @context.storage
 		{% if flag?(:release) %}
 			# when building for relase, embed the static files in binary
+			@context.debug "We are in release mode. Using embeded static files."
 			serve_static false
 			add_handler StaticHandler.new
 		{% end %}
 	end
 
 	def start
+		@context.debug "Starting Kemal server"
 		{% if flag?(:release) %}
 			Kemal.config.env = "production"
 		{% end %}
