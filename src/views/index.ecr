@@ -1,8 +1,14 @@
 <h2 class=uk-title>Library</h2>
 <p class="uk-text-meta"><%= titles.size %> titles found</p>
+<div class="uk-margin">
+    <form class="uk-search uk-search-default">
+        <span uk-search-icon></span>
+        <input class="uk-search-input" type="search" placeholder="Search">
+    </form>
+</div>
 <div class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
   <%- titles.each_with_index do |t, i| -%>
-    <div>
+    <div class="item">
       <a class="acard" href="/book/<%= t.title %>">
         <div class="uk-card uk-card-default">
             <div class="uk-card-media-top">
@@ -18,3 +24,7 @@
     </div>
   <%- end -%>
 </div>
+
+<% content_for "script" do %>
+<script src="/js/search.js"></script>
+<% end %>
