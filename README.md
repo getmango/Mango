@@ -12,12 +12,14 @@ Mango is a self-hosted manga server and reader. Its features include
 
 ## Installation
 
+### Docker
+
 ### Build from source
 
-1. Make sure you have Crystal (0.32.0), Node and Yarn installed
+1. Make sure you have Crystal, Node and Yarn installed
 2. Clone the repository
-3. Run `make`
-4. Move the compiled executable to your desired location and run it
+3. `make && sudo make install`
+4. Start mango by running the command `mango`
 
 ## Usage
 
@@ -44,11 +46,46 @@ scan_interval_minutes: 5
 log_level: info
 ```
 
+- `scan_interval_minutes` can be any non-negative integer. Setting it to `0` disables the periodic scan
+- `log_level` can be `debug`, `info`, `warn`, `error`, `fatal` or `off`. Setting it to `off` disables the logging
+
+### Required Library Structure
+
+Please make sure that your library directory has the following structure:
+
+```
+.
+├── Manga 1
+│   └── Manga 1.cbz
+└── Manga 2
+    ├── Vol 0001.zip
+    ├── Vol 0002.zip
+    ├── Vol 0003.zip
+    ├── Vol 0004.zip
+    └── Vol 0005.zip
+```
+
 ### Initial Login
 
 On the first run, Mango would log the default username and a randomly generated password to STDOUT. You are advised to immediately change the password.
 
 ## Screenshots
+
+Library
+
+![library screenshot](./.github/screenshots/library.png)
+
+Title
+
+![title screenshot](./.github/screenshots/title.png)
+
+Reader
+
+![reader screenshot](./.github/screenshots/reader.png)
+
+Mobile UI
+
+![mobile screenshot](./.github/screenshots/mobile.png)
 
 ## Contributors
 
