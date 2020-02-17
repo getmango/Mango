@@ -5,7 +5,7 @@ require "./util"
 
 class FS
 	extend BakedFileSystem
-	bake_folder "../public"
+	bake_folder "../dist"
 end
 
 class StaticHandler < Kemal::Handler

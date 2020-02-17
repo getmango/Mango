@@ -3,3 +3,6 @@
 /bin/
 /.shards/
 *.dwarf
+node_modules
+yarn.lock
+dist

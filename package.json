@@ -1,0 +1,16 @@
+{
+  "name": "mango",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/hkalexling/Mango.git",
+  "author": "Alex Ling <hkalexling@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-minify-css": "^1.2.4",
+    "gulp-uglify": "^3.0.2"
+  },
+  "scripts": {
+    "uglify": "gulp"
+  }
+}
