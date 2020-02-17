@@ -1,6 +1,8 @@
 # Mango
 
-Mango is a self-hosted Manga Server and Reader. Its features include
+![banner](./public/img/banner-padding.png)
+
+Mango is a self-hosted manga server and reader. Its features include
 
 - Multi-user support
 - Supports both `.zip` and `.cbz` formats
