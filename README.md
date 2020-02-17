@@ -1,6 +1,6 @@
 # Mango
 
-![banner](./public/img/banner-padding.png)
+![banner](./public/img/banner-paddings.png)
 
 Mango is a self-hosted manga server and reader. Its features include
 
