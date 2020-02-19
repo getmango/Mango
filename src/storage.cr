@@ -56,7 +56,7 @@ class Storage
 					@logger.debug "Password does not match the hash"
 					return nil
 				end
-				@logger.debug "Useer #{username} verified"
+				@logger.debug "User #{username} verified"
 				return token if token
 				token = random_str
 				@logger.debug "Updating token for #{username}"
