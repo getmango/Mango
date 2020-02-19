@@ -40,7 +40,7 @@ class Storage
 				hash = hash_password random_pw
 				db.exec "insert into users values (?, ?, ?, ?)",
 					"admin", hash, nil, 1
-				@logger.info "Initial user created. You can log in with " \
+				puts "Initial user created. You can log in with " \
 					"#{{"username" => "admin", "password" => random_pw}}"
 			end
 		end
