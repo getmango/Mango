@@ -18,6 +18,7 @@ Mango is a self-hosted manga server and reader. Its features include
 2. Clone the repository
 3. Copy `docker-compose.example.yml` to `docker-compose.yml` and modify it if necessary
 4. Run `docker-compose up`. This should build the docker image and start the container with Mango running inside
+5. Head over to `localhost:9000` to log in
 
 
 ### Build from source
@@ -25,7 +26,8 @@ Mango is a self-hosted manga server and reader. Its features include
 1. Make sure you have Crystal, Node and Yarn installed
 2. Clone the repository
 3. `make && sudo make install`
-4. Start mango by running the command `mango`
+4. Start Mango by running the command `mango`
+5. Head over to `localhost:9000` to log in
 
 ## Usage
 
