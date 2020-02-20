@@ -11,8 +11,5 @@ services:
     ports:
       - 9000:9000
     volumes:
-      - library:/root/mango/library
-      - config:/root/.config/mango
-volumes:
-  library:
-  config:
+      - ~/mango:/root/mango
+      - ~/.config/mango:/root/.config/mango
