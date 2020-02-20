@@ -164,7 +164,7 @@ module Mangadex
 	class API
 		def initialize(@base_url = "https://mangadex.org/api/")
 			@lang = {} of String => String
-			CSV.each_row {{read_file "src/lang.csv"}} do |row|
+			CSV.each_row {{read_file "src/assets/lang_codes.csv"}} do |row|
 				@lang[row[1]] = row[0]
 			end
 		end
