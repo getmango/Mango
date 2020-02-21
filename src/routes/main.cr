@@ -52,5 +52,9 @@ class MainRouter < Router
 				env.response.status_code = 404
 			end
 		end
+
+		get "/download" do |env|
+			layout "download"
+		end
 	end
 end
