@@ -20,6 +20,13 @@ class Config
 	@[YAML::Field(key: "log_level")]
 	property log_level : String = "info"
 
+	@[YAML::Field(key: "mangadex")]
+	property mangadex = {
+		"base_url" => "https://mangadex.org",
+		"api_url" => "https://mangadex.org/api",
+		"download_wait_seconds" => 5
+	}
+
 	def self.load(path : String?)
 		path = "~/.config/mango/config.yml" if path.nil?
 		cfg_path = File.expand_path path, home: true
