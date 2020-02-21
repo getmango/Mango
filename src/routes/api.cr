@@ -1,4 +1,5 @@
 require "./router"
+require "../mangadex/*"
 
 class APIRouter < Router
 	def setup
@@ -86,6 +87,19 @@ class APIRouter < Router
 				}.to_json
 			else
 				send_json env, {"success" => true}.to_json
+			end
+		end
+
+		get "/api/admin/mangadex/manga/:id" do |env|
+			begin
+				id = env.params.url["id"]
+				api = Mangadex::API.new \
+					@context.config.mangadex["api_url"].to_s
+				manga = api.get_manga id
+				send_json env, manga.to_info_json
+			rescue e
+				@context.error e
+				send_json env, {"error" => e.messsage}.to_json
 			end
 		end
 	end
