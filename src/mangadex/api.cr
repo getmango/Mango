@@ -142,13 +142,22 @@ module Mangadex
 		def initialize(@id, json_obj : JSON::Any)
 			self.parse_json json_obj
 		end
-		def to_info_json
+		def to_info_json(with_chapters = true)
 			JSON.build do |json|
 				json.object do
 					{% for name in ["id", "title", "description",
 							"author", "artist", "cover_url"] %}
 						json.field {{name}}, @{{name.id}}
 					{% end %}
+					if with_chapters
+						json.field "chapters" do
+							json.array do
+								@chapters.each do |c|
+									json.raw c.to_info_json
+								end
+							end
+						end
+					end
 				end
 			end
 		end
