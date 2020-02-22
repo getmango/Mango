@@ -1,10 +1,10 @@
 const gulp = require('gulp');
-const uglify = require('gulp-uglify');
+const minify = require("gulp-babel-minify");
 const minifyCss = require('gulp-minify-css');
 
 gulp.task('minify-js', () => {
 	return gulp.src('public/js/*.js')
-		.pipe(uglify())
+		.pipe(minify())
 		.pipe(gulp.dest('dist/js'));
 });
 

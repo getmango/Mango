@@ -7,8 +7,8 @@
   "license": "MIT",
   "devDependencies": {
     "gulp": "^4.0.2",
-    "gulp-minify-css": "^1.2.4",
-    "gulp-uglify": "^3.0.2"
+    "gulp-babel-minify": "^0.5.1",
+    "gulp-minify-css": "^1.2.4"
   },
   "scripts": {
     "uglify": "gulp"
