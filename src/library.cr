@@ -180,6 +180,7 @@ class Library
 			.select { |path| File.directory? File.join @dir, path }
 			.map { |path| Title.new File.join(@dir, path), @storage }
 			.select { |title| !title.entries.empty? }
+			.sort { |a, b| a.title <=> b.title }
 		@logger.debug "Scan completed"
 		@logger.debug "Scanned library: \n#{self.to_pretty_json}"
 	end
