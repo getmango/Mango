@@ -1,9 +1,186 @@
+<div id="alert"></div>
 <h2 class=uk-title>Download from MangaDex</h2>
-<form class="uk-grid-small" uk-grid>
+<div class="uk-grid-small" uk-grid>
 	<div class="uk-width-3-4">
 		<input class="uk-input" type="text" placeholder="MangaDex manga ID or URL">
 	</div>
 	<div class="uk-width-1-4">
-		<button class="uk-button uk-button-default">Search</button>
+		<div id="spinner" uk-spinner class="uk-align-center" hidden></div>
+		<button id="search-btn" class="uk-button uk-button-default" onclick="search()">Search</button>
 	</div>
-</form>
+</div>
+<div class"uk-grid-small" uk-grid hidden id="manga-details">
+	<div class="uk-width-1-4@s">
+		<img id="cover">
+	</div>
+	<div class="uk-width-1-4@s">
+		<p id="title"></p>
+		<p id="artist"></p>
+		<p id="author"></p>
+	</div>
+	<div id="filter-form" class="uk-form-stacked uk-width-1-2@s" hidden>
+		<p class="uk-text-lead">Filter Chapters</p>
+			<div class="uk-margin">
+				<label class="uk-form-label" for="lang-select">Language</label>
+				<div class="uk-form-controls">
+					<select class="uk-select" id="lang-select">
+					</select>
+				</div>
+			</div>
+			<div class="uk-margin">
+				<label class="uk-form-label" for="group-select">Group</label>
+				<div class="uk-form-controls">
+					<select class="uk-select" id="group-select">
+					</select>
+				</div>
+			</div>
+			<div class="uk-margin">
+				<label class="uk-form-label" for="volume-select">Volume</label>
+				<div class="uk-form-controls">
+					<select class="uk-select" id="volume-select">
+					</select>
+				</div>
+			</div>
+			<div class="uk-margin">
+				<label class="uk-form-label" for="chapter-select">Chapter</label>
+				<div class="uk-form-controls">
+					<select class="uk-select" id="chapter-select">
+					</select>
+				</div>
+			</div>
+	</div>
+</div>
+<table class="uk-table uk-table-striped" hidden>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Language</th>
+			<th>Group</th>
+			<th>Volume</th>
+			<th>Chapter</th>
+			<th>Timestamp</th>
+        </tr>
+    </thead>
+</table>
+
+<% content_for "script" do %>
+<script>
+	var baseURL = "<%= base_url %>".replace(/\/$/, "");
+</script>
+<script>
+	const toggleSpinner = () => {
+		var attr = $('#spinner').attr('hidden');
+		if (attr) {
+			$('#spinner').removeAttr('hidden');
+			$('#search-btn').attr('hidden', '');
+		}
+		else {
+			$('#search-btn').removeAttr('hidden');
+			$('#spinner').attr('hidden', '');
+		}
+		searching = !searching;
+	};
+	var searching = false;
+	const search = () => {
+		if (searching) {
+			return;
+		}
+		$('#manga-details').attr('hidden', '');
+		$('table').attr('hidden', '');
+		$('#filter-form').attr('hidden', '');
+		toggleSpinner();
+		var input = $('input').val()
+
+		if (input === "") {
+			toggleSpinner();
+			return;
+		}
+
+		var int_id = -1;
+		try {
+			const path = new URL(input).pathname;
+			const match = /\/title\/([0-9]+)/.exec(path);
+			int_id = parseInt(match[1]);
+		}
+		catch {
+			try {
+				int_id = parseInt(input);
+			}
+			catch {}
+		}
+
+		if (int_id <= 0 || isNaN(int_id)) {
+			alert('danger', 'Please make sure you are using a valid manga ID or manga URL from Mangadex.');
+			toggleSpinner();
+			return;
+		}
+
+		$.getJSON("/api/admin/mangadex/manga/" + int_id)
+			.done((data) => {
+				if (data.error) {
+					alert('danger', 'Failed to get manga info. Error: ' + data.error);
+					return;
+				}
+
+				const cover = baseURL + data.cover_url;
+				$('#cover').attr("src", cover);
+				$('#title').text("Title: " + data.title);
+				$('#artist').text("Artist: " + data.artist);
+				$('#author').text("Author: " + data.author);
+
+				$('#manga-details').removeAttr('hidden');
+
+				console.log(data.chapters);
+
+				const langs = new Set(['All']);
+				const group_names = new Set(['All']);
+				const volumes = new Set(['All']);
+				const chapters = new Set(['All']);
+				const inner = data.chapters.map(chp => {
+					langs.add(chp.language);
+					volumes.add(chp.volume);
+					chapters.add(chp.chapter);
+					const group_str = Object.entries(chp.groups).map(([k, v]) => {
+						group_names.add(k);
+						return `<a href="${baseURL }/group/${v}">${k}</a>`;
+					}).join(' | ');
+					return `<tr>
+						<td><a href="${baseURL}/chapter/${chp.id}">${chp.id}</a></td>
+						<td>${chp.title}</td>
+						<td>${chp.language}</td>
+						<td>${group_str}</td>
+						<td>${chp.volume}</td>
+						<td>${chp.chapter}</td>
+						<td>${chp.time}</td>
+					</tr>`;
+				}).join('');
+				const tbody = `<tbody>${inner}</tbody>`;
+				$('table > tbody').remove();
+				$('table').append(tbody);
+
+				$('select#lang-select').append([...langs].map(e => `<option>${e}</option>`).join(''));
+				$('select#group-select').append([...group_names].map(e => `<option>${e}</option>`).join(''));
+				$('select#volume-select').append([...volumes].map(e => `<option>${e}</option>`).join(''));
+				$('select#chapter-select').append([...chapters].map(e => `<option>${e}</option>`).join(''));
+
+				$('#filter-form').removeAttr('hidden');
+				$('table').removeAttr('hidden');
+			})
+			.fail((jqXHR, status) => {
+				alert('danger', 'Failed to get manga info. Error: ' + status);
+			})
+			.always(() => {
+				toggleSpinner();
+			});
+	};
+	const alert = (level, text) => {
+		hideAlert();
+		const html = '<div class="uk-alert-' + level + '" uk-alert><a class="uk-alert-close" uk-close></a><p>' + text + '</p></div>';
+		$('#alert').append(html);
+	};
+	const hideAlert = () => {
+		$('#alert').empty();
+	};
+</script>
+<% end %>

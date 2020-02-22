@@ -54,6 +54,7 @@ class MainRouter < Router
 		end
 
 		get "/download" do |env|
+			base_url = @context.config.mangadex["base_url"];
 			layout "download"
 		end
 	end

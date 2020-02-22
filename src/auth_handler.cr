@@ -15,7 +15,7 @@ class AuthHandler < Kemal::Handler
 			return env.redirect "/login"
 		end
 
-		if request_path_startswith env, ["/admin", "/api/admin"]
+		if request_path_startswith env, ["/admin", "/api/admin", "/download"]
 			unless @storage.verify_admin cookie.value
 				env.response.status_code = 403
 			end
