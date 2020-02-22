@@ -14,7 +14,7 @@ end
 
 class Entry
 	JSON.mapping zip_path: String, book_title: String, title: String, \
-		size: String, pages: Int32, cover_url: String
+		size: String, pages: Int32, cover_url: String, mtime: Time
 
 	def initialize(path, @book_title)
 		@zip_path = path
@@ -27,6 +27,7 @@ class Entry
 			}
 			.size
 		@cover_url = "/api/page/#{@book_title}/#{title}/1"
+		@mtime = File.info(@zip_path).modification_time
 	end
 	def read_page(page_num)
 		Zip::File.open @zip_path do |file|
@@ -51,7 +52,7 @@ class Entry
 end
 
 class Title
-	JSON.mapping dir: String, entries: Array(Entry), title: String
+	JSON.mapping dir: String, entries: Array(Entry), title: String, mtime: Time
 
 	def initialize(dir : String)
 		@dir = dir
@@ -61,6 +62,9 @@ class Title
 			.map { |path| Entry.new File.join(dir, path), @title }
 			.select { |e| e.pages > 0 }
 			.sort { |a, b| a.title <=> b.title }
+		mtimes = [File.info(dir).modification_time]
+		mtimes += @entries.map{|e| e.mtime}
+		@mtime = mtimes.max
 	end
 	def get_entry(name)
 		@entries.find { |e| e.title == name }

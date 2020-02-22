@@ -1,14 +1,28 @@
 <h2 class=uk-title>Library</h2>
 <p class="uk-text-meta"><%= titles.size %> titles found</p>
-<div class="uk-margin">
-    <form class="uk-search uk-search-default">
-        <span uk-search-icon></span>
-        <input class="uk-search-input" type="search" placeholder="Search">
-    </form>
+<div class="uk-grid-small" uk-grid>
+	<div class="uk-margin-bottom uk-width-3-4@s">
+		<form class="uk-search uk-search-default">
+			<span uk-search-icon></span>
+			<input class="uk-search-input" type="search" placeholder="Search">
+		</form>
+	</div>
+	<div class="uk-margin-bottom uk-width-1-4@s">
+		<div class="uk-form-horizontal">
+			<select class="uk-select" id="sort-select">
+				<option id="name-up">▲ Name</option>
+				<option id="name-down">▼ Name</option>
+				<option id="date-up">▲ Date Modified</option>
+				<option id="date-down">▼ Date Modified</option>
+				<option id="progress-up">▲ Progress</option>
+				<option id="progress-down">▼ Progress</option>
+			</select>
+		</div>
+	</div>
 </div>
-<div class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
+<div id="item-container" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
   <%- titles.each_with_index do |t, i| -%>
-    <div class="item">
+  <div class="item" data-mtime="<%= t.mtime.to_unix %>" data-progress="<%= percentage[i] %>">
       <a class="acard" href="/book/<%= t.title %>">
         <div class="uk-card uk-card-default">
             <div class="uk-card-media-top">
@@ -27,4 +41,5 @@
 
 <% content_for "script" do %>
 <script src="/js/search.js"></script>
+<script src="/js/sort-items.js"></script>
 <% end %>

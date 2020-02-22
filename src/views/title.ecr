@@ -1,15 +1,29 @@
 <div id="alert"></div>
 <h2 class=uk-title><%= title.title %></h2>
 <p class="uk-text-meta"><%= title.entries.size %> entries found</p>
-<div class="uk-margin">
-    <form class="uk-search uk-search-default">
-        <span uk-search-icon></span>
-        <input class="uk-search-input" type="search" placeholder="Search">
-    </form>
+<div class="uk-grid-small" uk-grid>
+	<div class="uk-margin-bottom uk-width-3-4@s">
+		<form class="uk-search uk-search-default">
+			<span uk-search-icon></span>
+			<input class="uk-search-input" type="search" placeholder="Search">
+		</form>
+	</div>
+	<div class="uk-margin-bottom uk-width-1-4@s">
+		<div class="uk-form-horizontal">
+			<select class="uk-select" id="sort-select">
+				<option id="name-up">▲ Name</option>
+				<option id="name-down">▼ Name</option>
+				<option id="date-up">▲ Date Modified</option>
+				<option id="date-down">▼ Date Modified</option>
+				<option id="progress-up">▲ Progress</option>
+				<option id="progress-down">▼ Progress</option>
+			</select>
+		</div>
+	</div>
 </div>
-<div class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
+<div id="item-container" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
   <%- title.entries.each_with_index do |e, i| -%>
-    <div class="item">
+  <div class="item" data-mtime="<%= e.mtime.to_unix %>" data-progress="<%= percentage[i] %>">
       <a class="acard">
         <div class="uk-card uk-card-default" onclick="showModal('<%= e.title %>', '<%= e.zip_path %>', '<%= e.pages %>', <%= (percentage[i] * 100).round(1) %>, '<%= title.title %>', '<%= e.title %>')">
           <div class="uk-card-media-top">
@@ -51,4 +65,5 @@
 <% content_for "script" do %>
 <script src="/js/title.js"></script>
 <script src="/js/search.js"></script>
+<script src="/js/sort-items.js"></script>
 <% end %>
