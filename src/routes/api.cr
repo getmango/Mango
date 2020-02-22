@@ -99,7 +99,7 @@ class APIRouter < Router
 				send_json env, manga.to_info_json
 			rescue e
 				@context.error e
-				send_json env, {"error" => e.messsage}.to_json
+				send_json env, {"error" => e.message}.to_json
 			end
 		end
 	end
