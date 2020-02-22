@@ -27,7 +27,7 @@ Mango is a self-hosted manga server and reader. Its features include
 
 ### Build from source
 
-1. Make sure you have Crystal, Node and Yarn installed
+1. Make sure you have Crystal, Node and Yarn installed. You might also need to install the development headers for `libsqlite3` and `libyaml`.
 2. Clone the repository
 3. `make && sudo make install`
 4. Start Mango by running the command `mango`
