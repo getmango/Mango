@@ -16,7 +16,8 @@ end
 class Entry
 	JSON.mapping zip_path: String, book_title: String, title: String, \
 		size: String, pages: Int32, cover_url: String, id: String, \
-		title_id: String, encoded_path: String, encoded_title: String
+		title_id: String, encoded_path: String, encoded_title: String,
+		mtime: Time
 
 	def initialize(path, @book_title, @title_id, storage)
 		@zip_path = path
@@ -32,6 +33,7 @@ class Entry
 			.size
 		@id = storage.get_id @zip_path, false
 		@cover_url = "/api/page/#{@title_id}/#{@id}/1"
+		@mtime = File.info(@zip_path).modification_time
 	end
 	def read_page(page_num)
 		Zip::File.open @zip_path do |file|
@@ -57,7 +59,7 @@ end
 
 class Title
 	JSON.mapping dir: String, entries: Array(Entry), title: String,
-		id: String, encoded_title: String
+		id: String, encoded_title: String, mtime: Time
 
 	def initialize(dir : String, storage)
 		@dir = dir
@@ -73,6 +75,9 @@ class Title
 			}
 			.select { |e| e.pages > 0 }
 			.sort { |a, b| a.title <=> b.title }
+		mtimes = [File.info(dir).modification_time]
+		mtimes += @entries.map{|e| e.mtime}
+		@mtime = mtimes.max
 	end
 	# When downloading from MangaDex, the zip/cbz file would not be valid
 	#	before the download is completed. If we scan the zip file,
