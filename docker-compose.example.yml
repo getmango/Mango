@@ -11,5 +11,5 @@ services:
     ports:
       - 9000:9000
     volumes:
-      - ./mango:/root/mango
-      - ./config:/root/.config/mango
+      - ~/mango:/root/mango
+      - ~/.config/mango:/root/.config/mango
