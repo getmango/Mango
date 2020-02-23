@@ -5,9 +5,11 @@ require "./util"
 
 class FS
 	extend BakedFileSystem
-	{% if read_file? "./dist" %}
+	{% if read_file? "#{__DIR__}/../dist/favicon.ico" %}
+		{% puts "baking ../dist" %}
 		bake_folder "../dist"
 	{% else %}
+		{% puts "baking ../public" %}
 		bake_folder "../public"
 	{% end %}
 end
