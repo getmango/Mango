@@ -16,7 +16,7 @@ class ReaderRouter < Router
 				# 	might not have actually read them
 				page = [page - 2 * IMGS_PER_PAGE, 1].max
 
-				env.redirect "/reader/#{title.title}/#{entry.title}/#{page}"
+				env.redirect "/reader/#{title.id}/#{entry.id}/#{page}"
 			rescue e
 				@context.error e
 				env.response.status_code = 404
@@ -37,16 +37,16 @@ class ReaderRouter < Router
 
 				pages = (page...[entry.pages + 1, page + IMGS_PER_PAGE].min)
 				urls = pages.map { |idx|
-					"/api/page/#{title.title}/#{entry.title}/#{idx}" }
+					"/api/page/#{title.id}/#{entry.id}/#{idx}" }
 				reader_urls = pages.map { |idx|
-					"/reader/#{title.title}/#{entry.title}/#{idx}" }
+					"/reader/#{title.id}/#{entry.id}/#{idx}" }
 				next_page = page + IMGS_PER_PAGE
 				next_url = next_page > entry.pages ? nil :
-					"/reader/#{title.title}/#{entry.title}/#{next_page}"
-				exit_url = "/book/#{title.title}"
+					"/reader/#{title.id}/#{entry.id}/#{next_page}"
+				exit_url = "/book/#{title.id}"
 				next_entry = title.next_entry entry
 				next_entry_url = next_entry.nil? ? nil : \
-					"/reader/#{title.title}/#{next_entry.title}"
+					"/reader/#{title.id}/#{next_entry.id}"
 
 				render "src/views/reader.ecr"
 			rescue e

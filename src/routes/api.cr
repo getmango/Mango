@@ -2,19 +2,20 @@ require "./router"
 
 class APIRouter < Router
 	def setup
-		get "/api/page/:title/:entry/:page" do |env|
+		get "/api/page/:tid/:eid/:page" do |env|
 			begin
-				title = env.params.url["title"]
-				entry = env.params.url["entry"]
+				tid = env.params.url["tid"]
+				eid = env.params.url["eid"]
 				page = env.params.url["page"].to_i
 
-				t = @context.library.get_title title
-				raise "Title `#{title}` not found" if t.nil?
-				e = t.get_entry entry
-				raise "Entry `#{entry}` of `#{title}` not found" if e.nil?
-				img = e.read_page page
-				raise "Failed to load page #{page} of `#{title}/#{entry}`"\
-					if img.nil?
+				title = @context.library.get_title tid
+				raise "Title ID `#{tid}` not found" if title.nil?
+				entry = title.get_entry eid
+				raise "Entry ID `#{eid}` of `#{title.title}` not found" if \
+					entry.nil?
+				img = entry.read_page page
+				raise "Failed to load page #{page} of " \
+					"`#{title.title}/#{entry.title}`" if img.nil?
 
 				send_img env, img
 			rescue e
@@ -26,12 +27,11 @@ class APIRouter < Router
 
 		get "/api/book/:title" do |env|
 			begin
-				title = env.params.url["title"]
+				tid = env.params.url["tid"]
+				title = @context.library.get_title tid
+				raise "Title ID `#{tid}` not found" if title.nil?
 
-				t = @context.library.get_title title
-				raise "Title `#{title}` not found" if t.nil?
-
-				send_json env, t.to_json
+				send_json env, title.to_json
 			rescue e
 				@context.error e
 				env.response.status_code = 500

@@ -9,7 +9,7 @@
 <div class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
   <%- titles.each_with_index do |t, i| -%>
     <div class="item">
-      <a class="acard" href="/book/<%= t.title %>">
+      <a class="acard" href="/book/<%= t.id %>">
         <div class="uk-card uk-card-default">
             <div class="uk-card-media-top">
               <img src="<%= t.entries[0].cover_url %>" alt="">

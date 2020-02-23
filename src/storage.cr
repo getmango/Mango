@@ -12,7 +12,7 @@ def verify_password(hash, pw)
 end
 
 def random_str
-	Base64.strict_encode UUID.random().to_s
+	UUID.random.to_s.gsub "-", ""
 end
 
 class Storage
@@ -25,10 +25,18 @@ class Storage
 		end
 		DB.open "sqlite3://#{path}" do |db|
 			begin
+				# We create the `ids` table first. even if the uses has an
+				#	early version installed and has the `user` table only,
+				#	we will still be able to create `ids`
+				db.exec "create table ids" \
+					"(path text, id text, is_title integer)"
+				db.exec "create unique index path_idx on ids (path)"
+				db.exec "create unique index id_idx on ids (id)"
+
 				db.exec "create table users" \
 					"(username text, password text, token text, admin integer)"
 			rescue e
-				unless e.message == "table users already exists"
+				unless e.message.not_nil!.ends_with? "already exists"
 					@logger.fatal "Error when checking tables in DB: #{e}"
 					raise e
 				end
@@ -146,5 +154,24 @@ class Storage
 			rescue
 			end
 		end
+	end
+
+	def get_id(path, is_title)
+		DB.open "sqlite3://#{@path}" do |db|
+			begin
+				id = db.query_one "select id from ids where path = (?)",
+					path, as: {String}
+				return id
+			rescue
+				id = random_str
+				db.exec "insert into ids values (?, ?, ?)", path, id,
+					is_title ? 1 : 0
+				return id
+			end
+		end
+	end
+
+	def to_json(json : JSON::Builder)
+		json.string self
 	end
 end

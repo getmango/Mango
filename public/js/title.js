@@ -1,4 +1,7 @@
-function showModal(title, zipPath, pages, percentage, title, entry) {
+function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTitle, titleID, entryID) {
+	const zipPath = decodeURIComponent(encodedPath);
+	const title = decodeURIComponent(encodedeTitle);
+	const entry = decodeURIComponent(encodedEntryTitle);
 	$('#modal button, #modal a').each(function(){
 		$(this).removeAttr('hidden');
 	});
@@ -16,20 +19,20 @@ function showModal(title, zipPath, pages, percentage, title, entry) {
 	$('#path-text').text(zipPath);
 	$('#pages-text').text(pages + ' pages');
 
-	$('#beginning-btn').attr('href', '/reader/' + title + '/' + entry + '/1');
-	$('#continue-btn').attr('href', '/reader/' + title + '/' + entry);
+	$('#beginning-btn').attr('href', '/reader/' + titleID + '/' + entryID + '/1');
+	$('#continue-btn').attr('href', '/reader/' + titleID + '/' + entryID);
 
 	$('#read-btn').click(function(){
-		updateProgress(title, entry, pages);
+		updateProgress(titleID, entryID, pages);
 	});
 	$('#unread-btn').click(function(){
-		updateProgress(title, entry, 0);
+		updateProgress(titleID, entryID, 0);
 	});
 
 	UIkit.modal($('#modal')).show();
 }
-function updateProgress(title, entry, page) {
-	$.post('/api/progress/' + title + '/' + entry + '/' + page, function(data) {
+function updateProgress(titleID, entryID, page) {
+	$.post('/api/progress/' + titleID + '/' + entryID + '/' + page, function(data) {
 		if (data.success) {
 			location.reload();
 		}
