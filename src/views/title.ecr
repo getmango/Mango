@@ -11,7 +11,7 @@
   <%- title.entries.each_with_index do |e, i| -%>
     <div class="item">
       <a class="acard">
-        <div class="uk-card uk-card-default" onclick="showModal('<%= e.title %>', '<%= e.zip_path %>', '<%= e.pages %>', <%= (percentage[i] * 100).round(1) %>, '<%= title.title %>', '<%= e.title %>')">
+		  <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= e.encoded_path %>&quot;, '<%= e.pages %>', <%= (percentage[i] * 100).round(1) %>, &quot;<%= title.encoded_title %>&quot;, &quot;<%= e.encoded_title %>&quot;, '<%= e.title_id %>', '<%= e.id %>')">
           <div class="uk-card-media-top">
             <img src="<%= e.cover_url %>" alt="">
           </div>

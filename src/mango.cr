@@ -25,8 +25,8 @@ end
 
 config = Config.load config_path
 logger = MLogger.new config
-library = Library.new config.library_path, config.scan_interval, logger
 storage = Storage.new config.db_path, logger
+library = Library.new config.library_path, config.scan_interval, logger, storage
 
 context = Context.new config, logger, library, storage
 
