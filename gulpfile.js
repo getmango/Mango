@@ -4,7 +4,9 @@ const minifyCss = require('gulp-minify-css');
 
 gulp.task('minify-js', () => {
 	return gulp.src('public/js/*.js')
-		.pipe(minify())
+		.pipe(minify({
+			removeConsole: true
+		}))
 		.pipe(gulp.dest('dist/js'));
 });
 
