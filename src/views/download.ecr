@@ -19,7 +19,8 @@
 		<p id="author"></p>
 	</div>
 	<div id="filter-form" class="uk-form-stacked uk-width-1-2@s" hidden>
-		<p class="uk-text-lead">Filter Chapters</p>
+		<p class="uk-text-lead uk-margin-remove-bottom">Filter Chapters</p>
+		<p class="uk-text-meta uk-margin-remove-top" id="count-text"></p>
 			<div class="uk-margin">
 				<label class="uk-form-label" for="lang-select">Language</label>
 				<div class="uk-form-controls">
@@ -223,6 +224,7 @@
 			chapters = chapters.filter(c => c[k] === v);
 		});
 		console.log('filtered chapters:', chapters);
+			$('#count-text').text(`${chapters.length} chapters found`)
 		const inner = chapters.map(chp => {
 			const group_str = Object.entries(chp.groups).map(([k, v]) => {
 				return `<a href="${baseURL }/group/${v}">${k}</a>`;
