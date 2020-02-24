@@ -69,6 +69,7 @@
 <script>
 	var baseURL = "<%= base_url %>".replace(/\/$/, "");
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <script>
 	$(() => {
 		$('.uk-input').keypress(event => {
@@ -236,7 +237,7 @@
 						<td>${group_str}</td>
 						<td>${chp.volume}</td>
 						<td>${chp.chapter}</td>
-						<td>${chp.time}</td>
+						<td>${moment.unix(chp.time).fromNow()}</td>
 					</tr>`;
 		}).join('');
 		const tbody = `<tbody>${inner}</tbody>`;
