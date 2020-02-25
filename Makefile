@@ -10,6 +10,9 @@ uglify:
 build: libs
 	crystal build src/mango.cr --release --progress
 
+static: uglify | libs
+	crystal build src/mango.cr --release --progress --static
+
 libs:
 	shards install
 
