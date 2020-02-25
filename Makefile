@@ -19,6 +19,9 @@ libs:
 run:
 	crystal run src/mango.cr --error-trace
 
+test:
+	crystal spec
+
 install:
 	cp mango $(INSTALL_DIR)/mango
 
