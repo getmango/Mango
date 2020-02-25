@@ -10,6 +10,35 @@ $(() => {
 		});
 	});
 });
+const selectAll = () => {
+	$('tbody > tr').each((i, e) => {
+		$(e).addClass('ui-selected');
+	});
+};
+const unselect = () => {
+	$('tbody > tr').each((i, e) => {
+		$(e).removeClass('ui-selected');
+	});
+};
+const download = () => {
+	const selected = $('tbody > tr.ui-selected');
+	if (selected.length === 0) return;
+	UIkit.modal.confirm(`Download ${selected.length} selected chapters?`).then(() => {
+		const ids = selected.map((i, e) => {
+			return $(e).find('td').first().text();
+		}).get();
+		console.log(ids);
+		$.post('/api/admin/download', {
+			chapters: ids
+		})
+		.done(() => {
+			console.log('post succeed');
+		})
+		.fail((jqXHR, status) => {
+			alert('danger', `Failed to add chapters to the download queue. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+		});
+	});
+};
 const toggleSpinner = () => {
 	var attr = $('#spinner').attr('hidden');
 	if (attr) {
@@ -111,7 +140,7 @@ const search = () => {
 			buildTable();
 		})
 		.fail((jqXHR, status) => {
-			alert('danger', 'Failed to get manga info. Error: ' + status);
+			alert('danger', `Failed to get manga info. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
 		})
 		.always(() => {
 			toggleSpinner();
@@ -241,8 +270,7 @@ const buildTable = () => {
 	$('table').append(tbody);
 	$('table').removeAttr('hidden');
 	$("#selectable").selectable({
-		filter: 'tr',
-		autoRefresh: false
+		filter: 'tr'
 	});
 	$('#selection-controls').removeAttr('hidden');
 };
