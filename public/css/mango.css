@@ -26,3 +26,9 @@
 .uk-search {
 	width: 100%;
 }
+#selectable .ui-selecting {
+  background: #EEE6B9;
+}
+#selectable .ui-selected {
+  background: #F4E487;
+}

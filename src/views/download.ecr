@@ -2,7 +2,7 @@
 <h2 class=uk-title>Download from MangaDex</h2>
 <div class="uk-grid-small" uk-grid>
 	<div class="uk-width-3-4">
-		<input class="uk-input" type="text" placeholder="MangaDex manga ID or URL">
+		<input id="search-input" class="uk-input" type="text" placeholder="MangaDex manga ID or URL">
 	</div>
 	<div class="uk-width-1-4">
 		<div id="spinner" uk-spinner class="uk-align-center" hidden></div>
@@ -24,34 +24,41 @@
 			<div class="uk-margin">
 				<label class="uk-form-label" for="lang-select">Language</label>
 				<div class="uk-form-controls">
-					<select class="uk-select" id="lang-select">
+					<select class="uk-select filter-field" id="lang-select">
 					</select>
 				</div>
 			</div>
 			<div class="uk-margin">
 				<label class="uk-form-label" for="group-select">Group</label>
 				<div class="uk-form-controls">
-					<select class="uk-select" id="group-select">
+					<select class="uk-select filter-field" id="group-select">
 					</select>
 				</div>
 			</div>
 			<div class="uk-margin">
-				<label class="uk-form-label" for="volume-select">Volume</label>
+				<label class="uk-form-label" for="volume-range">Volume</label>
 				<div class="uk-form-controls">
-					<select class="uk-select" id="volume-select">
-					</select>
+					<input class="uk-input filter-field" type="text" id="volume-range" placeholder="e.g., 127, 10-14, >30, <=212, or leave it empty.">
 				</div>
 			</div>
 			<div class="uk-margin">
-				<label class="uk-form-label" for="chapter-select">Chapter</label>
+				<label class="uk-form-label" for="chapter-range">Chapter</label>
 				<div class="uk-form-controls">
-					<select class="uk-select" id="chapter-select">
-					</select>
+					<input class="uk-input filter-field" type="text" id="chapter-range" placeholder="e.g., 127, 10-14, >30, <=212, or leave it empty.">
 				</div>
 			</div>
 	</div>
 </div>
-<table class="uk-table uk-table-striped" hidden>
+<div id="selection-controls" class="uk-margin" hidden>
+	<div class="uk-margin">
+		<button class="uk-button uk-button-default">Select All</button>
+		<button class="uk-button uk-button-default">Clear Selections</button>
+		<button class="uk-button uk-button-primary">Download Selected</button>
+	</div>
+	<p class="uk-text-meta">Click on a table row to select the chapter. Drag your mouse over multiple rows to select them all. Hold Ctrl to make multiple non-adjacent selections.</p>
+</div>
+<p id="filter-notification" hidden></p>
+<table class="uk-table uk-table-striped uk-overflow-auto" hidden>
     <thead>
         <tr>
             <th>ID</th>
@@ -70,188 +77,6 @@
 	var baseURL = "<%= base_url %>".replace(/\/$/, "");
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
-<script>
-	$(() => {
-		$('.uk-input').keypress(event => {
-			if (event.which === 13) {
-				search();
-			}
-		});
-		$('.uk-select').each((i, ele) => {
-			$(ele).change(() => {
-				buildTable();
-			});
-		});
-	});
-	const toggleSpinner = () => {
-		var attr = $('#spinner').attr('hidden');
-		if (attr) {
-			$('#spinner').removeAttr('hidden');
-			$('#search-btn').attr('hidden', '');
-		}
-		else {
-			$('#search-btn').removeAttr('hidden');
-			$('#spinner').attr('hidden', '');
-		}
-		searching = !searching;
-	};
-	var searching = false;
-	var globalChapters = undefined;
-	const search = () => {
-		if (searching) {
-			return;
-		}
-		$('#manga-details').attr('hidden', '');
-		$('table').attr('hidden', '');
-		$('#filter-form').attr('hidden', '');
-		toggleSpinner();
-		var input = $('input').val()
-
-		if (input === "") {
-			toggleSpinner();
-			return;
-		}
-
-		var int_id = -1;
-		try {
-			const path = new URL(input).pathname;
-			const match = /\/title\/([0-9]+)/.exec(path);
-			int_id = parseInt(match[1]);
-		}
-		catch {
-			try {
-				int_id = parseInt(input);
-			}
-			catch {}
-		}
-
-		if (int_id <= 0 || isNaN(int_id)) {
-			alert('danger', 'Please make sure you are using a valid manga ID or manga URL from Mangadex.');
-			toggleSpinner();
-			return;
-		}
-
-		$.getJSON("/api/admin/mangadex/manga/" + int_id)
-			.done((data) => {
-				if (data.error) {
-					alert('danger', 'Failed to get manga info. Error: ' + data.error);
-					return;
-				}
-
-				const cover = baseURL + data.cover_url;
-				$('#cover').attr("src", cover);
-				$('#title').text("Title: " + data.title);
-				$('#artist').text("Artist: " + data.artist);
-				$('#author').text("Author: " + data.author);
-
-				$('#manga-details').removeAttr('hidden');
-
-				console.log(data.chapters);
-				globalChapters = data.chapters;
-
-				let langs = new Set();
-				let group_names = new Set();
-				let volumes = new Set();
-				let chapters = new Set();
-				data.chapters.forEach(chp => {
-					Object.entries(chp.groups).forEach(([k, v]) => {
-						group_names.add(k);
-					});
-					langs.add(chp.language);
-					volumes.add(chp.volume);
-					chapters.add(chp.chapter);
-				});
-
-				const comp = (a, b) => {
-					var ai;
-					var bi;
-					try {ai = parseFloat(a)} catch(e) {}
-					try {bi = parseFloat(b)} catch(e) {}
-					if (typeof ai === 'undefined') return -1;
-					if (typeof bi === 'undefined') return 1;
-					if (ai < bi) return 1;
-					if (ai > bi) return -1;
-					return 0;
-				};
-
-				langs = [...langs].sort();
-				group_names = [...group_names].sort();
-				volumes = [...volumes].sort(comp);
-				chapters = [...chapters].sort(comp);
-
-				langs.unshift('All');
-				group_names.unshift('All');
-				volumes.unshift('All');
-				chapters.unshift('All');
-
-				$('select#lang-select').append(langs.map(e => `<option>${e}</option>`).join(''));
-				$('select#group-select').append(group_names.map(e => `<option>${e}</option>`).join(''));
-				$('select#volume-select').append(volumes.map(e => `<option>${e}</option>`).join(''));
-				$('select#chapter-select').append(chapters.map(e => `<option>${e}</option>`).join(''));
-
-				$('#filter-form').removeAttr('hidden');
-
-				buildTable();
-			})
-			.fail((jqXHR, status) => {
-				alert('danger', 'Failed to get manga info. Error: ' + status);
-			})
-			.always(() => {
-				toggleSpinner();
-			});
-	};
-	const getFilters = () => {
-		const filters = {};
-		$('.uk-select').each((i, ele) => {
-			const id = $(ele).attr('id');
-			const by = id.split('-')[0];
-			const choice = $(ele).val();
-			filters[by] = choice;
-		});
-		return filters;
-	};
-	const buildTable = () => {
-		console.log('rebuilding table');
-		const filters = getFilters();
-		console.log('filters:', filters);
-		var chapters = globalChapters.slice();
-		Object.entries(filters).forEach(([k, v]) => {
-			if (v === 'All') return;
-			if (k === 'group') {
-				chapters = chapters.filter(c => v in c.groups);
-				return;
-			}
-			if (k === 'lang') k = 'language';
-			chapters = chapters.filter(c => c[k] === v);
-		});
-		console.log('filtered chapters:', chapters);
-			$('#count-text').text(`${chapters.length} chapters found`)
-		const inner = chapters.map(chp => {
-			const group_str = Object.entries(chp.groups).map(([k, v]) => {
-				return `<a href="${baseURL }/group/${v}">${k}</a>`;
-			}).join(' | ');
-			return `<tr>
-						<td><a href="${baseURL}/chapter/${chp.id}">${chp.id}</a></td>
-						<td>${chp.title}</td>
-						<td>${chp.language}</td>
-						<td>${group_str}</td>
-						<td>${chp.volume}</td>
-						<td>${chp.chapter}</td>
-						<td>${moment.unix(chp.time).fromNow()}</td>
-					</tr>`;
-		}).join('');
-		const tbody = `<tbody>${inner}</tbody>`;
-		$('table > tbody').remove();
-		$('table').append(tbody);
-		$('table').removeAttr('hidden');
-	};
-	const alert = (level, text) => {
-		hideAlert();
-		const html = '<div class="uk-alert-' + level + '" uk-alert><a class="uk-alert-close" uk-close></a><p>' + text + '</p></div>';
-		$('#alert').append(html);
-	};
-	const hideAlert = () => {
-		$('#alert').empty();
-	};
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="/js/download.js"></script>
 <% end %>
