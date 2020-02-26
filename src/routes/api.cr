@@ -102,5 +102,32 @@ class APIRouter < Router
 				send_json env, {"error" => e.message}.to_json
 			end
 		end
+
+		post "/api/admin/mangadex/download" do |env|
+			begin
+				chapters = env.params.json["chapters"].as(Array).map{|c| c.as_h}
+				queue = MangaDex::Queue.new \
+					@context.config.mangadex["download_queue_db_path"].to_s
+				jobs = chapters.map {|chapter|
+					MangaDex::Job.new(
+						chapter["id"].as_s,
+						chapter["manga_id"].as_s,
+						chapter["title"].as_s,
+						chapter["manga_title"].as_s,
+						MangaDex::JobStatus::Pending,
+						"",
+						Time.utc
+					)
+				}
+				inserted_count = queue.push jobs
+				send_json env, {
+					"success": inserted_count,
+					"fail": jobs.size - inserted_count
+				}.to_json
+			rescue e
+				@context.error e
+				send_json env, {"error" => e.message}.to_json
+			end
+		end
 	end
 end
