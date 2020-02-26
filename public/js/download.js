@@ -29,7 +29,7 @@ const download = () => {
 		const ids = selected.map((i, e) => {
 			return $(e).find('td').first().text();
 		}).get();
-		const chapters = globalChapters.filter(c => ids.indexOf(c.id));
+		const chapters = globalChapters.filter(c => ids.indexOf(c.id) >= 0);
 		console.log(ids);
 		$.ajax({
 			type: 'POST',
