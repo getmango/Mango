@@ -27,11 +27,17 @@ const download = () => {
 		const ids = selected.map((i, e) => {
 			return $(e).find('td').first().text();
 		}).get();
+		const chapters = globalChapters.filter(c => ids.indexOf(c.id));
 		console.log(ids);
-		$.post('/api/admin/download', {
-			chapters: ids
+		$.ajax({
+			type: 'POST',
+			url: '/api/admin/mangadex/download',
+			data: JSON.stringify({chapters: chapters}),
+			contentType: "application/json",
+			dataType: 'json'
 		})
-		.done(() => {
+		.done(data => {
+			console.log(data);
 			console.log('post succeed');
 		})
 		.fail((jqXHR, status) => {
