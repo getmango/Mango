@@ -24,7 +24,9 @@ class Config
 	property mangadex = {
 		"base_url" => "https://mangadex.org",
 		"api_url" => "https://mangadex.org/api",
-		"download_wait_seconds" => 5
+		"download_wait_seconds" => 5,
+		"download_queue_db_path" => File.expand_path "~/mango/queue.db",
+			home: true
 	}
 
 	def self.load(path : String?)
