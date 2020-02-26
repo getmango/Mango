@@ -24,6 +24,8 @@ const download = () => {
 	const selected = $('tbody > tr.ui-selected');
 	if (selected.length === 0) return;
 	UIkit.modal.confirm(`Download ${selected.length} selected chapters?`).then(() => {
+		$('#download-btn').attr('hidden', '');
+		$('#download-spinner').removeAttr('hidden');
 		const ids = selected.map((i, e) => {
 			return $(e).find('td').first().text();
 		}).get();
@@ -42,6 +44,10 @@ const download = () => {
 		})
 		.fail((jqXHR, status) => {
 			alert('danger', `Failed to add chapters to the download queue. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+		})
+		.always(() => {
+			$('#download-spinner').attr('hidden', '');
+			$('#download-btn').removeAttr('hidden');
 		});
 	});
 };
