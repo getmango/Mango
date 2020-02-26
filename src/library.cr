@@ -1,6 +1,7 @@
 require "zip"
 require "mime"
 require "json"
+require "uri"
 
 struct Image
 	property data : Bytes
@@ -13,12 +14,16 @@ struct Image
 end
 
 class Entry
-	JSON.mapping zip_path: String, book_title: String, title: String, \
-		size: String, pages: Int32, cover_url: String, mtime: Time
+	JSON.mapping zip_path: String, book_title: String, title: String,
+		size: String, pages: Int32, cover_url: String, id: String,
+		title_id: String, encoded_path: String, encoded_title: String,
+		mtime: Time
 
-	def initialize(path, @book_title)
+	def initialize(path, @book_title, @title_id, storage)
 		@zip_path = path
+		@encoded_path = URI.encode path
 		@title = File.basename path, File.extname path
+		@encoded_title = URI.encode @title
 		@size = (File.size path).humanize_bytes
 		file = Zip::File.new path
 		@pages = file.entries
@@ -28,7 +33,8 @@ class Entry
 			}
 			.size
 		file.close
-		@cover_url = "/api/page/#{@book_title}/#{title}/1"
+		@id = storage.get_id @zip_path, false
+		@cover_url = "/api/page/#{@title_id}/#{@id}/1"
 		@mtime = File.info(@zip_path).modification_time
 	end
 	def read_page(page_num)
@@ -54,23 +60,30 @@ class Entry
 end
 
 class Title
-	JSON.mapping dir: String, entries: Array(Entry), title: String, mtime: Time
+	JSON.mapping dir: String, entries: Array(Entry), title: String,
+		id: String, encoded_title: String, mtime: Time
 
-	def initialize(dir : String)
+	def initialize(dir : String, storage)
 		@dir = dir
+		@id = storage.get_id @dir, true
 		@title = File.basename dir
+		@encoded_title = URI.encode @title
 		@entries = (Dir.entries dir)
 			.select { |path| [".zip", ".cbz"].includes? File.extname path }
-			.map { |path| Entry.new File.join(dir, path), @title }
+			.map { |path|
+				Entry.new File.join(dir, path), @title, @id, storage
+			}
 			.select { |e| e.pages > 0 }
 			.sort { |a, b| a.title <=> b.title }
 		mtimes = [File.info(dir).modification_time]
 		mtimes += @entries.map{|e| e.mtime}
 		@mtime = mtimes.max
 	end
-	def get_entry(name)
-		@entries.find { |e| e.title == name }
+	def get_entry(eid)
+		@entries.find { |e| e.id == eid }
 	end
+	# For backward backward compatibility with v0.1.0, we save entry titles
+	#	instead of IDs in info.json
 	def save_progress(username, entry, page)
 		info = TitleInfo.new @dir
 		if info.progress[username]?.nil?
@@ -81,7 +94,7 @@ class Title
 		info.progress[username][entry] = page
 		info.save @dir
 	end
-	def load_progress(username, entry : String)
+	def load_progress(username, entry)
 		info = TitleInfo.new @dir
 		if info.progress[username]?.nil?
 			return 0
@@ -91,10 +104,10 @@ class Title
 		end
 		info.progress[username][entry]
 	end
-	def load_percetage(username, entry : String)
+	def load_percetage(username, entry)
 		info = TitleInfo.new @dir
 		page = load_progress username, entry
-		entry_obj = get_entry entry
+		entry_obj = @entries.find{|e| e.title == entry}
 		return 0 if entry_obj.nil?
 		page / entry_obj.pages
 	end
@@ -142,9 +155,10 @@ class TitleInfo
 end
 
 class Library
-	JSON.mapping dir: String, titles: Array(Title), scan_interval: Int32, logger: MLogger
+	JSON.mapping dir: String, titles: Array(Title), scan_interval: Int32,
+		logger: MLogger, storage: Storage
 
-	def initialize(@dir, @scan_interval, @logger)
+	def initialize(@dir, @scan_interval, @logger, @storage)
 		# explicitly initialize @titles to bypass the compiler check. it will
 		#	be filled with actual Titles in the `scan` call below
 		@titles = [] of Title
@@ -160,8 +174,8 @@ class Library
 			end
 		end
 	end
-	def get_title(name)
-		@titles.find { |t| t.title == name }
+	def get_title(tid)
+		@titles.find { |t| t.id == tid }
 	end
 	def scan
 		unless Dir.exists? @dir
@@ -171,7 +185,7 @@ class Library
 		end
 		@titles = (Dir.entries @dir)
 			.select { |path| File.directory? File.join @dir, path }
-			.map { |path| Title.new File.join @dir, path }
+			.map { |path| Title.new File.join(@dir, path), @storage }
 			.select { |title| !title.entries.empty? }
 			.sort { |a, b| a.title <=> b.title }
 		@logger.debug "Scan completed"

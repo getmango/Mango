@@ -12,18 +12,22 @@ Mango is a self-hosted manga server and reader. Its features include
 
 ## Installation
 
+### Pre-built Binary
+
+1. Simply download the pre-built binary file `mango` for the latest [release](https://github.com/hkalexling/Mango/releases). All the dependencies are statically linked, and it should work with most Linux systems on amd64.
+
 ### Docker
 
 1. Make sure you have docker installed and running. You will also need `docker-compose`
 2. Clone the repository
-3. Copy `docker-compose.example.yml` to `docker-compose.yml` and modify it if necessary
-4. Run `docker-compose up`. This should build the docker image and start the container with Mango running inside
-5. Head over to `localhost:9000` to log in
-
+3. Copy `docker-compose.example.yml` to `docker-compose.yml`
+4. Modify the `volumes` in `docker-compose.yml` to point the directories to desired locations on the host machine
+5. Run `docker-compose up`. This should build the docker image and start the container with Mango running inside
+6. Head over to `localhost:9000` to log in
 
 ### Build from source
 
-1. Make sure you have Crystal, Node and Yarn installed
+1. Make sure you have Crystal, Node and Yarn installed. You might also need to install the development headers for `libsqlite3` and `libyaml`.
 2. Clone the repository
 3. `make && sudo make install`
 4. Start Mango by running the command `mango`
@@ -43,7 +47,7 @@ Mango e-manga server/reader. Version 0.1.0
 
 ### Config
 
-The default config file location is `~/.config/mango/config.yml`. The config options and default values are given below
+The default config file location is `~/.config/mango/config.yml`. It might be different if you are running Mango in a docker container. The config options and default values are given below
 
 ```yaml
 ---
