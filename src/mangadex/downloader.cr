@@ -73,18 +73,6 @@ module MangaDex
 				return job
 			end
 		end
-		def push(job)
-			begin
-				DB.open "sqlite3://#{@path}" do |db|
-					db.exec "insert into queue values (?, ?, ?, ?, ?, ?, ?)",
-						job.id, job.manga_id, job.title, job.manga_title,
-						job.status.to_i, job.log, job.time.to_unix
-				end
-				return true
-			rescue
-				return false
-			end
-		end
 		# Push an array of jobs into the queue, and return the number of jobs
 		#	inserted. Any job already exists in the queue will be ignored.
 		def push(jobs : Array(Job))
@@ -99,26 +87,6 @@ module MangaDex
 			end
 			self.count - start_count
 		end
-		#def push(job)
-			#sucess = false
-			#DB.open "sqlite3://#{@path}" do |db|
-				#trans = db.begin_transaction
-				#con = trans.connection
-				#begin
-					#con.exec "insert into queue values (?, ?, ?, ?, ?, ?, ?)",
-						#job.id, job.manga_id, job.title, job.manga_title,
-						#job.status.to_i, job.log, job.time.to_unix
-				#rescue
-					#trans.rollback
-				#else
-					#trans.commit
-					#success = true
-				#end
-				#con.close
-				#trans.close
-			#end
-			#success
-		#end
 		def delete(id)
 			DB.open "sqlite3://#{@path}" do |db|
 				db.exec "delete from queue where id = (?)", id
