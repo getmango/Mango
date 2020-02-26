@@ -27,13 +27,14 @@ module Mangadex
 	end
 	class Chapter
 		string_properties ["lang_code", "title", "volume", "chapter"]
+		property manga : Manga
 		property time = Time.local
 		property id : String
 		property language = ""
 		property pages = [] of {String, String} # filename, url
 		property groups = [] of {Int32, String} # group_id, group_name
 
-		def initialize(@id, json_obj : JSON::Any, lang : Hash(String, String))
+		def initialize(@id, json_obj : JSON::Any, @manga, lang : Hash(String, String))
 			self.parse_json json_obj, lang
 		end
 		def to_info_json
@@ -44,6 +45,8 @@ module Mangadex
 						json.field {{name}}, @{{name.id}}
 					{% end %}
 					json.field "time", @time.to_unix.to_s
+					json.field "manga_title", @manga.title
+					json.field "manga_id", @manga.id
 					json.field "groups" do
 						json.object do
 							@groups.each do |gid, gname|
@@ -192,7 +195,7 @@ module Mangadex
 				raise "" if obj["status"] != "OK"
 				manga = Manga.new id, obj["manga"]
 				obj["chapter"].as_h.map do |k, v|
-					chapter = Chapter.new k, v, @lang
+					chapter = Chapter.new k, v, manga, @lang
 					manga.chapters << chapter
 				end
 				return manga
