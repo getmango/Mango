@@ -203,7 +203,7 @@ module Mangadex
 				raise "Failed to parse JSON"
 			end
 		end
-		def get_chapter(chapter)
+		def get_chapter(chapter : Chapter)
 			obj = self.get File.join @base_url, "chapter/#{chapter.id}"
 			begin
 				raise "" if obj["status"] != "OK"
@@ -216,6 +216,19 @@ module Mangadex
 					}
 				}
 			rescue
+				raise "Failed to parse JSON"
+			end
+		end
+		def get_chapter(id : String)
+			obj = self.get File.join @base_url, "chapter/#{id}"
+			begin
+				raise "" if obj["status"] != "OK"
+				manga = self.get_manga obj["manga_id"].as_i.to_s
+				chapter = manga.chapters.find {|c| c.id == id}.not_nil!
+				self.get_chapter chapter
+				return chapter
+			rescue e
+				pp e
 				raise "Failed to parse JSON"
 			end
 		end
