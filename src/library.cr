@@ -20,12 +20,14 @@ class Entry
 		@zip_path = path
 		@title = File.basename path, File.extname path
 		@size = (File.size path).humanize_bytes
-		@pages = Zip::File.new(path).entries
+		file = Zip::File.new path
+		@pages = file.entries
 			.select { |e|
 				["image/jpeg", "image/png"].includes? \
 				MIME.from_filename? e.filename
 			}
 			.size
+		file.close
 		@cover_url = "/api/page/#{@book_title}/#{title}/1"
 		@mtime = File.info(@zip_path).modification_time
 	end
