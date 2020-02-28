@@ -25,7 +25,8 @@ module MangaDex
 		property pages = [] of {String, String} # filename, url
 		property groups = [] of {Int32, String} # group_id, group_name
 
-		def initialize(@id, json_obj : JSON::Any, @manga, lang : Hash(String, String))
+		def initialize(@id, json_obj : JSON::Any, @manga, lang :
+					   Hash(String, String))
 			self.parse_json json_obj, lang
 		end
 		def to_info_json
@@ -147,12 +148,12 @@ module MangaDex
 				raise "" if obj["status"] != "OK"
 				server = obj["server"].as_s
 				hash = obj["hash"].as_s
-				chapter.pages = obj["page_array"].as_a.map{|fn|
+				chapter.pages = obj["page_array"].as_a.map do |fn|
 					{
 						fn.as_s,
 						"#{server}#{hash}/#{fn.as_s}"
 					}
-				}
+				end
 			rescue
 				raise "Failed to parse JSON"
 			end
