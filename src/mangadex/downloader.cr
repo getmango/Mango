@@ -2,6 +2,15 @@ require "./api"
 require "sqlite3"
 
 module MangaDex
+	struct PageJob
+		property success = false
+		property url : String
+		property filename : String
+		property writer : Zip::Writer
+		property tries_remaning : Int32
+		def initialize(@url, @filename, @writer, @tries_remaning)
+		end
+	end
 	enum JobStatus
 		Pending     # 0
 		Downloading # 1
@@ -106,6 +115,135 @@ module MangaDex
 		def count
 			DB.open "sqlite3://#{@path}" do |db|
 				return db.query_one "select count(*) from queue", as: Int32
+			end
+		end
+		def log(msg : String, job : Job)
+			DB.open "sqlite3://#{@path}" do |db|
+				db.exec "update queue set log = log || (?) || (?) where "\
+					"id = (?)", msg, "\n", job.id
+			end
+		end
+		def set_status(status : JobStatus, job : Job)
+			DB.open "sqlite3://#{@path}" do |db|
+				db.exec "update queue set status = (?) where id = (?)",
+					status.to_i, job.id
+			end
+		end
+		def get_all
+			jobs = [] of Job
+			DB.open "sqlite3://#{@path}" do |db|
+				jobs = db.query_all "select * from queue", do |rs|
+					Job.from_query_result rs
+				end
+			end
+			return jobs
+		end
+	end
+
+	class Downloader
+		@stopped = false
+
+		def initialize(@queue : Queue, @api : API, @library_path : String,
+					   @wait_seconds : Int32, @retries : Int32)
+			spawn do
+				loop do
+					sleep 1.second
+					next if @stopped
+					begin
+						job = @queue.pop
+						next if job.nil?
+						download job
+					end
+				end
+			end
+		end
+
+		def stop
+			@stopped = true
+		end
+		def resume
+			@stopped = false
+		end
+
+		private def download(job : Job)
+			self.stop
+			@queue.set_status JobStatus::Downloading, job
+			chapter = @api.get_chapter(job.id)
+			lib_dir = @library_path
+			manga_dir = File.join lib_dir, chapter.manga.title
+			unless File.exists? manga_dir
+				Dir.mkdir_p manga_dir
+			end
+			zip_path = File.join manga_dir, "#{job.title}.cbz"
+			@queue.log "Downloading to #{zip_path}", job
+
+			# Find the number of digits needed to store the number of pages
+			len = Math.log10(chapter.pages.size).to_i + 1
+
+			writer = Zip::Writer.new zip_path
+			# Create a buffered channel. It works as an FIFO queue
+			channel = Channel(PageJob).new chapter.pages.size
+			spawn do
+				chapter.pages.each_with_index do |tuple, i|
+					fn, url = tuple
+					ext = File.extname fn
+					fn = "#{i.to_s.rjust len, '0'}#{ext}"
+					page_job = PageJob.new url, fn, writer, @retries
+					puts "Downloading #{url}"
+					@queue.log "Downloading #{url}", job
+					loop do
+						sleep @wait_seconds.seconds
+						download_page page_job
+						break if page_job.success ||
+							page_job.tries_remaning <= 0
+						page_job.tries_remaning -= 1
+						puts "Retrying... Remaining retries: "\
+							"#{page_job.tries_remaning}"
+						@queue.log "Retrying. Remaining retries: #{page_job.tries_remaning}", job
+					end
+
+					channel.send page_job
+				end
+			end
+
+			spawn do
+				page_jobs = [] of PageJob
+				chapter.pages.size.times do
+					page_job = channel.receive
+					log_str = "[#{page_job.success ? "success" : "failed"}] #{page_job.url}"
+					puts log_str
+					@queue.log log_str, job
+					page_jobs << page_job
+				end
+				fail_count = page_jobs.select{|j| !j.success}.size
+				log_str = "Download completed. "\
+					"#{fail_count}/#{page_jobs.size} failed"
+				puts log_str
+				@queue.log log_str, job
+				writer.close
+				puts "cbz File created at #{zip_path}"
+				if fail_count == 0
+					@queue.set_status JobStatus::Completed, job
+				else
+					@queue.set_status JobStatus::MissingPages, job
+				end
+				self.resume
+			end
+		end
+
+		private def download_page(job : PageJob)
+			headers = HTTP::Headers {
+				"User-agent" => "Mangadex.cr"
+			}
+			begin
+				HTTP::Client.get job.url, headers do |res|
+					return if !res.success?
+					job.writer.add job.filename, res.body_io
+				end
+				job.success = true
+			rescue e
+				puts e
+				job.success = false
 			end
 		end
 	end
