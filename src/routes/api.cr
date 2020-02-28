@@ -129,5 +129,10 @@ class APIRouter < Router
 				send_json env, {"error" => e.message}.to_json
 			end
 		end
+
+		get "/api/admin/mangadex/queue" do |env|
+			jobs = @context.queue.get_all
+			send_json env, jobs.to_json
+		end
 	end
 end
