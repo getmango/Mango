@@ -70,14 +70,29 @@ class Title
 		@encoded_title = URI.encode @title
 		@entries = (Dir.entries dir)
 			.select { |path| [".zip", ".cbz"].includes? File.extname path }
+			.map { |path| File.join dir, path }
+			.select { |path| valid_zip path }
 			.map { |path|
-				Entry.new File.join(dir, path), @title, @id, storage
+				Entry.new path, @title, @id, storage
 			}
 			.select { |e| e.pages > 0 }
 			.sort { |a, b| a.title <=> b.title }
 		mtimes = [File.info(dir).modification_time]
 		mtimes += @entries.map{|e| e.mtime}
 		@mtime = mtimes.max
+	end
+	# When downloading from MangaDex, the zip/cbz file would not be valid
+	#	before the download is completed. If we scan the zip file,
+	#	Entry.new would throw, so we use this method to check before
+	#	constructing Entry
+	private def valid_zip(path : String)
+		begin
+			file = Zip::File.new path
+			file.close
+			return true
+		rescue
+			return false
+		end
 	end
 	def get_entry(eid)
 		@entries.find { |e| e.id == eid }
