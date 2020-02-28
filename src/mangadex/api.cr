@@ -30,6 +30,7 @@ module MangaDex
 		property manga : Manga
 		property time = Time.local
 		property id : String
+		property full_title = ""
 		property language = ""
 		property pages = [] of {String, String} # filename, url
 		property groups = [] of {Int32, String} # group_id, group_name
@@ -41,7 +42,7 @@ module MangaDex
 			JSON.build do |json|
 				json.object do
 					{% for name in ["id", "title", "volume", "chapter",
-							"language"] %}
+							"language", "full_title"] %}
 						json.field {{name}}, @{{name.id}}
 					{% end %}
 					json.field "time", @time.to_unix.to_s
@@ -70,6 +71,13 @@ module MangaDex
 					next if gid == 0
 					gname = obj["group_name#{s}"].as_s
 					@groups << {gid, gname}
+				end
+				@full_title = @title
+				unless @chapter.empty?
+					@full_title = "Ch.#{@chapter} " + @full_title
+				end
+				unless @volume.empty?
+					@full_title = "Vol.#{@volume} " + @full_title
 				end
 			rescue e
 				raise "failed to parse json: #{e}"
