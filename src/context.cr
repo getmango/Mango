@@ -8,8 +8,9 @@ class Context
 	property library : Library
 	property storage : Storage
 	property logger : MLogger
+	property queue : MangaDex::Queue
 
-	def initialize(@config, @logger, @library, @storage)
+	def initialize(@config, @logger, @library, @storage, @queue)
 	end
 
 	{% for lvl in LEVELS %}
