@@ -93,7 +93,7 @@ class APIRouter < Router
 		get "/api/admin/mangadex/manga/:id" do |env|
 			begin
 				id = env.params.url["id"]
-				api = Mangadex::API.new \
+				api = MangaDex::API.new \
 					@context.config.mangadex["api_url"].to_s
 				manga = api.get_manga id
 				send_json env, manga.to_info_json

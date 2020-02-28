@@ -15,7 +15,7 @@ macro parse_strings_from_json (names)
 	{% end %}
 end
 
-module Mangadex
+module MangaDex
 	class DownloadContext
 		property success = false
 		property url : String
