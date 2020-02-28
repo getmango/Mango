@@ -1,7 +1,6 @@
 require "http/client"
 require "json"
 require "csv"
-require "zip"
 
 macro string_properties (names)
 	{% for name in names %}
@@ -16,15 +15,6 @@ macro parse_strings_from_json (names)
 end
 
 module MangaDex
-	class DownloadContext
-		property success = false
-		property url : String
-		property filename : String
-		property writer : Zip::Writer
-		property tries_remaning : Int32
-		def initialize(@url, @filename, @writer, @tries_remaning)
-		end
-	end
 	class Chapter
 		string_properties ["lang_code", "title", "volume", "chapter"]
 		property manga : Manga
@@ -81,66 +71,6 @@ module MangaDex
 				end
 			rescue e
 				raise "failed to parse json: #{e}"
-			end
-		end
-		def download(dir, wait_seconds=5, retries=4)
-			name = "mangadex-chapter-#{@id}"
-			info_json_path = File.join dir, "#{name}.info.json"
-			zip_path = File.join dir, "#{name}.cbz"
-
-			puts "Writing info.josn to #{info_json_path}"
-			File.write info_json_path, self.to_info_json
-
-			writer = Zip::Writer.new zip_path
-
-			# Create a buffered channel. It works as an FIFO queue
-			channel = Channel(DownloadContext).new @pages.size
-
-			spawn do
-				@pages.each do |fn, url|
-					context = DownloadContext.new url, fn, writer, retries
-
-					puts "Downlaoding #{url}"
-					loop do
-						sleep wait_seconds.seconds
-						download_page context
-						break if context.success || context.tries_remaning <= 0
-						context.tries_remaning -= 1
-						puts "Retrying... Remaining retries: "\
-							"#{context.tries_remaning}"
-					end
-
-					channel.send context
-				end
-			end
-
-			spawn do
-				context_ary = [] of DownloadContext
-				@pages.size.times do
-					context = channel.receive
-					puts "[#{context.success}] #{context.url}"
-					context_ary << context
-				end
-				fail_count = context_ary.select{|ctx| !ctx.success}.size
-				puts "Download completed. "\
-					"#{fail_count}/#{context_ary.size} failed"
-				writer.close
-				puts "cbz File created at #{zip_path}"
-			end
-		end
-		def download_page(context)
-			headers = HTTP::Headers {
-				"User-agent" => "Mangadex.cr"
-			}
-			begin
-				HTTP::Client.get context.url, headers do |res|
-					return if !res.success?
-					context.writer.add context.filename, res.body_io
-				end
-				context.success = true
-			rescue e
-				puts e
-				context.success = false
 			end
 		end
 	end
