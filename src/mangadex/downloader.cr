@@ -12,10 +12,11 @@ module MangaDex
 		end
 	end
 	enum JobStatus
-		Pending     # 0
-		Downloading # 1
-		Error       # 2
-		Completed   # 3
+		Pending      # 0
+		Downloading  # 1
+		Error        # 2
+		Completed    # 3
+		MissingPages # 4
 	end
 	struct Job
 		property id : String
@@ -25,12 +26,17 @@ module MangaDex
 		property status : JobStatus
 		property log : String
 		property time : Time
-		private def load_query_result(res : DB::ResultSet)
+		def load_query_result(res : DB::ResultSet)
 			begin
-				@id, @manga_id, @title, @manga_title, status, @log, time = \
-					res.as {String, String, String, String, Int32, String, Int64}
+				@id = res.read String
+				@manga_id = res.read String
+				@title = res.read String
+				@manga_title = res.read String
+				status = res.read Int32
+				@log = res.read String
+				time = res.read Int64
 				@status = JobStatus.new status
-				@time = Time.unix time
+				@time = Time.unix_ms time
 				return true
 			rescue e
 				puts e
@@ -45,6 +51,18 @@ module MangaDex
 		def initialize(@id, @manga_id, @title, @manga_title, @status, @log,
 					   @time)
 		end
+		def to_json(json)
+			json.object do
+				{% for name in ["id", "manga_id", "title", "manga_title",
+					"log"] %}
+					json.field {{name}}, @{{name.id}}
+				{% end %}
+				json.field "status", @status.to_s
+				json.field "time" do
+					json.number @time.to_unix_ms
+				end
+			end
+		end
 	end
 	class Queue
 		def initialize(@path : String)
@@ -56,49 +74,57 @@ module MangaDex
 			end
 			DB.open "sqlite3://#{@path}" do |db|
 				begin
-					db.exec "create table queue" \
-						"(id string, manga_id string, title text," \
-						"manga_title text, status integer, log text, time integer)"
-					db.exec "create unique index id_idx on queue (id)"
-					db.exec "create index manga_id_idx on queue (manga_id)"
-					db.exec "create index status_idx on queue (status)"
+					db.exec "create table if not exists queue" \
+						"(id text, manga_id text, title text, manga_title "\
+						"text, status integer, log text, time integer)"
+					db.exec "create unique index if not exists id_idx on queue (id)"
+					db.exec "create index if not exists manga_id_idx on queue (manga_id)"
+					db.exec "create index if not exists status_idx on queue (status)"
 				rescue e
-					unless e.message == "table queue already exists"
-						puts "Error when checking tables in DB: #{e}"
-						raise e
-					end
+					puts "Error when checking tables in DB: #{e}"
+					raise e
 				end
 			end
 		end
 		# Returns the earliest job in queue or nil if the job cannot be parsed.
-		#	Raises DB::Error if queue is empty
+		#	Returns nil if queue is empty
 		def pop
+			job = nil
 			DB.open "sqlite3://#{@path}" do |db|
-				res = db.query_one "select * from queue where status = 0 "\
-					"order by time limit 1"
-				job = Job.from_query_result res
-				db.exec "delete from queue where id = (select id from queue "\
-					"where status = 0 order by time limit 1)"
-				return job
+				begin
+					db.query_one "select * from queue where status = 0 "\
+						"or status = 1 order by time limit 1" do |res|
+						job = Job.from_query_result res
+					end
+				rescue
+				end
 			end
+			return job
 		end
 		# Push an array of jobs into the queue, and return the number of jobs
 		#	inserted. Any job already exists in the queue will be ignored.
 		def push(jobs : Array(Job))
 			start_count = self.count
 			DB.open "sqlite3://#{@path}" do |db|
-				jobs.each {|job|
+				jobs.each do |job|
 					db.exec "insert or ignore into queue values "\
 						"(?, ?, ?, ?, ?, ?, ?)",
 						job.id, job.manga_id, job.title, job.manga_title,
-						job.status.to_i, job.log, job.time.to_unix
-				}
+						job.status.to_i, job.log, job.time.to_unix_ms
+				end
 			end
 			self.count - start_count
 		end
-		def delete(id)
+		def delete(job : Job)
 			DB.open "sqlite3://#{@path}" do |db|
-				db.exec "delete from queue where id = (?)", id
+				db.exec "delete from queue where id = (?)", job.id
+			end
+		end
+		def get(job : Job)
+			DB.open "sqlite3://#{@path}" do |db|
+				db.query_one "select * from queue where id = (?)", id do |res|
+					job.load_query_result res
+				end
 			end
 		end
 		def delete_status(status : JobStatus)
@@ -108,8 +134,8 @@ module MangaDex
 		end
 		def count_status(status : JobStatus)
 			DB.open "sqlite3://#{@path}" do |db|
-				return db.query_one "select count(*) from queue where status = (?)",
-					status.to_i, as: Int32
+				return db.query_one "select count(*) from queue where "\
+					"status = (?)", status.to_i, as: Int32
 			end
 		end
 		def count
