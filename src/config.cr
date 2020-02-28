@@ -21,10 +21,13 @@ class Config
 	property log_level : String = "info"
 
 	@[YAML::Field(key: "mangadex")]
-	property mangadex = {
+	property mangadex = Hash(String, String|Int32).new
+
+	@mangadex_defaults = {
 		"base_url" => "https://mangadex.org",
 		"api_url" => "https://mangadex.org/api",
 		"download_wait_seconds" => 5,
+		"download_retries" => 4,
 		"download_queue_db_path" => File.expand_path "~/mango/queue.db",
 			home: true
 	}
@@ -33,7 +36,9 @@ class Config
 		path = "~/.config/mango/config.yml" if path.nil?
 		cfg_path = File.expand_path path, home: true
 		if File.exists? cfg_path
-			return self.from_yaml File.read cfg_path
+			config = self.from_yaml File.read cfg_path
+			config.fill_defaults
+			return config
 		end
 		puts "The config file #{cfg_path} does not exist." \
 			" Do you want mango to dump the default config there? [Y/n]"
@@ -49,5 +54,15 @@ class Config
 		File.write cfg_path, default.to_yaml
 		puts "The config file has been created at #{cfg_path}."
 		default
+	end
+
+	def fill_defaults
+		{% for hash_name in ["mangadex"] %}
+			@{{hash_name.id}}_defaults.map do |k, v|
+				if @{{hash_name.id}}[k]?.nil?
+					@{{hash_name.id}}[k] = v
+				end
+			end
+		{% end %}
 	end
 end
