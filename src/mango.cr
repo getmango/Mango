@@ -2,7 +2,7 @@ require "./server"
 require "./context"
 require "option_parser"
 
-VERSION = "0.1.0"
+VERSION = "0.1.2"
 
 config_path = nil
 
