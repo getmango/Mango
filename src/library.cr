@@ -202,6 +202,5 @@ class Library
 			.select { |title| !title.entries.empty? }
 			.sort { |a, b| a.title <=> b.title }
 		@logger.debug "Scan completed"
-		@logger.debug "Scanned library: \n#{self.to_pretty_json}"
 	end
 end
