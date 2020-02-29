@@ -113,7 +113,6 @@ class APIRouter < Router
 						chapter["full_title"].as_s,
 						chapter["manga_title"].as_s,
 						MangaDex::JobStatus::Pending,
-						"",
 						Time.utc
 					)
 				}
