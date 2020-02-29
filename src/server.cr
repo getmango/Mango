@@ -24,7 +24,7 @@ class Server
 		add_handler AuthHandler.new @context.storage
 		{% if flag?(:release) %}
 			# when building for relase, embed the static files in binary
-			@context.debug "We are in release mode. Using embeded static files."
+			@context.debug "We are in release mode. Using embedded static files."
 			serve_static false
 			add_handler StaticHandler.new
 		{% end %}
