@@ -130,8 +130,11 @@ module MangaDex
 		end
 		def get_manga(id)
 			obj = self.get File.join @base_url, "manga/#{id}"
+			if obj["status"]? != "OK"
+				raise "Expecting `OK` in the `status` field. " \
+					"Got `#{obj["status"]?}`"
+			end
 			begin
-				raise "" if obj["status"] != "OK"
 				manga = Manga.new id, obj["manga"]
 				obj["chapter"].as_h.map do |k, v|
 					chapter = Chapter.new k, v, manga, @lang
@@ -144,8 +147,16 @@ module MangaDex
 		end
 		def get_chapter(chapter : Chapter)
 			obj = self.get File.join @base_url, "chapter/#{chapter.id}"
+			if obj["status"]? == "external"
+				raise "This chapter is hosted on an external site " \
+					"#{obj["external"]?}, and Mango does not support " \
+					"external chapters."
+			end
+			if obj["status"]? != "OK"
+				raise "Expecting `OK` in the `status` field. " \
+					"Got `#{obj["status"]?}`"
+			end
 			begin
-				raise "" if obj["status"] != "OK"
 				server = obj["server"].as_s
 				hash = obj["hash"].as_s
 				chapter.pages = obj["page_array"].as_a.map do |fn|
@@ -160,16 +171,25 @@ module MangaDex
 		end
 		def get_chapter(id : String)
 			obj = self.get File.join @base_url, "chapter/#{id}"
+			if obj["status"]? == "external"
+				raise "This chapter is hosted on an external site " \
+					"#{obj["external"]?}, and Mango does not support " \
+					"external chapters."
+			end
+			if obj["status"]? != "OK"
+				raise "Expecting `OK` in the `status` field. " \
+					"Got `#{obj["status"]?}`"
+			end
+			manga_id = ""
 			begin
-				raise "" if obj["status"] != "OK"
-				manga = self.get_manga obj["manga_id"].as_i.to_s
-				chapter = manga.chapters.find {|c| c.id == id}.not_nil!
-				self.get_chapter chapter
-				return chapter
-			rescue e
-				pp e
+				manga_id = obj["manga_id"].as_i.to_s
+			rescue
 				raise "Failed to parse JSON"
 			end
+			manga = self.get_manga manga_id
+			chapter = manga.chapters.find {|c| c.id == id}.not_nil!
+			self.get_chapter chapter
+			return chapter
 		end
 	end
 end
