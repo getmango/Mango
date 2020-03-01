@@ -99,5 +99,10 @@ class AdminRouter < Router
 					env.redirect redirect_url.to_s
 			end
 		end
+
+		get "/admin/downloads" do |env|
+			base_url = @context.config.mangadex["base_url"];
+			layout "download-manager"
+		end
 	end
 end

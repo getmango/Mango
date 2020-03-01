@@ -1,0 +1,32 @@
+<div class="uk-margin">
+	<div id="actions" class="uk-margin">
+		<button class="uk-button uk-button-default">Delete Completed Tasks</button>
+		<button class="uk-button uk-button-default">Retry Failed Tasks</button>
+		<button class="uk-button uk-button-default">Refresh Queue</button>
+	</div>
+	<div id="config" class="uk-margin">
+		<label class="uk-margin-right"><input class="uk-checkbox" type="checkbox"> Auto Delete Completed Tasks</label>
+		<label><input class="uk-checkbox" type="checkbox" checked> Auto Refresh</label>
+	</div>
+</div>
+<table class="uk-table uk-table-striped uk-overflow-auto">
+    <thead>
+        <tr>
+			<th>Chapter</th>
+			<th>Manga</th>
+			<th>Progress</th>
+			<th>Time Submitted</th>
+			<th>Status</th>
+			<th>Actions</th>
+        </tr>
+    </thead>
+</table>
+
+<% content_for "script" do %>
+<script>
+	var baseURL = "<%= base_url %>".replace(/\/$/, "");
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+<script src="/js/alert.js"></script>
+<script src="/js/download-manager.js"></script>
+<% end %>
