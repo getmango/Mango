@@ -11,6 +11,7 @@ module MangaDex
 		def initialize(@url, @filename, @writer, @tries_remaning)
 		end
 	end
+
 	enum JobStatus
 		Pending      # 0
 		Downloading  # 1
@@ -18,16 +19,19 @@ module MangaDex
 		Completed    # 3
 		MissingPages # 4
 	end
+
 	struct Job
 		property id : String
 		property manga_id : String
 		property title : String
 		property manga_title : String
 		property status : JobStatus
+		property status_message : String = ""
 		property pages : Int32 = 0
 		property success_count : Int32 = 0
 		property fail_count : Int32 = 0
 		property time : Time
+
 		def parse_query_result(res : DB::ResultSet)
 			begin
 				@id = res.read String
@@ -35,6 +39,7 @@ module MangaDex
 				@title = res.read String
 				@manga_title = res.read String
 				status = res.read Int32
+				@status_message = res.read String
 				@pages = res.read Int32
 				@success_count = res.read Int32
 				@fail_count = res.read Int32
@@ -47,16 +52,20 @@ module MangaDex
 				return false
 			end
 		end
+
 		def self.from_query_result(res : DB::ResultSet)
 			job = Job.allocate
 			success = job.parse_query_result res
 			return success ? job : nil
 		end
+
 		def initialize(@id, @manga_id, @title, @manga_title, @status, @time)
 		end
+
 		def to_json(json)
 			json.object do
-				{% for name in ["id", "manga_id", "title", "manga_title"] %}
+				{% for name in ["id", "manga_id", "title", "manga_title",
+					"status_message"] %}
 					json.field {{name}}, @{{name.id}}
 				{% end %}
 				{% for name in ["pages", "success_count", "fail_count"] %}
@@ -83,9 +92,9 @@ module MangaDex
 				begin
 					db.exec "create table if not exists queue " \
 						"(id text, manga_id text, title text, manga_title " \
-						"text, status integer, pages integer, " \
-						"success_count integer, fail_count integer, " \
-						"time integer)"
+						"text, status integer, status_message text, " \
+						"pages integer, success_count integer, " \
+						"fail_count integer, time integer)"
 					db.exec "create unique index if not exists id_idx " \
 						"on queue (id)"
 					db.exec "create index if not exists manga_id_idx " \
@@ -98,6 +107,7 @@ module MangaDex
 				end
 			end
 		end
+
 		# Returns the earliest job in queue or nil if the job cannot be parsed.
 		#	Returns nil if queue is empty
 		def pop
@@ -113,6 +123,7 @@ module MangaDex
 			end
 			return job
 		end
+
 		# Push an array of jobs into the queue, and return the number of jobs
 		#	inserted. Any job already exists in the queue will be ignored.
 		def push(jobs : Array(Job))
@@ -120,19 +131,21 @@ module MangaDex
 			DB.open "sqlite3://#{@path}" do |db|
 				jobs.each do |job|
 					db.exec "insert or ignore into queue values "\
-						"(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+						"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 						job.id, job.manga_id, job.title, job.manga_title,
-						job.status.to_i, job.pages, job.success_count,
-						job.fail_count, job.time.to_unix_ms
+						job.status.to_i, job.status_message, job.pages,
+						job.success_count, job.fail_count, job.time.to_unix_ms
 				end
 			end
 			self.count - start_count
 		end
+
 		def delete(job : Job)
 			DB.open "sqlite3://#{@path}" do |db|
 				db.exec "delete from queue where id = (?)", job.id
 			end
 		end
+
 		def get(job : Job)
 			DB.open "sqlite3://#{@path}" do |db|
 				db.query_one "select * from queue where id = (?)", id do |res|
@@ -140,28 +153,33 @@ module MangaDex
 				end
 			end
 		end
+
 		def delete_status(status : JobStatus)
 			DB.open "sqlite3://#{@path}" do |db|
 				db.exec "delete from queue where status = (?)", status.to_i
 			end
 		end
+
 		def count_status(status : JobStatus)
 			DB.open "sqlite3://#{@path}" do |db|
 				return db.query_one "select count(*) from queue where "\
 					"status = (?)", status.to_i, as: Int32
 			end
 		end
+
 		def count
 			DB.open "sqlite3://#{@path}" do |db|
 				return db.query_one "select count(*) from queue", as: Int32
 			end
 		end
+
 		def set_status(status : JobStatus, job : Job)
 			DB.open "sqlite3://#{@path}" do |db|
 				db.exec "update queue set status = (?) where id = (?)",
 					status.to_i, job.id
 			end
 		end
+
 		def get_all
 			jobs = [] of Job
 			DB.open "sqlite3://#{@path}" do |db|
@@ -171,22 +189,33 @@ module MangaDex
 			end
 			return jobs
 		end
+
 		def add_success(job : Job)
 			DB.open "sqlite3://#{@path}" do |db|
 				db.exec "update queue set success_count = success_count + 1 " \
 					"where id = (?)", job.id
 			end
 		end
+
 		def add_fail(job : Job)
 			DB.open "sqlite3://#{@path}" do |db|
 				db.exec "update queue set fail_count = fail_count + 1 " \
 					"where id = (?)", job.id
 			end
 		end
+
 		def set_pages(pages : Int32, job : Job)
 			DB.open "sqlite3://#{@path}" do |db|
-				db.exec "update queue set pages = (?), success_count = 0, fail_count = 0 where id = (?)",
-					pages, job.id
+				db.exec "update queue set pages = (?), success_count = 0, " \
+					"fail_count = 0 where id = (?)", pages, job.id
+			end
+		end
+
+		def add_message(msg : String, job : Job)
+			DB.open "sqlite3://#{@path}" do |db|
+				db.exec "update queue set status_message = " \
+					"status_message || (?) || (?) where id = (?)",
+					"\n", msg, job.id
 			end
 		end
 	end
@@ -214,6 +243,7 @@ module MangaDex
 		def stop
 			@stopped = true
 		end
+
 		def resume
 			@stopped = false
 		end
@@ -226,6 +256,9 @@ module MangaDex
 			rescue e
 				puts e
 				@queue.set_status JobStatus::Error, job
+				unless e.message.nil?
+					@queue.add_message e.message.not_nil!, job
+				end
 				self.resume
 				return
 			end
@@ -268,12 +301,15 @@ module MangaDex
 				page_jobs = [] of PageJob
 				chapter.pages.size.times do
 					page_job = channel.receive
-					puts "[#{page_job.success ? "success" : "failed"}] #{page_job.url}"
+					puts "[#{page_job.success ? "success" : "failed"}] " \
+						"#{page_job.url}"
 					page_jobs << page_job
 					if page_job.success
 						@queue.add_success job
 					else
 						@queue.add_fail job
+						@queue.add_message \
+							"Failed to download page #{page_job.url}", job
 					end
 				end
 				fail_count = page_jobs.select{|j| !j.success}.size
