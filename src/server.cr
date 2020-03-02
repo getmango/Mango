@@ -10,7 +10,16 @@ class Server
 	def initialize(@context : Context)
 
 		error 403 do |env|
-			message = "You are not authorized to visit #{env.request.path}"
+			message = "HTTP 403: You are not authorized to visit " \
+				"#{env.request.path}"
+			layout "message"
+		end
+		error 404 do |env|
+			message = "HTTP 404: Mango cannot find the page #{env.request.path}"
+			layout "message"
+		end
+		error 500 do |env|
+			message = "HTTP 500: Internal server error. Please try again later."
 			layout "message"
 		end
 
