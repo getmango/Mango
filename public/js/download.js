@@ -40,7 +40,15 @@ const download = () => {
 		})
 		.done(data => {
 			console.log(data);
-			console.log('post succeed');
+			if (data.error) {
+				alert('danger', `Failed to add chapters to the download queue. Error: ${data.error}`);
+				return;
+			}
+			const successCount = parseInt(data.success);
+			const failCount = parseInt(data.fail);
+			UIkit.modal.confirm(`${successCount} of ${successCount + failCount} chapters added to the download queue. Proceed to the download manager?`).then(() => {
+				window.location.href = '/admin/downloads';
+			});
 		})
 		.fail((jqXHR, status) => {
 			alert('danger', `Failed to add chapters to the download queue. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
