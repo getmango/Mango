@@ -140,10 +140,35 @@ module MangaDex
 			self.count - start_count
 		end
 
-		def delete(job : Job)
+		def reset(id : String)
 			DB.open "sqlite3://#{@path}" do |db|
-				db.exec "delete from queue where id = (?)", job.id
+				db.exec "update queue set status = 0, status_message = '', " \
+					"pages = 0, success_count = 0, fail_count = 0 " \
+					"where id = (?)", id
 			end
+		end
+
+		def reset (job : Job)
+			self.reset job.id
+		end
+
+		# Reset all failed tasks (missing pages and error)
+		def reset
+			DB.open "sqlite3://#{@path}" do |db|
+				db.exec "update queue set status = 0, status_message = '', " \
+					"pages = 0, success_count = 0, fail_count = 0 " \
+					"where status = 2 or status = 4"
+			end
+		end
+
+		def delete(id : String)
+			DB.open "sqlite3://#{@path}" do |db|
+				db.exec "delete from queue where id = (?)", id
+			end
+		end
+
+		def delete(job : Job)
+			self.delete job.id
 		end
 
 		def get(job : Job)

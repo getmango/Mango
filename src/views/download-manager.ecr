@@ -1,12 +1,11 @@
 <div class="uk-margin">
 	<div id="actions" class="uk-margin">
-		<button class="uk-button uk-button-default">Delete Completed Tasks</button>
-		<button class="uk-button uk-button-default">Retry Failed Tasks</button>
-		<button class="uk-button uk-button-default">Refresh Queue</button>
+		<button class="uk-button uk-button-default" onclick="remove()">Delete Completed Tasks</button>
+		<button class="uk-button uk-button-default" onclick="refresh()">Retry Failed Tasks</button>
+		<button class="uk-button uk-button-default" onclick="load()">Refresh Queue</button>
 	</div>
 	<div id="config" class="uk-margin">
-		<label class="uk-margin-right"><input class="uk-checkbox" type="checkbox"> Auto Delete Completed Tasks</label>
-		<label><input class="uk-checkbox" type="checkbox" checked> Auto Refresh</label>
+		<label><input id="auto-refresh" class="uk-checkbox" type="checkbox" checked> Auto Refresh</label>
 	</div>
 </div>
 <table class="uk-table uk-table-striped uk-overflow-auto">
