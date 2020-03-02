@@ -129,26 +129,16 @@ class APIRouter < Router
 
 		get "/api/admin/mangadex/queue" do |env|
 			jobs = @context.queue.get_all
-			send_json env, jobs.to_json
+			send_json env, {
+				"jobs" => jobs,
+				"paused" => @context.queue.paused?
+			}.to_json
 		end
 
 		post "/api/admin/mangadex/queue/delete/:id" do |env|
 			begin
 				id = env.params.url["id"]
 				@context.queue.delete id
-				send_json env, {"success" => true}.to_json
-			rescue e
-				send_json env, {
-					"success" => false,
-					"error" => e.message
-				}.to_json
-			end
-		end
-
-		# Delete all completed tasks from the queue
-		post "/api/admin/mangadex/queue/delete" do |env|
-			begin
-				@context.queue.delete_status MangaDex::JobStatus::Completed
 				send_json env, {"success" => true}.to_json
 			rescue e
 				send_json env, {
@@ -171,9 +161,22 @@ class APIRouter < Router
 			end
 		end
 
-		post "/api/admin/mangadex/queue/retry" do |env|
+		post "/api/admin/mangadex/queue/:action" do |env|
 			begin
-				@context.queue.reset
+				action = env.params.url["action"]
+				case action
+				when "delete"
+					@context.queue.delete_status MangaDex::JobStatus::Completed
+				when "retry"
+					@context.queue.reset
+				when "pause"
+					@context.queue.pause
+				when "resume"
+					@context.queue.resume
+				else
+					raise "Unknown queue action #{action}"
+				end
+
 				send_json env, {"success" => true}.to_json
 			rescue e
 				send_json env, {

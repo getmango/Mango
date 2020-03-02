@@ -63,6 +63,24 @@ const refresh = (id) => {
 		alert('danger', `Failed to restart download job. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
 	});
 };
+const toggle = () => {
+	$('#pause-resume-btn').attr('disabled', '');
+	const paused = $('#pause-resume-btn').text() === 'Resume download';
+	const action = paused ? 'resume' : 'pause';
+	const url = `/api/admin/mangadex/queue/${action}`;
+	$.ajax({
+		type: 'POST',
+		url: url,
+		dataType: 'json'
+	})
+	.fail((jqXHR, status) => {
+		alert('danger', `Failed to ${action} download queue. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+	})
+	.always(() => {
+		load();
+		$('#pause-resume-btn').removeAttr('disabled');
+	});
+};
 const load = () => {
 	if (loading) return;
 	loading = true;
@@ -74,7 +92,10 @@ const load = () => {
 	})
 	.done(data => {
 		console.log(data);
-		const rows = data.map(obj => {
+		const btnText = data.paused ? "Resume download" : "Pause download";
+		$('#pause-resume-btn').text(btnText);
+		$('#pause-resume-btn').removeAttr('hidden');
+		const rows = data.jobs.map(obj => {
 			var cls = 'uk-label ';
 			if (obj.status === 'Completed')
 				cls += 'uk-label-success';
