@@ -174,14 +174,6 @@ module MangaDex
 			self.delete job.id
 		end
 
-		def get(job : Job)
-			DB.open "sqlite3://#{@path}" do |db|
-				db.query_one "select * from queue where id = (?)", id do |res|
-					job.parse_query_result res
-				end
-			end
-		end
-
 		def delete_status(status : JobStatus)
 			DB.open "sqlite3://#{@path}" do |db|
 				db.exec "delete from queue where status = (?)", status.to_i
