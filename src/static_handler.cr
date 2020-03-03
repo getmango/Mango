@@ -1,6 +1,5 @@
 require "baked_file_system"
 require "kemal"
-require "gzip"
 require "./util"
 
 class FS
