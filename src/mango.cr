@@ -28,9 +28,12 @@ config = Config.load config_path
 logger = MLogger.new config
 storage = Storage.new config.db_path, logger
 library = Library.new config.library_path, config.scan_interval, logger, storage
-queue = MangaDex::Queue.new config.mangadex["download_queue_db_path"].to_s
+queue = MangaDex::Queue.new config.mangadex["download_queue_db_path"].to_s,
+	logger
 api = MangaDex::API.new  config.mangadex["api_url"].to_s
-downloader = MangaDex::Downloader.new queue, api, config.library_path, config.mangadex["download_wait_seconds"].to_i, config.mangadex["download_retries"].to_i
+downloader = MangaDex::Downloader.new queue, api, config.library_path,
+	config.mangadex["download_wait_seconds"].to_i,
+	config.mangadex["download_retries"].to_i, logger
 
 context = Context.new config, logger, library, storage, queue
 
