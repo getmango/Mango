@@ -33,30 +33,25 @@ module MangaDex
 		property time : Time
 
 		def parse_query_result(res : DB::ResultSet)
-			begin
-				@id = res.read String
-				@manga_id = res.read String
-				@title = res.read String
-				@manga_title = res.read String
-				status = res.read Int32
-				@status_message = res.read String
-				@pages = res.read Int32
-				@success_count = res.read Int32
-				@fail_count = res.read Int32
-				time = res.read Int64
-				@status = JobStatus.new status
-				@time = Time.unix_ms time
-				return true
-			rescue e
-				puts e
-				return false
-			end
+			@id = res.read String
+			@manga_id = res.read String
+			@title = res.read String
+			@manga_title = res.read String
+			status = res.read Int32
+			@status_message = res.read String
+			@pages = res.read Int32
+			@success_count = res.read Int32
+			@fail_count = res.read Int32
+			time = res.read Int64
+			@status = JobStatus.new status
+			@time = Time.unix_ms time
 		end
 
+		# Raises if the result set does not contain the correct set of columns
 		def self.from_query_result(res : DB::ResultSet)
 			job = Job.allocate
-			success = job.parse_query_result res
-			return success ? job : nil
+			job.parse_query_result res
+			return job
 		end
 
 		def initialize(@id, @manga_id, @title, @manga_title, @status, @time)

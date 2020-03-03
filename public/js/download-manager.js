@@ -91,6 +91,10 @@ const load = () => {
 		dataType: 'json'
 	})
 	.done(data => {
+		if (!data.success && data.error) {
+			alert('danger', `Failed to fetch download queue. Error: ${data.error}`);
+			return;
+		}
 		console.log(data);
 		const btnText = data.paused ? "Resume download" : "Pause download";
 		$('#pause-resume-btn').text(btnText);

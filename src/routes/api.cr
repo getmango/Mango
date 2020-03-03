@@ -128,11 +128,19 @@ class APIRouter < Router
 		end
 
 		get "/api/admin/mangadex/queue" do |env|
-			jobs = @context.queue.get_all
-			send_json env, {
-				"jobs" => jobs,
-				"paused" => @context.queue.paused?
-			}.to_json
+			begin
+				jobs = @context.queue.get_all
+				send_json env, {
+					"jobs" => jobs,
+					"paused" => @context.queue.paused?,
+					"success" => true
+				}.to_json
+			rescue e
+				send_json env, {
+					"success" => false,
+					"error" => e.message
+				}.to_json
+			end
 		end
 
 		post "/api/admin/mangadex/queue/delete/:id" do |env|
