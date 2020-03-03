@@ -284,7 +284,7 @@ module MangaDex
 		end
 
 		private def download(job : Job)
-			@stop = true
+			@stopped = true
 			@queue.set_status JobStatus::Downloading, job
 			begin
 				chapter = @api.get_chapter(job.id)
@@ -294,7 +294,7 @@ module MangaDex
 				unless e.message.nil?
 					@queue.add_message e.message.not_nil!, job
 				end
-				@stop = false
+				@stopped = false
 				return
 			end
 			@queue.set_pages chapter.pages.size, job
@@ -359,7 +359,7 @@ module MangaDex
 				else
 					@queue.set_status JobStatus::MissingPages, job
 				end
-				@stop = false
+				@stopped = false
 			end
 		end
 
