@@ -83,9 +83,9 @@ describe Storage do
 	end
 
 	it "cleans up" do
-		State.reset
 		with_storage do
 			true
 		end
+		State.reset
 	end
 end

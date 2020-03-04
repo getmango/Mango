@@ -96,10 +96,10 @@ describe Queue do
 	end
 
 	it "cleans up" do
-		State.reset
 		with_queue do
 			true
 		end
+		State.reset
 	end
 end
 
