@@ -13,6 +13,7 @@
   </head>
 
   <body>
+	<script src="/js/theme.js"></script>
     <div class="uk-offcanvas-content">
       <div class="uk-navbar-container uk-navbar-transparent" uk-navbar="uk-navbar">
         <div id="mobile-nav" uk-offcanvas="overlay: true">
@@ -22,7 +23,7 @@
               <li><a href="/admin">Admin</a></li>
 			  <li><a href="/download">Download</a></li>
               <hr uk-divider>
-			  <li><a><i class="fas fa-adjust"></i></a></li>
+			  <li><a onclick="toggleTheme()"><i class="fas fa-adjust"></i></a></li>
               <li><a href="/logout">Logout</a></li>
             </ul>
           </div>
@@ -44,15 +45,15 @@
         </div>
         <div class="uk-navbar-right uk-visible@s">
           <ul class="uk-navbar-nav">
-			  <li><a><i class="fas fa-adjust"></i></a></li>
+			  <li><a onclick="toggleTheme()"><i class="fas fa-adjust"></i></a></li>
             <li><a href="/logout">Logout</a></li>
           </ul>
         </div>
       </div>
     </div>
-    <div class="uk-section uk-section-default uk-section-small">
+    <div class="uk-section uk-section-small">
     </div>
-    <div class="uk-section uk-section-default uk-section-small">
+    <div class="uk-section uk-section-small">
       <div class="uk-container uk-container-small">
 		  <div id="alert"></div>
         <%= content %>

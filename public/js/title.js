@@ -30,6 +30,7 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 	});
 
 	UIkit.modal($('#modal')).show();
+	styleModal();
 }
 function updateProgress(titleID, entryID, page) {
 	$.post('/api/progress/' + titleID + '/' + entryID + '/' + page, function(data) {

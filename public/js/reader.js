@@ -60,6 +60,7 @@ $('#page-select').change(function(){
 function showControl(idx) {
 	$('#page-select').val(idx);
 	UIkit.modal($('#modal-sections')).show();
+	styleModal();
 }
 function jumpTo(page) {
 	var ary = window.location.pathname.split('/');
