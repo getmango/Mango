@@ -49,12 +49,14 @@ const setTheme = themeStr => {
 		addClass(document.getElementsByTagName('body')[0], 'uk-light');
 		addClassToClass('uk-card', 'uk-card-secondary');
 		removeClassFromClass('uk-card', 'uk-card-default');
+		addClassToClass('ui-widget-content', 'dark');
 	}
 	else {
 		document.getElementsByTagName('html')[0].style.background = '';
 		removeClass(document.getElementsByTagName('body')[0], 'uk-light');
 		removeClassFromClass('uk-card', 'uk-card-secondary');
 		addClassToClass('uk-card', 'uk-card-default');
+		removeClassFromClass('ui-widget-content', 'dark');
 	}
 };
 

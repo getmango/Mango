@@ -49,6 +49,7 @@ const download = () => {
 			UIkit.modal.confirm(`${successCount} of ${successCount + failCount} chapters added to the download queue. Proceed to the download manager?`).then(() => {
 				window.location.href = '/admin/downloads';
 			});
+			styleModal();
 		})
 		.fail((jqXHR, status) => {
 			alert('danger', `Failed to add chapters to the download queue. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
@@ -58,6 +59,7 @@ const download = () => {
 			$('#download-btn').removeAttr('hidden');
 		});
 	});
+	styleModal();
 };
 const toggleSpinner = () => {
 	var attr = $('#spinner').attr('hidden');
@@ -275,7 +277,8 @@ const buildTable = () => {
 		const group_str = Object.entries(chp.groups).map(([k, v]) => {
 			return `<a href="${baseURL }/group/${v}">${k}</a>`;
 		}).join(' | ');
-		return `<tr class="ui-widget-content">
+		const dark = getTheme() === 'dark' ? 'dark' : '';
+		return `<tr class="ui-widget-content ${dark}">
 						<td><a href="${baseURL}/chapter/${chp.id}">${chp.id}</a></td>
 						<td>${chp.title}</td>
 						<td>${chp.language}</td>

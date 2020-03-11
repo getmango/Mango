@@ -32,3 +32,9 @@
 #selectable .ui-selected {
   background: #F4E487;
 }
+#selectable .ui-selecting.dark {
+  background: #5E5731;
+}
+#selectable .ui-selected.dark {
+  background: #9D9252;
+}
