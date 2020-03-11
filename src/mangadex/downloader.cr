@@ -198,7 +198,7 @@ module MangaDex
 		def get_all
 			jobs = [] of Job
 			DB.open "sqlite3://#{@path}" do |db|
-				jobs = db.query_all "select * from queue", do |rs|
+				jobs = db.query_all "select * from queue order by time", do |rs|
 					Job.from_query_result rs
 				end
 			end
