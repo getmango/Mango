@@ -99,9 +99,9 @@ const search = () => {
 		const match = /\/title\/([0-9]+)/.exec(path);
 		int_id = parseInt(match[1]);
 	}
-	catch(e) {}
-
-	int_id = parseInt(input);
+	catch(e) {
+		int_id = parseInt(input);
+	}
 
 	if (int_id <= 0 || isNaN(int_id)) {
 		alert('danger', 'Please make sure you are using a valid manga ID or manga URL from Mangadex.');
