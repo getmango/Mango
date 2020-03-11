@@ -113,7 +113,7 @@ class APIRouter < Router
 						chapter["full_title"].as_s,
 						chapter["manga_title"].as_s,
 						MangaDex::JobStatus::Pending,
-						Time.utc
+						Time.unix chapter["time"].as_s.to_i
 					)
 				}
 				inserted_count = @context.queue.push jobs
