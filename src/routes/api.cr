@@ -143,40 +143,23 @@ class APIRouter < Router
 			end
 		end
 
-		post "/api/admin/mangadex/queue/delete/:id" do |env|
-			begin
-				id = env.params.url["id"]
-				@context.queue.delete id
-				send_json env, {"success" => true}.to_json
-			rescue e
-				send_json env, {
-					"success" => false,
-					"error" => e.message
-				}.to_json
-			end
-		end
-
-		post "/api/admin/mangadex/queue/retry/:id" do |env|
-			begin
-				id = env.params.url["id"]
-				@context.queue.reset id
-				send_json env, {"success" => true}.to_json
-			rescue e
-				send_json env, {
-					"success" => false,
-					"error" => e.message
-				}.to_json
-			end
-		end
-
 		post "/api/admin/mangadex/queue/:action" do |env|
 			begin
 				action = env.params.url["action"]
+				id = env.params.query["id"]?
 				case action
 				when "delete"
-					@context.queue.delete_status MangaDex::JobStatus::Completed
+					if id.nil?
+						@context.queue.delete_status MangaDex::JobStatus::Completed
+					else
+						@context.queue.delete id
+					end
 				when "retry"
-					@context.queue.reset
+					if id.nil?
+						@context.queue.reset
+					else
+						@context.queue.reset id
+					end
 				when "pause"
 					@context.queue.pause
 				when "resume"

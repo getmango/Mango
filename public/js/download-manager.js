@@ -22,10 +22,10 @@ const loadConfig = () => {
 	globalConfig.autoRefresh = $('#auto-refresh').prop('checked');
 };
 const remove = (id) => {
-	var url = '/api/admin/mangadex/queue/delete/';
-	if (id !== undefined) {
-		url += id;
-	}
+	var url = '/api/admin/mangadex/queue/delete';
+	if (id !== undefined)
+		url += '?' + $.param({id: id});
+	console.log(url);
 	$.ajax({
 		type: 'POST',
 		url: url,
@@ -43,10 +43,10 @@ const remove = (id) => {
 	});
 };
 const refresh = (id) => {
-	var url = '/api/admin/mangadex/queue/retry/';
-	if (id !== undefined) {
-		url += id;
-	}
+	var url = '/api/admin/mangadex/queue/retry';
+	if (id !== undefined)
+		url += '?' + $.param({id: id});
+	console.log(url);
 	$.ajax({
 		type: 'POST',
 		url: url,
