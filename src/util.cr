@@ -47,16 +47,21 @@ end
 
 def compare_alphanumerically(c, d)
 	is_c_bigger = c.size <=> d.size
-	begin
-		c.zip(d) do |a, b|
-			if is_numeric(a) && is_numeric(b)
-				compare = a.to_i <=> b.to_i
-				return compare if compare != 0
-			else
-				compare = a <=> b
-				return compare if compare != 0
-			end
-		end
-		is_c_bigger
+	if c.size > d.size
+		d += [nil] * (c.size - d.size)
+	elsif c.size < d.size
+		c += [nil] * (d.size - c.size)
 	end
+	c.zip(d) do |a, b|
+		return -1 if a.nil?
+		return 1 if b.nil?
+		if is_numeric(a) && is_numeric(b)
+			compare = a.to_i <=> b.to_i
+			return compare if compare != 0
+		else
+			compare = a <=> b
+			return compare if compare != 0
+		end
+	end
+	is_c_bigger
 end
