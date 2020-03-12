@@ -9,7 +9,7 @@ macro send_img(env, img)
 end
 
 macro get_username(env)
-	# if the request gets here, its has gone through the auth handler, and
+	# if the request gets here, it has gone through the auth handler, and
 	# 	we can be sure that a valid token exists, so we can use not_nil! here
 	cookie = {{env}}.request.cookies.find { |c| c.name == "token" }.not_nil!
 	(@context.storage.verify_token cookie.value).not_nil!
