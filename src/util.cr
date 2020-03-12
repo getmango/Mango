@@ -65,3 +65,7 @@ def compare_alphanumerically(c, d)
 	end
 	is_c_bigger
 end
+
+def compare_alphanumerically(a : String, b : String)
+	compare_alphanumerically split_by_alphanumeric(a), split_by_alphanumeric(b)
+end
