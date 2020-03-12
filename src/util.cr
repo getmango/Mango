@@ -38,29 +38,10 @@ def is_numeric(str)
 end
 
 def split_by_alphanumeric(str)
-	is_number = false
 	arr = [] of String
-	arr.push(
-		str.split("").reduce("") do |memo, c|
-			if (is_number)
-				if is_numeric(c)
-					memo + c
-				else
-					arr.push(memo) if memo != ""
-					is_number = false
-					c
-				end
-		      else
-				if is_numeric(c) # number
-					arr.push(memo) if memo != ""
-					is_number = true
-					c
-				else
-					memo + c
-				end
-			end
-		end
-	)
+	str.scan(/([^\d\n\r]*)(\d*)([^\d\n\r]*)/) do |match|
+		arr += match.captures.select{|s| s != ""}
+	end
 	arr
 end
 
