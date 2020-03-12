@@ -2,6 +2,7 @@ require "zip"
 require "mime"
 require "json"
 require "uri"
+require "./util"
 
 struct Image
 	property data : Bytes
@@ -44,7 +45,7 @@ class Entry
 					["image/jpeg", "image/png"].includes? \
 					MIME.from_filename? e.filename
 				}
-				.sort { |a, b| a.filename <=> b.filename }
+				.sort { |a, b| compare_alphanumerically(split_by_alphanumeric(a.filename), split_by_alphanumeric(b.filename)) }
 				.[page_num - 1]
 			page.open do |io|
 				slice = Bytes.new page.uncompressed_size

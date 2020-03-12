@@ -32,3 +32,50 @@ def request_path_startswith(env, ary)
 	end
 	return false
 end
+
+def is_numeric(str)
+	/^\d+/.match(str) != nil
+end
+
+def split_by_alphanumeric(str)
+	is_number = false
+	arr = [] of String
+	arr.push(
+		str.split("").reduce("") do |memo, c|
+			if (is_number)
+				if is_numeric(c)
+					memo + c
+				else
+					arr.push(memo) if memo != ""
+					is_number = false
+					c
+				end
+		      else
+				if is_numeric(c) # number
+					arr.push(memo) if memo != ""
+					is_number = true
+					c
+				else
+					memo + c
+				end
+			end
+		end
+	)
+	arr
+end
+
+def compare_alphanumerically(c, d)
+	is_c_bigger = c.size <=> d.size
+	begin
+		c.zip(d) do |a, b|
+			if is_numeric(a) && is_numeric(b)
+				compare = a.to_i <=> b.to_i
+				return compare if compare != 0
+			else
+				compare = a <=> b
+				return compare if compare != 0
+			end
+		end
+		is_c_bigger
+	end
+end
