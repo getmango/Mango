@@ -25,9 +25,11 @@
   <div class="item" data-mtime="<%= t.mtime.to_unix %>" data-progress="<%= percentage[i] %>">
       <a class="acard" href="/book/<%= t.id %>">
         <div class="uk-card uk-card-default">
+			<%- if t.entries.size > 0 -%>
             <div class="uk-card-media-top">
               <img src="<%= t.entries[0].cover_url %>" alt="">
             </div>
+			<%- end -%>
             <div class="uk-card-body">
               <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
               <h3 class="uk-card-title"><%= t.title %></h3>

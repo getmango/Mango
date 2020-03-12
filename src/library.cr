@@ -60,25 +60,40 @@ class Entry
 end
 
 class Title
-	JSON.mapping dir: String, entries: Array(Entry), title: String,
-		id: String, encoded_title: String, mtime: Time, logger: MLogger
+	JSON.mapping dir: String, titles: Array(Title), entries: Array(Entry),
+		title: String, id: String, encoded_title: String, mtime: Time,
+		logger: MLogger
 
 	def initialize(dir : String, storage, @logger : MLogger)
 		@dir = dir
 		@id = storage.get_id @dir, true
 		@title = File.basename dir
 		@encoded_title = URI.encode @title
-		@entries = (Dir.entries dir)
-			.select { |path| [".zip", ".cbz"].includes? File.extname path }
-			.map { |path| File.join dir, path }
-			.select { |path| valid_zip path }
-			.map { |path|
-				Entry.new path, @title, @id, storage
-			}
-			.select { |e| e.pages > 0 }
-			.sort { |a, b| a.title <=> b.title }
+		@titles = [] of Title
+		@entries = [] of Entry
+
+		Dir.entries(dir).each do |fn|
+			next if fn.starts_with? "."
+			path = File.join dir, fn
+			if File.directory? path
+				title = Title.new path, storage, @logger
+				next if title.entries.size == 0 && title.titles.size == 0
+				@titles << title
+				next
+			end
+			if [".zip", ".cbz"].includes? File.extname path
+				next if !valid_zip path
+				entry = Entry.new path, @title, @id, storage
+				@entries << entry if entry.pages > 0
+			end
+		end
+
+		@titles.sort! { |a,b| a.title <=> b.title }
+		@entries.sort! { |a,b| a.title <=> b.title }
+
 		mtimes = [File.info(dir).modification_time]
 		mtimes += @entries.map{|e| e.mtime}
+		mtimes += @titles.map{|e| e.mtime}
 		@mtime = mtimes.max
 	end
 	# When downloading from MangaDex, the zip/cbz file would not be valid
@@ -192,7 +207,9 @@ class Library
 		end
 	end
 	def get_title(tid)
-		@titles.find { |t| t.id == tid }
+		# top level
+		title = @titles.find { |t| t.id == tid }
+		return title if !title.nil?
 	end
 	def scan
 		unless Dir.exists? @dir
@@ -201,9 +218,11 @@ class Library
 			Dir.mkdir_p @dir
 		end
 		@titles = (Dir.entries @dir)
-			.select { |path| File.directory? File.join @dir, path }
-			.map { |path| Title.new File.join(@dir, path), @storage, @logger }
-			.select { |title| !title.entries.empty? }
+			.select { |fn| !fn.starts_with? "." }
+			.map { |fn| File.join @dir, fn }
+			.select { |path| File.directory? path }
+			.map { |path| Title.new path, @storage, @logger }
+			.select { |title| !(title.entries.empty? && title.titles.empty?) }
 			.sort { |a, b| a.title <=> b.title }
 		@logger.debug "Scan completed"
 	end

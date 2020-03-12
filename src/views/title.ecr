@@ -23,6 +23,24 @@
 	</div>
 </div>
 <div id="item-container" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
+	<%- title.titles.each_with_index do |t, i| -%>
+	<div class="item" data-mtime="<%= t.mtime.to_unix %>" data-progress="<%= titles_percentage[i] %>">
+      <a class="acard" href="/book/<%= t.id %>">
+        <div class="uk-card uk-card-default">
+			<%- if t.entries.size > 0 -%>
+            <div class="uk-card-media-top">
+              <img src="<%= t.entries[0].cover_url %>" alt="">
+            </div>
+			<%- end -%>
+            <div class="uk-card-body">
+              <div class="uk-card-badge uk-label"><%= (titles_percentage[i] * 100).round(1) %>%</div>
+              <h3 class="uk-card-title"><%= t.title %></h3>
+              <p><%= t.entries.size %> entries</p>
+            </div>
+        </div>
+      </a>
+	</div>
+	<%- end -%>
   <%- title.entries.each_with_index do |e, i| -%>
   <div class="item" data-mtime="<%= e.mtime.to_unix %>" data-progress="<%= percentage[i] %>">
       <a class="acard">
