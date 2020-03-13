@@ -104,6 +104,10 @@ Title:
 
 ![title screenshot](./.github/screenshots/title.png)
 
+Dark mode:
+
+![dark mode screeshot](./.github/screenshots/dark.png)
+
 Reader:
 
 ![reader screenshot](./.github/screenshots/reader.png)
