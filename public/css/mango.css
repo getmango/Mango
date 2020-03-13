@@ -30,14 +30,17 @@
 	width: 100%;
 }
 #selectable .ui-selecting {
-  background: #EEE6B9;
+	background: #EEE6B9;
 }
 #selectable .ui-selected {
-  background: #F4E487;
+	background: #F4E487;
 }
 #selectable .ui-selecting.dark {
-  background: #5E5731;
+	background: #5E5731;
 }
 #selectable .ui-selected.dark {
-  background: #9D9252;
+	background: #9D9252;
+}
+td > .uk-dropdown {
+	white-space: pre-line;
 }
