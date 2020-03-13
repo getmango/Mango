@@ -29,6 +29,7 @@ module MangaDex
 					   Hash(String, String))
 			self.parse_json json_obj, lang
 		end
+
 		def to_info_json
 			JSON.build do |json|
 				json.object do
@@ -49,6 +50,7 @@ module MangaDex
 				end
 			end
 		end
+
 		def parse_json(obj, lang)
 			begin
 				parse_strings_from_json ["lang_code", "title", "volume",
@@ -84,6 +86,7 @@ module MangaDex
 		def initialize(@id, json_obj : JSON::Any)
 			self.parse_json json_obj
 		end
+
 		def to_info_json(with_chapters = true)
 			JSON.build do |json|
 				json.object do
@@ -103,6 +106,7 @@ module MangaDex
 				end
 			end
 		end
+
 		def parse_json(obj)
 			begin
 				parse_strings_from_json ["cover_url", "description", "title",
@@ -119,6 +123,7 @@ module MangaDex
 				@lang[row[1]] = row[0]
 			end
 		end
+
 		def get(url)
 			headers = HTTP::Headers {
 				"User-agent" => "Mangadex.cr"
@@ -128,6 +133,7 @@ module MangaDex
 				"#{res.status_message}" if !res.success?
 			JSON.parse res.body
 		end
+
 		def get_manga(id)
 			obj = self.get File.join @base_url, "manga/#{id}"
 			if obj["status"]? != "OK"
@@ -145,6 +151,7 @@ module MangaDex
 				raise "Failed to parse JSON"
 			end
 		end
+
 		def get_chapter(chapter : Chapter)
 			obj = self.get File.join @base_url, "chapter/#{chapter.id}"
 			if obj["status"]? == "external"
@@ -169,6 +176,7 @@ module MangaDex
 				raise "Failed to parse JSON"
 			end
 		end
+
 		def get_chapter(id : String)
 			obj = self.get File.join @base_url, "chapter/#{id}"
 			if obj["status"]? == "external"
