@@ -3,7 +3,7 @@ require "./context"
 require "./mangadex/*"
 require "option_parser"
 
-VERSION = "0.1.2"
+VERSION = "0.2.0"
 
 config_path = nil
 
