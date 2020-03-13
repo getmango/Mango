@@ -58,6 +58,9 @@ $('#page-select').change(function(){
 	jumpTo(parseInt($('#page-select').val()));
 });
 function showControl(idx) {
+	const pageCount = $('#page-select > option').length;
+	const progressText = `Progress: ${idx}/${pageCount} (${(idx/pageCount * 100).toFixed(1)}%)`;
+	$('#progress-label').text(progressText);
 	$('#page-select').val(idx);
 	UIkit.modal($('#modal-sections')).show();
 	styleModal();
