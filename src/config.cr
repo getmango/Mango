@@ -38,6 +38,7 @@ class Config
 			abort "Aborting..."
 		end
 		default = self.allocate
+		default.fill_defaults
 		cfg_dir = File.dirname cfg_path
 		unless Dir.exists? cfg_dir
 			Dir.mkdir_p cfg_dir
