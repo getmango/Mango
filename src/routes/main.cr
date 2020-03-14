@@ -26,6 +26,7 @@ class MainRouter < Router
 					.not_nil!
 
 				cookie = HTTP::Cookie.new "token", token
+				cookie.expires = Time.local.shift years: 1
 				env.response.cookies << cookie
 				env.redirect "/"
 			rescue
