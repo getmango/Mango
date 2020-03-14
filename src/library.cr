@@ -14,10 +14,10 @@ struct Image
 end
 
 class Entry
-	JSON.mapping zip_path: String, book_title: String, title: String,
-		size: String, pages: Int32, cover_url: String, id: String,
-		title_id: String, encoded_path: String, encoded_title: String,
-		mtime: Time
+	property zip_path : String, book_title : String, title : String,
+		size : String, pages : Int32, cover_url : String, id : String,
+		title_id : String, encoded_path : String, encoded_title : String,
+		mtime : Time
 
 	def initialize(path, @book_title, @title_id, storage)
 		@zip_path = path
@@ -37,6 +37,19 @@ class Entry
 		@cover_url = "/api/page/#{@title_id}/#{@id}/1"
 		@mtime = File.info(@zip_path).modification_time
 	end
+
+	def to_json(json : JSON::Builder)
+		json.object do
+			{% for str in ["zip_path", "book_title", "title", "size",
+				"cover_url", "id", "title_id", "encoded_path",
+				"encoded_title"] %}
+				json.field {{str}}, @{{str.id}}
+			{% end %}
+			json.field "pages" {json.number @pages}
+			json.field "mtime" {json.number @mtime.to_unix}
+		end
+	end
+
 	def read_page(page_num)
 		Zip::File.open @zip_path do |file|
 			page = file.entries
@@ -60,9 +73,10 @@ class Entry
 end
 
 class Title
-	JSON.mapping dir: String, titles: Array(Title), entries: Array(Entry),
-		title: String, id: String, encoded_title: String, mtime: Time,
-		logger: MLogger
+	property dir : String, titles : Array(Title), entries : Array(Entry),
+		title : String, id : String, encoded_title : String, mtime : Time,
+		logger : MLogger
+
 
 	def initialize(dir : String, storage, @logger : MLogger)
 		@dir = dir
@@ -96,6 +110,22 @@ class Title
 		mtimes += @titles.map{|e| e.mtime}
 		@mtime = mtimes.max
 	end
+
+	def to_json(json : JSON::Builder)
+		json.object do
+			{% for str in ["dir", "title", "id", "encoded_title"] %}
+				json.field {{str}}, @{{str.id}}
+			{% end %}
+			json.field "mtime" {json.number @mtime.to_unix}
+			json.field "titles" do
+				json.raw @titles.to_json
+			end
+			json.field "entries" do
+				json.raw @entries.to_json
+			end
+		end
+	end
+
 	# When downloading from MangaDex, the zip/cbz file would not be valid
 	#	before the download is completed. If we scan the zip file,
 	#	Entry.new would throw, so we use this method to check before
@@ -187,8 +217,8 @@ class TitleInfo
 end
 
 class Library
-	JSON.mapping dir: String, titles: Array(Title), scan_interval: Int32,
-		logger: MLogger, storage: Storage
+	property dir : String, titles : Array(Title), scan_interval : Int32,
+		logger : MLogger, storage : Storage
 
 	def initialize(@dir, @scan_interval, @logger, @storage)
 		# explicitly initialize @titles to bypass the compiler check. it will
@@ -203,6 +233,14 @@ class Library
 				ms = (Time.local - start).total_milliseconds
 				@logger.info "Scanned #{@titles.size} titles in #{ms}ms"
 				sleep @scan_interval * 60
+			end
+		end
+	end
+	def to_json(json : JSON::Builder)
+		json.object do
+			json.field "dir", @dir
+			json.field "titles" do
+				json.raw @titles.to_json
 			end
 		end
 	end
