@@ -15,7 +15,7 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 	if (percentage === 100) {
 		$('#read-btn').attr('hidden', '');
 	}
-	$('#modal-title').text(title);
+	$('#modal-title').text(entry);
 	$('#path-text').text(zipPath);
 	$('#pages-text').text(pages + ' pages');
 
