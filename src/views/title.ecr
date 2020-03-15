@@ -1,4 +1,11 @@
 <h2 class=uk-title><%= title.title %></h2>
+<ul class="uk-breadcrumb">
+	<li><a href="/">Library</a></li>
+	<%- title.parents.each do |t| -%>
+	<li><a href="/book/<%= t.id %>"><%= t.title %></a></li>
+	<%- end -%>
+	<li class="uk-disabled"><a><%= title.title %></a></li>
+</ul>
 <p class="uk-text-meta"><%= title.entries.size %> entries found</p>
 <div class="uk-grid-small" uk-grid>
 	<div class="uk-margin-bottom uk-width-3-4@s">
