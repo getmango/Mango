@@ -45,7 +45,7 @@
 			<%- if t.entries.size > 0 -%>
               <div class="uk-card-badge uk-label"><%= (titles_percentage[i] * 100).round(1) %>%</div>
 			<%- end -%>
-              <h3 class="uk-card-title"><%= t.title %></h3>
+              <h3 class="uk-card-title break-word"><%= t.title %></h3>
               <p><%= t.size %> entries</p>
             </div>
         </div>
@@ -73,8 +73,8 @@
   <div class="uk-modal-dialog uk-margin-auto-vertical">
     <button class="uk-modal-close-default" type="button" uk-close></button>
     <div class="uk-modal-header">
-      <h3 class="uk-modal-title" id="modal-title"></h3>
-      <p class="uk-text-meta uk-margin-remove-bottom" id="path-text"></p>
+      <h3 class="uk-modal-title break-word" id="modal-title"></h3>
+      <p class="uk-text-meta uk-margin-remove-bottom break-word" id="path-text"></p>
       <p class="uk-text-meta uk-margin-remove-top" id="pages-text"></p>
     </div>
     <div class="uk-modal-body">
