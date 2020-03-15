@@ -12,6 +12,7 @@ Mango is a self-hosted manga server and reader. Its features include
 - Multi-user support
 - Dark/light mode switch
 - Supports both `.zip` and `.cbz` formats
+- Supports nested folders in library
 - Automatically stores reading progress
 - Built-in [MangaDex](https://mangadex.org/) downloader
 - The web reader is responsive and works well on mobile, so there is no need for a mobile app
@@ -73,22 +74,6 @@ mangadex:
 
 - `scan_interval_minutes` can be any non-negative integer. Setting it to `0` disables the periodic scan
 - `log_level` can be `debug`, `info`, `warn`, `error`, `fatal` or `off`. Setting it to `off` disables the logging
-
-### Required Library Structure
-
-Please make sure that your library directory has the following structure:
-
-```
-.
-├── Manga 1
-│   └── Manga 1.cbz
-└── Manga 2
-    ├── Vol 0001.zip
-    ├── Vol 0002.zip
-    ├── Vol 0003.zip
-    ├── Vol 0004.zip
-    └── Vol 0005.zip
-```
 
 ### Initial Login
 
