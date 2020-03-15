@@ -73,10 +73,12 @@ class Entry
 end
 
 class Title
-	property dir : String, title_ids : Array(String), entries : Array(Entry),
-		title : String, id : String, encoded_title : String, mtime : Time
+	property dir : String, parent_id : String, title_ids : Array(String),
+		entries : Array(Entry), title : String, id : String,
+		encoded_title : String, mtime : Time
 
-	def initialize(dir : String, storage, @logger : MLogger, @library : Library)
+	def initialize(dir : String, @parent_id, storage,
+				   @logger : MLogger, @library : Library)
 		@dir = dir
 		@id = storage.get_id @dir, true
 		@title = File.basename dir
@@ -88,7 +90,7 @@ class Title
 			next if fn.starts_with? "."
 			path = File.join dir, fn
 			if File.directory? path
-				title = Title.new path, storage, @logger, library
+				title = Title.new path, @id, storage, @logger, library
 				next if title.entries.size == 0 && title.titles.size == 0
 				@library.title_hash[title.id] = title
 				@title_ids << title.id
@@ -124,11 +126,32 @@ class Title
 			json.field "entries" do
 				json.raw @entries.to_json
 			end
+			json.field "parents" do
+				json.array do
+					self.parents.each do |title|
+						json.object do
+							json.field "title", title.title
+							json.field "id", title.id
+						end
+					end
+				end
+			end
 		end
 	end
 
 	def titles
 		@title_ids.map {|tid| @library.get_title! tid}
+	end
+
+	def parents
+		ary = [] of Title
+		tid = @parent_id
+		while !tid.empty?
+			title = @library.get_title! tid
+			ary << title
+			tid = title.parent_id
+		end
+		ary
 	end
 
 	# When downloading from MangaDex, the zip/cbz file would not be valid
@@ -267,7 +290,7 @@ class Library
 			.select { |fn| !fn.starts_with? "." }
 			.map { |fn| File.join @dir, fn }
 			.select { |path| File.directory? path }
-			.map { |path| Title.new path, @storage, @logger, self }
+			.map { |path| Title.new path, "", @storage, @logger, self }
 			.select { |title| !(title.entries.empty? && title.titles.empty?) }
 			.sort { |a, b| a.title <=> b.title }
 			.each do |title|
