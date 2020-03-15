@@ -73,26 +73,25 @@ class Entry
 end
 
 class Title
-	property dir : String, titles : Array(Title), entries : Array(Entry),
-		title : String, id : String, encoded_title : String, mtime : Time,
-		logger : MLogger
+	property dir : String, title_ids : Array(String), entries : Array(Entry),
+		title : String, id : String, encoded_title : String, mtime : Time
 
-
-	def initialize(dir : String, storage, @logger : MLogger)
+	def initialize(dir : String, storage, @logger : MLogger, @library : Library)
 		@dir = dir
 		@id = storage.get_id @dir, true
 		@title = File.basename dir
 		@encoded_title = URI.encode @title
-		@titles = [] of Title
+		@title_ids = [] of String
 		@entries = [] of Entry
 
 		Dir.entries(dir).each do |fn|
 			next if fn.starts_with? "."
 			path = File.join dir, fn
 			if File.directory? path
-				title = Title.new path, storage, @logger
+				title = Title.new path, storage, @logger, library
 				next if title.entries.size == 0 && title.titles.size == 0
-				@titles << title
+				@library.title_hash[title.id] = title
+				@title_ids << title.id
 				next
 			end
 			if [".zip", ".cbz"].includes? File.extname path
@@ -102,12 +101,14 @@ class Title
 			end
 		end
 
-		@titles.sort! { |a,b| a.title <=> b.title }
+		@title_ids.sort! { |a,b|
+			@library.title_hash[a].title <=> @library.title_hash[b].title
+		}
 		@entries.sort! { |a,b| a.title <=> b.title }
 
 		mtimes = [File.info(dir).modification_time]
+		mtimes += @title_ids.map{|e| @library.title_hash[e].mtime}
 		mtimes += @entries.map{|e| e.mtime}
-		mtimes += @titles.map{|e| e.mtime}
 		@mtime = mtimes.max
 	end
 
@@ -118,12 +119,16 @@ class Title
 			{% end %}
 			json.field "mtime" {json.number @mtime.to_unix}
 			json.field "titles" do
-				json.raw @titles.to_json
+				json.raw self.titles.to_json
 			end
 			json.field "entries" do
 				json.raw @entries.to_json
 			end
 		end
+	end
+
+	def titles
+		@title_ids.map {|tid| @library.get_title! tid}
 	end
 
 	# When downloading from MangaDex, the zip/cbz file would not be valid
@@ -214,13 +219,14 @@ class TitleInfo
 end
 
 class Library
-	property dir : String, titles : Array(Title), scan_interval : Int32,
-		logger : MLogger, storage : Storage
+	property dir : String, title_ids : Array(String), scan_interval : Int32,
+		logger : MLogger, storage : Storage, title_hash : Hash(String, Title)
 
 	def initialize(@dir, @scan_interval, @logger, @storage)
 		# explicitly initialize @titles to bypass the compiler check. it will
 		#	be filled with actual Titles in the `scan` call below
-		@titles = [] of Title
+		@title_ids = [] of String
+		@title_hash = {} of String => Title
 
 		return scan if @scan_interval < 1
 		spawn do
@@ -228,23 +234,27 @@ class Library
 				start = Time.local
 				scan
 				ms = (Time.local - start).total_milliseconds
-				@logger.info "Scanned #{@titles.size} titles in #{ms}ms"
+				@logger.info "Scanned #{@title_ids.size} titles in #{ms}ms"
 				sleep @scan_interval * 60
 			end
 		end
+	end
+	def titles
+		@title_ids.map {|tid| self.get_title!(tid) }
 	end
 	def to_json(json : JSON::Builder)
 		json.object do
 			json.field "dir", @dir
 			json.field "titles" do
-				json.raw @titles.to_json
+				json.raw self.titles.to_json
 			end
 		end
 	end
 	def get_title(tid)
-		# top level
-		title = @titles.find { |t| t.id == tid }
-		return title if !title.nil?
+		@title_hash[tid]?
+	end
+	def get_title!(tid)
+		@title_hash[tid]
 	end
 	def scan
 		unless Dir.exists? @dir
@@ -252,13 +262,18 @@ class Library
 				"Attempting to create it"
 			Dir.mkdir_p @dir
 		end
-		@titles = (Dir.entries @dir)
+		@title_ids.clear
+		(Dir.entries @dir)
 			.select { |fn| !fn.starts_with? "." }
 			.map { |fn| File.join @dir, fn }
 			.select { |path| File.directory? path }
-			.map { |path| Title.new path, @storage, @logger }
+			.map { |path| Title.new path, @storage, @logger, self }
 			.select { |title| !(title.entries.empty? && title.titles.empty?) }
 			.sort { |a, b| a.title <=> b.title }
+			.each do |title|
+				@title_hash[title.id] = title
+				@title_ids << title.id
+			end
 		@logger.debug "Scan completed"
 	end
 end
