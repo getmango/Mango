@@ -106,10 +106,13 @@ class Title
 			end
 		end
 
-		@title_ids.sort! { |a,b|
-			@library.title_hash[a].title <=> @library.title_hash[b].title
-		}
-		@entries.sort! { |a,b| a.title <=> b.title }
+		@title_ids.sort! do |a, b|
+			compare_alphanumerically @library.title_hash[a].title,
+				@library.title_hash[b].title
+		end
+		@entries.sort! do |a, b|
+			compare_alphanumerically a.title, b.title
+		end
 
 		mtimes = [File.info(dir).modification_time]
 		mtimes += @title_ids.map{|e| @library.title_hash[e].mtime}
