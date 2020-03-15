@@ -6,7 +6,7 @@
 	<%- end -%>
 	<li class="uk-disabled"><a><%= title.title %></a></li>
 </ul>
-<p class="uk-text-meta"><%= title.entries.size %> entries found</p>
+<p class="uk-text-meta"><%= title.size %> entries found</p>
 <div class="uk-grid-small" uk-grid>
 	<div class="uk-margin-bottom uk-width-3-4@s">
 		<form class="uk-search uk-search-default">
@@ -42,7 +42,7 @@
             <div class="uk-card-body">
               <div class="uk-card-badge uk-label"><%= (titles_percentage[i] * 100).round(1) %>%</div>
               <h3 class="uk-card-title"><%= t.title %></h3>
-              <p><%= t.entries.size %> entries</p>
+              <p><%= t.size %> entries</p>
             </div>
         </div>
       </a>

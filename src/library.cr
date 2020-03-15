@@ -154,6 +154,10 @@ class Title
 		ary
 	end
 
+	def size
+		@entries.size + @title_ids.size
+	end
+
 	# When downloading from MangaDex, the zip/cbz file would not be valid
 	#	before the download is completed. If we scan the zip file,
 	#	Entry.new would throw, so we use this method to check before
