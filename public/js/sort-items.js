@@ -93,8 +93,8 @@ $(() => {
 				else if (by === 'date')
 					res = $(a).attr('data-mtime') > $(b).attr('data-mtime');
 				else if (by === 'progress') {
-					const ap = $(a).attr('data-progress');
-					const bp = $(b).attr('data-progress');
+					const ap = parseFloat($(a).attr('data-progress'));
+					const bp = parseFloat($(b).attr('data-progress'));
 					if (ap === bp)
 						// if progress is the same, we compare by name
 						res = $(a).find('.uk-card-title').text() > $(b).find('.uk-card-title').text();
