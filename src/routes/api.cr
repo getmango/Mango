@@ -26,7 +26,7 @@ class APIRouter < Router
 			end
 		end
 
-		get "/api/book/:title" do |env|
+		get "/api/book/:tid" do |env|
 			begin
 				tid = env.params.url["tid"]
 				title = @context.library.get_title tid
