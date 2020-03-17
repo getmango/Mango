@@ -85,7 +85,7 @@ You can organize your `.cbz/.zip` files in nested folders in the library directo
 │   ├── Volume 1.cbz
 │   ├── Volume 2.cbz
 │   ├── Volume 3.cbz
-│   ├── Volume 4.cbz
+│   └── Volume 4.zip
 └── Manga 2
     └── Vol. 1
         └── Ch.1 - Ch.3
