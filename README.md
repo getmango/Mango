@@ -75,6 +75,25 @@ mangadex:
 - `scan_interval_minutes` can be any non-negative integer. Setting it to `0` disables the periodic scan
 - `log_level` can be `debug`, `info`, `warn`, `error`, `fatal` or `off`. Setting it to `off` disables the logging
 
+### Library Structure
+
+You can organize your `.cbz/.zip` files in nested folders in the library directory. Here's an example:
+
+```
+.
+├── Manga 1
+│   ├── Volume 1.cbz
+│   ├── Volume 2.cbz
+│   ├── Volume 3.cbz
+│   ├── Volume 4.cbz
+└── Manga 2
+    └── Vol. 1
+        └── Ch.1 - Ch.3
+            ├── 1.zip 
+            ├── 2.zip 
+            └── 3.zip
+```
+
 ### Initial Login
 
 On the first run, Mango would log the default username and a randomly generated password to STDOUT. You are advised to immediately change the password.
