@@ -1,18 +1,17 @@
-FROM crystallang/crystal:0.32.0
-
-RUN apt-get update && apt-get install -y curl
-
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-
-RUN apt-get update && apt-get install -y nodejs yarn libsqlite3-dev
+FROM crystallang/crystal:0.32.1-alpine
 
 WORKDIR /Mango
 
 COPY . .
 COPY package*.json .
+RUN apk add --no-cache nodejs yarn sqlite sqlite-doc sqlite-static sqlite-dev sqlite-libs yaml \
+    && apk add uglifycss uglify-js --repository http://nl.alpinelinux.org/alpine/edge/testing/ \
+    && make static
 
-RUN make && make install
+FROM library/alpine
 
-CMD ["mango"]
+WORKDIR /root
+
+COPY --from=0 /Mango/mango ./Mango/
+
+CMD ["/root/Mango/mango"]
