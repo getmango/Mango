@@ -9,8 +9,8 @@ RUN apk add --no-cache yarn yaml sqlite-static \
 
 FROM library/alpine
 
-WORKDIR /root
+WORKDIR /
 
-COPY --from=builder /Mango/mango ./Mango/
+COPY --from=builder /Mango/mango .
 
-CMD ["/root/Mango/mango"]
+CMD ["./mango"]
