@@ -4,8 +4,7 @@ WORKDIR /Mango
 
 COPY . .
 COPY package*.json .
-RUN apk add --no-cache nodejs yarn sqlite sqlite-doc sqlite-static sqlite-dev sqlite-libs yaml \
-    && apk add uglifycss uglify-js --repository http://nl.alpinelinux.org/alpine/edge/testing/ \
+RUN apk add --no-cache yarn yaml sqlite-static \
     && make static
 
 FROM library/alpine
