@@ -1,0 +1,24 @@
+name: Build
+
+on:
+  push:
+    branches: [ master, dev ]
+  pull_request:
+    branches: [ master, dev ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    container:
+      image: crystallang/crystal:0.32.1-alpine
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies
+      run: apk add --no-cache yarn yaml sqlite-static
+    - name: Build
+      run: make
+    - name: Run tests
+      run: make test
