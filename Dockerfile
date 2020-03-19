@@ -1,4 +1,4 @@
-FROM crystallang/crystal:0.32.1-alpine
+FROM crystallang/crystal:0.32.1-alpine AS builder
 
 WORKDIR /Mango
 
@@ -12,6 +12,6 @@ FROM library/alpine
 
 WORKDIR /root
 
-COPY --from=0 /Mango/mango ./Mango/
+COPY --from=builder /Mango/mango ./Mango/
 
 CMD ["/root/Mango/mango"]
