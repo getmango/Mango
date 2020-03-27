@@ -90,6 +90,29 @@ class APIRouter < Router
 			end
 		end
 
+		post "/api/admin/display_name/:title/:name" do |env|
+			begin
+				title = (@context.library.get_title env.params.url["title"])
+					.not_nil!
+				entry = title.get_entry env.params.query["entry"]?
+				name = env.params.url["name"]
+
+				if entry.nil?
+					title.set_display_name name
+				else
+					title.set_display_name entry.title, name
+				end
+			rescue e
+				@context.error e
+				send_json env, {
+					"success" => false,
+					"error" => e.message
+				}.to_json
+			else
+				send_json env, {"success" => true}.to_json
+			end
+		end
+
 		get "/api/admin/mangadex/manga/:id" do |env|
 			begin
 				id = env.params.url["id"]
