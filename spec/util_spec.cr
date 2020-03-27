@@ -25,4 +25,12 @@ describe "compare_alphanumerically" do
 			compare_alphanumerically a, b
 		}.should eq ary
 	end
+
+	# https://github.com/hkalexling/Mango/issues/22
+	it "handles numbers larger than Int32" do
+		ary = ["14410155591588.jpg", "21410155591588.png", "104410155591588.jpg"]
+		ary.reverse.sort {|a, b|
+			compare_alphanumerically a, b
+		}.should eq ary
+	end
 end

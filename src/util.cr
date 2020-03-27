@@ -1,3 +1,5 @@
+require "big"
+
 IMGS_PER_PAGE = 5
 
 macro layout(name)
@@ -56,7 +58,7 @@ def compare_alphanumerically(c, d)
 		return -1 if a.nil?
 		return 1 if b.nil?
 		if is_numeric(a) && is_numeric(b)
-			compare = a.to_i <=> b.to_i
+			compare = a.to_big_i <=> b.to_big_i
 			return compare if compare != 0
 		else
 			compare = a <=> b
