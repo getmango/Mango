@@ -27,9 +27,9 @@
         <div class="uk-card uk-card-default">
             <div class="uk-card-media-top">
 			<%- if t.entries.size > 0 -%>
-              <img src="<%= t.entries[0].cover_url %>" alt="">
+              <img data-src="<%= t.entries[0].cover_url %>" data-width data-height alt="" uk-img>
 			<%- else -%>
-              <img src="/img/icon.png" alt="">
+              <img data-src="/img/icon.png" data-width data-height alt="" uk-img>
 			<%- end -%>
             </div>
             <div class="uk-card-body">

@@ -36,9 +36,9 @@
         <div class="uk-card uk-card-default">
             <div class="uk-card-media-top">
 			<%- if t.entries.size > 0 -%>
-              <img src="<%= t.entries[0].cover_url %>" alt="">
+              <img data-src="<%= t.entries[0].cover_url %>" data-width data-height alt="" uk-img>
 			<%- else -%>
-              <img src="/img/icon.png" alt="">
+              <img data-src="/img/icon.png" data-width data-height alt="" uk-img>
 			<%- end -%>
             </div>
             <div class="uk-card-body">
@@ -57,7 +57,7 @@
       <a class="acard">
 		  <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= e.encoded_path %>&quot;, '<%= e.pages %>', <%= (percentage[i] * 100).round(1) %>, &quot;<%= title.encoded_title %>&quot;, &quot;<%= e.encoded_title %>&quot;, '<%= e.title_id %>', '<%= e.id %>')">
           <div class="uk-card-media-top">
-            <img src="<%= e.cover_url %>" alt="">
+            <img data-src="<%= e.cover_url %>" alt="" data-width data-height uk-img>
           </div>
           <div class="uk-card-body">
             <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
