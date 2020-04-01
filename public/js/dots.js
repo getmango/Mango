@@ -1,7 +1,6 @@
 const truncate = () => {
 	$('.acard .uk-card-title').each((i, e) => {
-		new Dotdotdot(e, {
-			height: 120,
+		$(e).dotdotdot({
 			truncate: 'letter'
 		});
 	});

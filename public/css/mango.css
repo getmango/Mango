@@ -8,6 +8,9 @@
 	max-height: 350px;
 	overflow: hidden;
 }
+.uk-card-title {
+	height: 3em;
+}
 .acard:hover {
 	text-decoration: none;
 }
