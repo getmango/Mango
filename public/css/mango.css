@@ -5,8 +5,17 @@
 	padding: 20px;
 }
 .uk-card-media-top {
-	max-height: 350px;
-	overflow: hidden;
+	height: 250px;
+}
+@media (min-width: 600px) {
+.uk-card-media-top {
+	height: 300px;
+}
+}
+.uk-card-media-top > img {
+	height: 100%;
+	width: 100%;
+	object-fit: cover;
 }
 .uk-card-title {
 	height: 3em;
