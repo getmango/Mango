@@ -6,4 +6,6 @@ const truncate = () => {
 	});
 };
 
-truncate();
+$(() => {
+	truncate();
+});
