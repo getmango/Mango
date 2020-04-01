@@ -45,7 +45,7 @@
 			<%- if t.entries.size > 0 -%>
               <div class="uk-card-badge uk-label"><%= (titles_percentage[i] * 100).round(1) %>%</div>
 			<%- end -%>
-              <h3 class="uk-card-title break-word"><%= t.title %></h3>
+			<h3 class="uk-card-title break-word" uk-tooltip="<%= t.title.gsub("\"", "&quot;") %>"><%= t.title %></h3>
               <p><%= t.size %> entries</p>
             </div>
         </div>
@@ -61,7 +61,7 @@
           </div>
           <div class="uk-card-body">
             <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
-            <h3 class="uk-card-title"><%= e.title %></h3>
+			<h3 class="uk-card-title break-word" uk-tooltip="<%= e.title.gsub("\"", "&quot;") %>"><%= e.title %></h3>
           </div>
       </div>
       </a>
