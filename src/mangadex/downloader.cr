@@ -249,6 +249,7 @@ module MangaDex
 
 	class Downloader
 		property stopped = false
+		@downloading = false
 
 		def initialize(@queue : Queue, @api : API, @library_path : String,
 					   @wait_seconds : Int32, @retries : Int32,
@@ -258,7 +259,7 @@ module MangaDex
 			spawn do
 				loop do
 					sleep 1.second
-					next if @stopped
+					next if @stopped || @downloading
 					begin
 						job = @queue.pop
 						next if job.nil?
@@ -271,7 +272,7 @@ module MangaDex
 		end
 
 		private def download(job : Job)
-			@stopped = true
+			@downloading = true
 			@queue.set_status JobStatus::Downloading, job
 			begin
 				chapter = @api.get_chapter(job.id)
@@ -281,7 +282,7 @@ module MangaDex
 				unless e.message.nil?
 					@queue.add_message e.message.not_nil!, job
 				end
-				@stopped = false
+				@downloading = false
 				return
 			end
 			@queue.set_pages chapter.pages.size, job
@@ -346,7 +347,7 @@ module MangaDex
 				else
 					@queue.set_status JobStatus::MissingPages, job
 				end
-				@stopped = false
+				@downloading = false
 			end
 		end
 
