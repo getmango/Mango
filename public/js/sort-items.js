@@ -50,10 +50,10 @@ $(() => {
 			sortedKeys.sort((a, b) => {
 				// sort by frequency of the key first
 				if (keyRange[a][2] !== keyRange[b][2]) {
-					return keyRange[a][2] < keyRange[b][2];
+					return (keyRange[a][2] < keyRange[b][2]) ? 1 : -1;
 				}
 				// then sort by range of the key
-				return (keyRange[a][1] - keyRange[a][0]) < (keyRange[b][1] - keyRange[b][0]);
+				return ((keyRange[a][1] - keyRange[a][0]) < (keyRange[b][1] - keyRange[b][0])) ? 1 : -1;
 			});
 
 			console.log(sortedKeys);
@@ -70,7 +70,7 @@ $(() => {
 						return -1;
 					if (a.numbers[key] === b.numbers[key])
 						continue;
-					return a.numbers[key] > b.numbers[key];
+					return (a.numbers[key] > b.numbers[key]) ? 1 : -1;
 				}
 				return 0;
 			});
@@ -102,12 +102,11 @@ $(() => {
 						res = ap > bp;
 				}
 				if (dir === 'up')
-					return res;
+					return res ? 1 : -1;
 				else
-					return !res;
+					return !res ? 1 : -1;
 			});
 		}
-		var html = '';
 		$('#item-container').append(items);
 	};
 
