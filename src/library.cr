@@ -208,11 +208,11 @@ class Title
 		info = TitleInfo.new @dir
 		page = load_progress username, entry
 		entry_obj = @entries.find{|e| e.title == entry}
-		return 0 if entry_obj.nil?
+		return 0.0 if entry_obj.nil?
 		page / entry_obj.pages
 	end
 	def load_percetage(username)
-		return 0 if @entries.empty?
+		return 0.0 if @entries.empty?
 		read_pages = total_pages = 0
 		@entries.each do |e|
 			read_pages += load_progress username, e.title

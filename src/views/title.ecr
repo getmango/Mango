@@ -31,7 +31,7 @@
 </div>
 <div id="item-container" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
 	<%- title.titles.each_with_index do |t, i| -%>
-	<div class="item" data-mtime="<%= t.mtime.to_unix %>" data-progress="<%= titles_percentage[i] %>">
+	<div class="item" data-mtime="<%= t.mtime.to_unix %>" data-progress="0.0">
       <a class="acard" href="/book/<%= t.id %>">
         <div class="uk-card uk-card-default">
             <div class="uk-card-media-top">
@@ -42,9 +42,6 @@
 			<%- end -%>
             </div>
             <div class="uk-card-body">
-			<%- if t.entries.size > 0 -%>
-              <div class="uk-card-badge uk-label"><%= (titles_percentage[i] * 100).round(1) %>%</div>
-			<%- end -%>
 			<h3 class="uk-card-title break-word" data-title="<%= t.title.gsub("\"", "&quot;") %>"><%= t.title %></h3>
               <p><%= t.size %> entries</p>
             </div>
