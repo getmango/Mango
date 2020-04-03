@@ -3,7 +3,17 @@ require "big"
 IMGS_PER_PAGE = 5
 
 macro layout(name)
-	render "src/views/#{{{name}}}.ecr", "src/views/layout.ecr"
+	begin
+		cookie = env.request.cookies.find { |c| c.name == "token" }
+		is_admin = false
+		unless cookie.nil?
+			is_admin = @context.storage.verify_admin cookie.value
+		end
+		render "src/views/#{{{name}}}.ecr", "src/views/layout.ecr"
+	rescue e
+		message = e.to_s
+		render "message"
+	end
 end
 
 macro send_img(env, img)
