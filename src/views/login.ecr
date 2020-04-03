@@ -8,9 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.3.1/dist/css/uikit.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="/js/theme.js"></script>
 </head>
 <body>
-	<script src="/js/theme.js"></script>
     <div class="uk-section uk-flex uk-flex-middle uk-animation-fade" uk-height-viewport="">
         <div class="uk-width-1-1">
             <div class="uk-container">
@@ -33,6 +34,9 @@
             </div>
         </div>
     </div>
+	<script>
+		setTheme(getTheme());
+	</script>
     <script src="https://cdn.jsdelivr.net/npm/uikit@3.3.1/dist/js/uikit.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/uikit@3.3.1/dist/js/uikit-icons.min.js"></script>
 </body>
