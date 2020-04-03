@@ -1,10 +1,18 @@
-<h2 class=uk-title><%= title.title %></h2>
+<div>
+	<h2 class=uk-title><span><%= title.display_name %></span>  <a onclick="rename(this)" class="uk-icon-button" uk-icon="icon:pencil"></a></h2>
+	<div class="uk-margin title-rename" data-id="<%= title.id %>" hidden>
+		<div class="uk-inline">
+			<a class="uk-form-icon uk-form-icon-flip" onclick="renameSubmit(this)" uk-icon="icon:check"></a>
+			<input class="uk-input title-rename-field" type="text" value="<%= title.display_name.gsub("\"", "&quot;") %>">
+		</div>
+	</div>
+</div>
 <ul class="uk-breadcrumb">
 	<li><a href="/">Library</a></li>
 	<%- title.parents.each do |t| -%>
-	<li><a href="/book/<%= t.id %>"><%= t.title %></a></li>
+	<li><a href="/book/<%= t.id %>"><%= t.display_name %></a></li>
 	<%- end -%>
-	<li class="uk-disabled"><a><%= title.title %></a></li>
+	<li class="uk-disabled"><a><%= title.display_name %></a></li>
 </ul>
 <p class="uk-text-meta"><%= title.size %> entries found</p>
 <div class="uk-grid-small" uk-grid>
@@ -42,7 +50,7 @@
 			<%- end -%>
             </div>
             <div class="uk-card-body">
-			<h3 class="uk-card-title break-word" data-title="<%= t.title.gsub("\"", "&quot;") %>"><%= t.title %></h3>
+			<h3 class="uk-card-title break-word" data-title="<%= t.display_name.gsub("\"", "&quot;") %>"><%= t.display_name %></h3>
               <p><%= t.size %> entries</p>
             </div>
         </div>
@@ -52,13 +60,13 @@
   <%- title.entries.each_with_index do |e, i| -%>
   <div class="item" data-mtime="<%= e.mtime.to_unix %>" data-progress="<%= percentage[i] %>">
       <a class="acard">
-		  <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= e.encoded_path %>&quot;, '<%= e.pages %>', <%= (percentage[i] * 100).round(1) %>, &quot;<%= title.encoded_title %>&quot;, &quot;<%= e.encoded_title %>&quot;, '<%= e.title_id %>', '<%= e.id %>')">
+		  <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= e.encoded_path %>&quot;, '<%= e.pages %>', <%= (percentage[i] * 100).round(1) %>, &quot;<%= title.encoded_display_name %>&quot;, &quot;<%= e.encoded_display_name %>&quot;, '<%= e.title_id %>', '<%= e.id %>')">
           <div class="uk-card-media-top">
             <img data-src="<%= e.cover_url %>" alt="" data-width data-height uk-img>
           </div>
           <div class="uk-card-body">
             <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
-			<h3 class="uk-card-title break-word" data-title="<%= e.title.gsub("\"", "&quot;") %>"><%= e.title %></h3>
+			<h3 class="uk-card-title break-word" data-title="<%= e.display_name.gsub("\"", "&quot;") %>"><%= e.display_name %></h3>
               <p><%= e.pages %> pages</p>
           </div>
       </div>
@@ -71,7 +79,15 @@
   <div class="uk-modal-dialog uk-margin-auto-vertical">
     <button class="uk-modal-close-default" type="button" uk-close></button>
     <div class="uk-modal-header">
-      <h3 class="uk-modal-title break-word" id="modal-title"></h3>
+	<div>
+		<h3 class="uk-modal-title break-word" id="modal-title"><span></span>  <a onclick="rename(this)" class="uk-icon-button" uk-icon="icon:pencil"></a></h3>
+		<div class="uk-margin title-rename" data-id="" data-entry-id="" hidden>
+			<div class="uk-inline">
+				<a class="uk-form-icon uk-form-icon-flip" onclick="renameSubmit(this)" uk-icon="icon:check"></a>
+				<input class="uk-input title-rename-field" type="text" value="">
+			</div>
+		</div>
+	</div>
       <p class="uk-text-meta uk-margin-remove-bottom break-word" id="path-text"></p>
       <p class="uk-text-meta uk-margin-remove-top" id="pages-text"></p>
     </div>

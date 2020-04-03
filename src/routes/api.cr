@@ -94,13 +94,13 @@ class APIRouter < Router
 			begin
 				title = (@context.library.get_title env.params.url["title"])
 					.not_nil!
-				entry = title.get_entry env.params.query["entry"]?
 				name = env.params.url["name"]
-
+				entry = env.params.query["entry"]?
 				if entry.nil?
 					title.set_display_name name
 				else
-					title.set_display_name entry.title, name
+					eobj = title.get_entry entry
+					title.set_display_name eobj.not_nil!.title, name
 				end
 			rescue e
 				@context.error e

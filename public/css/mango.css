@@ -56,3 +56,6 @@
 td > .uk-dropdown {
 	white-space: pre-line;
 }
+.title-rename > .uk-inline {
+	width: 100%;
+}

@@ -51,6 +51,14 @@ class Entry
 		end
 	end
 
+	def display_name
+		@book.display_name @title
+	end
+
+	def encoded_display_name
+		URI.encode display_name
+	end
+
 	def read_page(page_num)
 		Zip::File.open @zip_path do |file|
 			page = file.entries
@@ -189,6 +197,10 @@ class Title
 		info = TitleInfo.new @dir
 		dn = info.display_name
 		dn.empty? ? @title : dn
+	end
+
+	def encoded_display_name
+		URI.encode display_name
 	end
 
 	def display_name(entry_name)

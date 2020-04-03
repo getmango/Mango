@@ -36,7 +36,7 @@
 			<%- if t.entries.size > 0 -%>
               <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
 			<%- end -%>
-			<h3 class="uk-card-title break-word" data-title="<%= t.title.gsub("\"", "&quot;") %>"><%= t.title %></h3>
+			<h3 class="uk-card-title break-word" data-title="<%= t.display_name.gsub("\"", "&quot;") %>"><%= t.display_name %></h3>
               <p><%= t.size %> entries</p>
             </div>
         </div>
