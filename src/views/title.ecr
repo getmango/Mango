@@ -1,5 +1,10 @@
 <div>
-	<h2 class=uk-title><span><%= title.display_name %></span>  <a onclick="rename(this)" class="uk-icon-button" uk-icon="icon:pencil"></a></h2>
+	<h2 class=uk-title><span><%= title.display_name %></span>
+		&nbsp;
+		<% if is_admin %>
+			<a onclick="rename(this)" class="uk-icon-button" uk-icon="icon:pencil"></a>
+		<% end %>
+	</h2>
 	<div class="uk-margin title-rename" data-id="<%= title.id %>" hidden>
 		<div class="uk-inline">
 			<a class="uk-form-icon uk-form-icon-flip" onclick="renameSubmit(this)" uk-icon="icon:check"></a>
@@ -80,7 +85,12 @@
     <button class="uk-modal-close-default" type="button" uk-close></button>
     <div class="uk-modal-header">
 	<div>
-		<h3 class="uk-modal-title break-word" id="modal-title"><span></span>  <a onclick="rename(this)" class="uk-icon-button" uk-icon="icon:pencil"></a></h3>
+		<h3 class="uk-modal-title break-word" id="modal-title"><span></span>
+			&nbsp;
+			<% if is_admin %>
+				<a onclick="rename(this)" class="uk-icon-button" uk-icon="icon:pencil"></a>
+			<% end %>
+		</h3>
 		<div class="uk-margin title-rename" data-id="" data-entry-id="" hidden>
 			<div class="uk-inline">
 				<a class="uk-form-icon uk-form-icon-flip" onclick="renameSubmit(this)" uk-icon="icon:check"></a>
