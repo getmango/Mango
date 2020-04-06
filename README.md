@@ -22,7 +22,7 @@ Mango is a self-hosted manga server and reader. Its features include
 
 ### Pre-built Binary
 
-1. Simply download the pre-built binary file `mango` for the latest [release](https://github.com/hkalexling/Mango/releases). All the dependencies are statically linked, and it should work with most Linux systems on amd64.
+Simply download the pre-built binary file `mango` for the latest [release](https://github.com/hkalexling/Mango/releases). All the dependencies are statically linked, and it should work with most Linux systems on amd64.
 
 ### Docker
 
@@ -33,9 +33,13 @@ Mango is a self-hosted manga server and reader. Its features include
 5. Run `docker-compose up`. This should build the docker image and start the container with Mango running inside
 6. Head over to `localhost:9000` to log in
 
+### Docker (via Dockerhub)
+
+The official docker images are available on [Dockerhub](https://hub.docker.com/r/hkalexling/mango). 
+
 ### Build from source
 
-1. Make sure you have Crystal, Node and Yarn installed. You might also need to install the development headers for `libsqlite3` and `libyaml`.
+1. Make sure you have `crystal`, `shards` and `yarn` installed. You might also need to install the development headers for `libsqlite3` and `libyaml`.
 2. Clone the repository
 3. `make && sudo make install`
 4. Start Mango by running the command `mango`
