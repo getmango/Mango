@@ -7,9 +7,9 @@ services:
       context: .
       dockerfile: ./Dockerfile
     expose:
-      - 9000
+      - ${PORT}
     ports:
-      - 9000:9000
+      - "${PORT}:9000"
     volumes:
-      - ~/mango:/root/mango
-      - ~/.config/mango:/root/.config/mango
+      - ${MAIN_DIRECTORY_PATH}:/root/mango
+      - ${CONFIG_DIRECTORY_PATH}:/root/.config/mango
