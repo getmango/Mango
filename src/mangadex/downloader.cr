@@ -79,7 +79,7 @@ module MangaDex
 	class Queue
 		property downloader : Downloader?
 
-		def initialize(@path : String, @logger : MLogger)
+		def initialize(@path : String, @logger : Logger)
 			dir = File.dirname path
 			unless Dir.exists? dir
 				@logger.info "The queue DB directory #{dir} does not exist. " \
@@ -253,7 +253,7 @@ module MangaDex
 
 		def initialize(@queue : Queue, @api : API, @library_path : String,
 					   @wait_seconds : Int32, @retries : Int32,
-					   @logger : MLogger)
+					   @logger : Logger)
 			@queue.downloader = self
 
 			spawn do

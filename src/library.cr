@@ -89,7 +89,7 @@ class Title
 		encoded_title : String, mtime : Time
 
 	def initialize(@dir : String, @parent_id, storage,
-				   @logger : MLogger, @library : Library)
+				   @logger : Logger, @library : Library)
 		@id = storage.get_id @dir, true
 		@title = File.basename dir
 		@encoded_title = URI.encode @title
@@ -304,7 +304,7 @@ end
 
 class Library
 	property dir : String, title_ids : Array(String), scan_interval : Int32,
-		logger : MLogger, storage : Storage, title_hash : Hash(String, Title)
+		logger : Logger, storage : Storage, title_hash : Hash(String, Title)
 
 	def initialize(@dir, @scan_interval, @logger, @storage)
 		# explicitly initialize @titles to bypass the compiler check. it will

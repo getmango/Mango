@@ -25,7 +25,7 @@ parser = OptionParser.parse do |parser|
 end
 
 config = Config.load config_path
-logger = MLogger.new config
+logger = Logger.new config.log_level
 storage = Storage.new config.db_path, logger
 library = Library.new config.library_path, config.scan_interval, logger, storage
 queue = MangaDex::Queue.new config.mangadex["download_queue_db_path"].to_s,

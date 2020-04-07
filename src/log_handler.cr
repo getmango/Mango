@@ -2,7 +2,7 @@ require "kemal"
 require "./logger"
 
 class LogHandler < Kemal::BaseLogHandler
-	def initialize(@logger : MLogger)
+	def initialize(@logger : Logger)
 	end
 
 	def call(env)

@@ -16,7 +16,7 @@ def random_str
 end
 
 class Storage
-	def initialize(@path : String, @logger : MLogger)
+	def initialize(@path : String, @logger : Logger)
 		dir = File.dirname path
 		unless Dir.exists? dir
 			@logger.info "The DB directory #{dir} does not exist. " \
@@ -48,7 +48,7 @@ class Storage
 				hash = hash_password random_pw
 				db.exec "insert into users values (?, ?, ?, ?)",
 					"admin", hash, nil, 1
-				puts "Initial user created. You can log in with " \
+				@logger.log "Initial user created. You can log in with " \
 					"#{{"username" => "admin", "password" => random_pw}}"
 			end
 		end

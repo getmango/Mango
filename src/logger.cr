@@ -1,59 +1,58 @@
-require "./config"
-require "logger"
+require "log"
 require "colorize"
 
-LEVELS = ["debug", "error", "fatal", "info", "warn"]
-COLORS = [:light_cyan, :light_red, :red, :light_yellow, :light_magenta]
+class Logger
+	LEVELS = ["debug", "error", "fatal", "info", "warn"]
+	SEVERITY_IDS = [0, 4, 5, 2, 3]
+	COLORS = [:light_cyan, :light_red, :red, :light_yellow, :light_magenta]
 
-class MLogger
-	def initialize(config : Config)
-		@logger = Logger.new STDOUT
+	@@severity : Log::Severity = :info
 
-		@log_off = false
-		log_level = config.log_level
-		if log_level == "off"
-			@log_off = true
-			return
-		end
-
+	def initialize(level : String)
 		{% begin %}
-			case log_level
-				{% for lvl in LEVELS %}
+			case level.downcase
+			when "off"
+				@@severity = :none
+				{% for lvl, i in LEVELS %}
 				when {{lvl}}
-					@logger.level = Logger::{{lvl.upcase.id}}
+					@@severity = Log::Severity.new SEVERITY_IDS[{{i}}]
 				{% end %}
 			else
-				raise "Unknown log level #{log_level}"
+				raise "Unknown log level #{level}"
 			end
 		{% end %}
 
-		@logger.formatter = Logger::Formatter.new do \
-			|severity, datetime, progname, message, io|
+		@log = Log.for("")
 
+		@backend = Log::IOBackend.new
+		@backend.formatter = ->(entry : Log::Entry, io : IO) do
 			color = :default
 			{% begin %}
-				case severity.to_s().downcase
+				case entry.severity.label.to_s().downcase
 					{% for lvl, i in LEVELS %}
-					when {{lvl}}
+					when {{lvl}}, "#{{{lvl}}}ing"
 						color = COLORS[{{i}}]
 					{% end %}
+				else
 				end
 			{% end %}
 
-			io << "[#{severity}]".ljust(8).colorize(color)
-			io << datetime.to_s("%Y/%m/%d %H:%M:%S") << " | "
-			io << message
+			io << "[#{entry.severity.label}]".ljust(10).colorize(color)
+			io << entry.timestamp.to_s("%Y/%m/%d %H:%M:%S") << " | "
+			io << entry.message
 		end
+
+		Log.builder.bind "*", @@severity, @backend
+	end
+
+	# Ignores @@severity and always log msg
+	def log(msg)
+		@backend.write Log::Entry.new "", Log::Severity::None, msg, nil
 	end
 
 	{% for lvl in LEVELS %}
 		def {{lvl.id}}(msg)
-			return if @log_off
-			@logger.{{lvl.id}} msg
+			@log.{{lvl.id}} { msg }
 		end
 	{% end %}
-
-	def to_json(json : JSON::Builder)
-		json.string self
-	end
 end
