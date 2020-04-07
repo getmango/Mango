@@ -1,20 +1,20 @@
 version: 1.0
 shards:
+  baked_file_system:
+    github: schovi/baked_file_system
+    version: 0.9.8
+
   db:
     github: crystal-lang/crystal-db
-    version: 0.8.0
+    version: 0.9.0
 
   exception_page:
     github: crystal-loot/exception_page
-    version: 0.1.2
+    version: 0.1.4
 
   kemal:
     github: kemalcr/kemal
     version: 0.26.1
-
-  kemal-basic-auth:
-    github: kemalcr/kemal-basic-auth
-    version: 0.2.0
 
   kilt:
     github: jeromegn/kilt
@@ -26,5 +26,5 @@ shards:
 
   sqlite3:
     github: crystal-lang/crystal-sqlite3
-    version: 0.15.0
+    version: 0.16.0
 
