@@ -37,7 +37,7 @@ end
 def with_default_config
 	temp_config = get_tempfile "mango-test-config"
 	config = Config.load temp_config.path
-	logger = MLogger.new config
+	logger = Logger.new config.log_level
 	yield config, logger, temp_config.path
 	temp_config.delete
 end
