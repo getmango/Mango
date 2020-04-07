@@ -8,7 +8,7 @@ targets:
   mango:
     main: src/mango.cr
 
-crystal: 0.32.1
+crystal: 0.34.0
 
 license: MIT
 
