@@ -26,7 +26,7 @@ A clear and concise description of what you expected to happen.
  - Mango Version [e.g. v0.1.0]
 
 **Docker (if you are running Mango in a Docker container)**
-- The `docker-compose.yml` file you are using
+- The `docker-compose.yml` file you are using, or your `.env` file.
 
 **Additional context**
 Add any other context about the problem here. Add screenshots if applicable.
