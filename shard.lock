@@ -1,5 +1,9 @@
 version: 1.0
 shards:
+  baked_file_system:
+    github: schovi/baked_file_system
+    version: 0.9.8
+
   db:
     github: crystal-lang/crystal-db
     version: 0.8.0
@@ -11,10 +15,6 @@ shards:
   kemal:
     github: kemalcr/kemal
     version: 0.26.1
-
-  kemal-basic-auth:
-    github: kemalcr/kemal-basic-auth
-    version: 0.2.0
 
   kilt:
     github: jeromegn/kilt
