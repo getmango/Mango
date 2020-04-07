@@ -28,10 +28,10 @@ Simply download the pre-built binary file `mango` for the latest [release](https
 
 1. Make sure you have docker installed and running. You will also need `docker-compose`
 2. Clone the repository
-3. Copy `docker-compose.example.yml` to `docker-compose.yml`
-4. Modify the `volumes` in `docker-compose.yml` to point the directories to desired locations on the host machine
+3. Copy the `env.example` file to `.env`
+4. Fill out the values in the `.env` file. Note that the main and config directories will be created if they don't already exist. The files in these folders will be owned by the root user
 5. Run `docker-compose up`. This should build the docker image and start the container with Mango running inside
-6. Head over to `localhost:9000` to log in
+6. Head over to `localhost:9000` (or a different port if you changed it) to log in
 
 ### Docker (via Dockerhub)
 
