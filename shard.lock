@@ -6,11 +6,11 @@ shards:
 
   db:
     github: crystal-lang/crystal-db
-    version: 0.8.0
+    version: 0.9.0
 
   exception_page:
     github: crystal-loot/exception_page
-    version: 0.1.2
+    version: 0.1.4
 
   kemal:
     github: kemalcr/kemal
@@ -26,5 +26,5 @@ shards:
 
   sqlite3:
     github: crystal-lang/crystal-sqlite3
-    version: 0.15.0
+    version: 0.16.0
 
