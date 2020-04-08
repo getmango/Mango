@@ -7,7 +7,7 @@ VERSION = "0.2.5"
 
 config_path = nil
 
-parser = OptionParser.parse do |parser|
+OptionParser.parse do |parser|
   parser.banner = "Mango e-manga server/reader. Version #{VERSION}\n"
 
   parser.on "-v", "--version", "Show version" do
@@ -31,7 +31,7 @@ library = Library.new config.library_path, config.scan_interval, logger, storage
 queue = MangaDex::Queue.new config.mangadex["download_queue_db_path"].to_s,
   logger
 api = MangaDex::API.new config.mangadex["api_url"].to_s
-downloader = MangaDex::Downloader.new queue, api, config.library_path,
+MangaDex::Downloader.new queue, api, config.library_path,
   config.mangadex["download_wait_seconds"].to_i,
   config.mangadex["download_retries"].to_i, logger
 

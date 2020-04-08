@@ -42,7 +42,7 @@ def request_path_startswith(env, ary)
       return true
     end
   end
-  return false
+  false
 end
 
 def is_numeric(str)

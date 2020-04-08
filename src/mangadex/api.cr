@@ -52,29 +52,27 @@ module MangaDex
     end
 
     def parse_json(obj, lang)
-      begin
-        parse_strings_from_json ["lang_code", "title", "volume",
-                                 "chapter"]
-        language = lang[@lang_code]?
-        @language = language if language
-        @time = Time.unix obj["timestamp"].as_i
-        suffixes = ["", "_2", "_3"]
-        suffixes.each do |s|
-          gid = obj["group_id#{s}"].as_i
-          next if gid == 0
-          gname = obj["group_name#{s}"].as_s
-          @groups << {gid, gname}
-        end
-        @full_title = @title
-        unless @chapter.empty?
-          @full_title = "Ch.#{@chapter} " + @full_title
-        end
-        unless @volume.empty?
-          @full_title = "Vol.#{@volume} " + @full_title
-        end
-      rescue e
-        raise "failed to parse json: #{e}"
+      parse_strings_from_json ["lang_code", "title", "volume",
+                               "chapter"]
+      language = lang[@lang_code]?
+      @language = language if language
+      @time = Time.unix obj["timestamp"].as_i
+      suffixes = ["", "_2", "_3"]
+      suffixes.each do |s|
+        gid = obj["group_id#{s}"].as_i
+        next if gid == 0
+        gname = obj["group_name#{s}"].as_s
+        @groups << {gid, gname}
       end
+      @full_title = @title
+      unless @chapter.empty?
+        @full_title = "Ch.#{@chapter} " + @full_title
+      end
+      unless @volume.empty?
+        @full_title = "Vol.#{@volume} " + @full_title
+      end
+    rescue e
+      raise "failed to parse json: #{e}"
     end
   end
 
@@ -108,12 +106,10 @@ module MangaDex
     end
 
     def parse_json(obj)
-      begin
-        parse_strings_from_json ["cover_url", "description", "title", "author",
-                                 "artist"]
-      rescue e
-        raise "failed to parse json: #{e}"
-      end
+      parse_strings_from_json ["cover_url", "description", "title", "author",
+                               "artist"]
+    rescue e
+      raise "failed to parse json: #{e}"
     end
   end
 
@@ -146,7 +142,7 @@ module MangaDex
           chapter = Chapter.new k, v, manga, @lang
           manga.chapters << chapter
         end
-        return manga
+        manga
       rescue
         raise "Failed to parse JSON"
       end
@@ -195,7 +191,7 @@ module MangaDex
       manga = self.get_manga manga_id
       chapter = manga.chapters.find { |c| c.id == id }.not_nil!
       self.get_chapter chapter
-      return chapter
+      chapter
     end
   end
 end

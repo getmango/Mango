@@ -4,7 +4,7 @@ include MangaDex
 
 describe Queue do
   it "creates DB at given path" do
-    with_queue do |queue, path|
+    with_queue do |_, path|
       File.exists?(path).should be_true
     end
   end

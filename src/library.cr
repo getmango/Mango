@@ -27,12 +27,10 @@ class Entry
     @encoded_title = URI.encode @title
     @size = (File.size path).humanize_bytes
     file = Zip::File.new path
-    @pages = file.entries
-      .select { |e|
-        ["image/jpeg", "image/png"].includes? \
-          MIME.from_filename? e.filename
-      }
-      .size
+    @pages = file.entries.count do |e|
+      ["image/jpeg", "image/png"].includes? \
+        MIME.from_filename? e.filename
+    end
     file.close
     @id = storage.get_id @zip_path, false
     @cover_url = "/api/page/#{@title_id}/#{@id}/1"
@@ -178,15 +176,13 @@ class Title
   #   Entry.new would throw, so we use this method to check before
   #   constructing Entry
   private def valid_zip(path : String)
-    begin
-      file = Zip::File.new path
-      file.close
-      return true
-    rescue
-      @logger.warn "File #{path} is corrupted or is not a valid zip " \
-                   "archive. Ignoring it."
-      return false
-    end
+    file = Zip::File.new path
+    file.close
+    true
+  rescue
+    @logger.warn "File #{path} is corrupted or is not a valid zip " \
+                 "archive. Ignoring it."
+    false
   end
 
   def get_entry(eid)
@@ -249,7 +245,6 @@ class Title
   end
 
   def load_percetage(username, entry)
-    info = TitleInfo.new @dir
     page = load_progress username, entry
     entry_obj = @entries.find { |e| e.title == entry }
     return 0.0 if entry_obj.nil?

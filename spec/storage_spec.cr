@@ -2,7 +2,7 @@ require "./spec_helper"
 
 describe Storage do
   it "creates DB at given path" do
-    with_storage do |storage, path|
+    with_storage do |_, path|
       File.exists?(path).should be_true
     end
   end

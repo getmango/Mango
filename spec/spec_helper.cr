@@ -28,9 +28,9 @@ def get_tempfile(name)
   if path.nil? || !File.exists? path
     file = File.tempfile name
     State.set name, file.path
-    return file
+    file
   else
-    return File.new path
+    File.new path
   end
 end
 
@@ -43,7 +43,7 @@ def with_default_config
 end
 
 def with_storage
-  with_default_config do |config, logger|
+  with_default_config do |_, logger|
     temp_db = get_tempfile "mango-test-db"
     storage = Storage.new temp_db.path, logger
     clear = yield storage, temp_db.path
@@ -54,7 +54,7 @@ def with_storage
 end
 
 def with_queue
-  with_default_config do |config, logger|
+  with_default_config do |_, logger|
     temp_queue_db = get_tempfile "mango-test-queue-db"
     queue = MangaDex::Queue.new temp_queue_db.path, logger
     clear = yield queue, temp_queue_db.path

@@ -52,7 +52,7 @@ module MangaDex
     def self.from_query_result(res : DB::ResultSet)
       job = Job.allocate
       job.parse_query_result res
-      return job
+      job
     end
 
     def initialize(@id, @manga_id, @title, @manga_title, @status, @time)
@@ -120,7 +120,7 @@ module MangaDex
         rescue
         end
       end
-      return job
+      job
     end
 
     # Push an array of jobs into the queue, and return the number of jobs
@@ -203,7 +203,7 @@ module MangaDex
           Job.from_query_result rs
         end
       end
-      return jobs
+      jobs
     end
 
     def add_success(job : Job)
@@ -338,7 +338,7 @@ module MangaDex
             @logger.error msg
           end
         end
-        fail_count = page_jobs.select { |j| !j.success }.size
+        fail_count = page_jobs.count { |j| !j.success }
         @logger.debug "Download completed. " \
                       "#{fail_count}/#{page_jobs.size} failed"
         writer.close
