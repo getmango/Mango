@@ -106,7 +106,13 @@ class Title
         next
       end
       if [".zip", ".cbz"].includes? File.extname path
-        next if !valid_zip path
+        zip_exception = validate_zip path
+        unless zip_exception.nil?
+          @logger.warn "File #{path} is corrupted or is not a valid zip " \
+                       "archive. Ignoring it."
+          @logger.debug "Zip error: #{zip_exception}"
+          next
+        end
         entry = Entry.new path, self, @id, storage
         @entries << entry if entry.pages > 0
       end
@@ -169,20 +175,6 @@ class Title
 
   def size
     @entries.size + @title_ids.size
-  end
-
-  # When downloading from MangaDex, the zip/cbz file would not be valid
-  #   before the download is completed. If we scan the zip file,
-  #   Entry.new would throw, so we use this method to check before
-  #   constructing Entry
-  private def valid_zip(path : String)
-    file = Zip::File.new path
-    file.close
-    true
-  rescue
-    @logger.warn "File #{path} is corrupted or is not a valid zip " \
-                 "archive. Ignoring it."
-    false
   end
 
   def get_entry(eid)

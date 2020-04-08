@@ -343,10 +343,16 @@ module MangaDex
                       "#{fail_count}/#{page_jobs.size} failed"
         writer.close
         @logger.debug "cbz File created at #{zip_path}"
-        if fail_count == 0
-          @queue.set_status JobStatus::Completed, job
-        else
+
+        zip_exception = validate_zip zip_path
+        if !zip_exception.nil?
+          @queue.add_message "The downloaded archive is corrupted. " \
+                             "Error: #{zip_exception}", job
+          @queue.set_status JobStatus::Error, job
+        elsif fail_count > 0
           @queue.set_status JobStatus::MissingPages, job
+        else
+          @queue.set_status JobStatus::Completed, job
         end
         @downloading = false
       end
