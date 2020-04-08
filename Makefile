@@ -1,4 +1,4 @@
-PREFIX=/usr/local
+PREFIX ?= /usr/local
 INSTALL_DIR=$(PREFIX)/bin
 
 all: uglify | build
@@ -23,7 +23,8 @@ test:
 	crystal spec
 
 check:
-	crystal tool format --check && ./bin/ameba
+	crystal tool format --check
+	./bin/ameba
 
 install:
 	cp mango $(INSTALL_DIR)/mango
