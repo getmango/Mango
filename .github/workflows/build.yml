@@ -20,5 +20,7 @@ jobs:
       run: apk add --no-cache yarn yaml sqlite-static
     - name: Build
       run: make
+    - name: Linter
+      run: make check
     - name: Run tests
       run: make test
