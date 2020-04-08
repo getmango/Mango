@@ -48,11 +48,7 @@
       <a class="acard" href="/book/<%= t.id %>">
         <div class="uk-card uk-card-default">
             <div class="uk-card-media-top">
-			<%- if t.entries.size > 0 -%>
-              <img data-src="<%= t.entries[0].cover_url %>" data-width data-height alt="" uk-img>
-			<%- else -%>
-              <img data-src="/img/icon.png" data-width data-height alt="" uk-img>
-			<%- end -%>
+              <img data-src="<%= t.cover_url %>" data-width data-height alt="" uk-img>
             </div>
             <div class="uk-card-body">
 			<h3 class="uk-card-title break-word" data-title="<%= t.display_name.gsub("\"", "&quot;") %>"><%= t.display_name %></h3>

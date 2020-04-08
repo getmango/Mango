@@ -1,5 +1,6 @@
 require "./router"
 require "../mangadex/*"
+require "../upload"
 
 class APIRouter < Router
   def setup
@@ -190,6 +191,60 @@ class APIRouter < Router
         end
 
         send_json env, {"success" => true}.to_json
+      rescue e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    post "/api/admin/upload/:target" do |env|
+      begin
+        target = env.params.url["target"]
+
+        HTTP::FormData.parse env.request do |part|
+          next if part.name != "file"
+
+          filename = part.filename
+          if filename.nil?
+            raise "No file uploaded"
+          end
+
+          case target
+          when "cover"
+            title_id = env.params.query["title"]
+            entry_id = env.params.query["entry"]?
+            title = @context.library.get_title(title_id).not_nil!
+
+            unless ["image/jpeg", "image/png"].includes? \
+                     MIME.from_filename? filename
+              raise "The uploaded image must be either JPEG or PNG"
+            end
+
+            ext = File.extname filename
+            upload = Upload.new @context.config.upload_path, @context.logger
+            url = upload.path_to_url upload.save "img", ext, part.body
+
+            if url.nil?
+              raise "Failed to generate a public URL for the uploaded file"
+            end
+
+            if entry_id.nil?
+              title.set_cover_url url
+            else
+              entry_name = title.get_entry(entry_id).not_nil!.title
+              title.set_cover_url entry_name, url
+            end
+          else
+            raise "Unkown upload target #{target}"
+          end
+
+          send_json env, {"success" => true}.to_json
+          env.response.close
+        end
+
+        raise "No part with name `file` found"
       rescue e
         send_json env, {
           "success" => false,

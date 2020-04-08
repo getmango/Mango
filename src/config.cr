@@ -4,11 +4,14 @@ class Config
   include YAML::Serializable
 
   property port : Int32 = 9000
-  property library_path : String = File.expand_path "~/mango/library", home: true
+  property library_path : String = File.expand_path "~/mango/library",
+    home: true
   property db_path : String = File.expand_path "~/mango/mango.db", home: true
   @[YAML::Field(key: "scan_interval_minutes")]
   property scan_interval : Int32 = 5
   property log_level : String = "info"
+  property upload_path : String = File.expand_path "~/mango/uploads",
+    home: true
   property mangadex = Hash(String, String | Int32).new
 
   @[YAML::Field(ignore: true)]

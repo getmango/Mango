@@ -1,6 +1,7 @@
 require "big"
 
-IMGS_PER_PAGE = 5
+IMGS_PER_PAGE     = 5
+UPLOAD_URL_PREFIX = "/uploads"
 
 macro layout(name)
   begin
@@ -27,9 +28,9 @@ macro get_username(env)
   (@context.storage.verify_token cookie.value).not_nil!
 end
 
-macro send_json(env, json)
-  {{env}}.response.content_type = "application/json"
-  {{json}}
+def send_json(env, json)
+  env.response.content_type = "application/json"
+  env.response.print json
 end
 
 def hash_to_query(hash)
@@ -80,4 +81,8 @@ end
 
 def compare_alphanumerically(a : String, b : String)
   compare_alphanumerically split_by_alphanumeric(a), split_by_alphanumeric(b)
+end
+
+def random_str
+  UUID.random.to_s.gsub "-", ""
 end

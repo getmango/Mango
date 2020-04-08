@@ -1,6 +1,6 @@
 require "kemal"
-require "./storage"
-require "./util"
+require "../storage"
+require "../util"
 
 class AuthHandler < Kemal::Handler
   def initialize(@storage : Storage)

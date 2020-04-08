@@ -1,5 +1,5 @@
 require "kemal"
-require "./logger"
+require "../logger"
 
 class LogHandler < Kemal::BaseLogHandler
   def initialize(@logger : Logger)

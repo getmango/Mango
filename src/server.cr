@@ -1,8 +1,6 @@
 require "kemal"
 require "./context"
-require "./auth_handler"
-require "./static_handler"
-require "./log_handler"
+require "./handlers/*"
 require "./util"
 require "./routes/*"
 
@@ -29,6 +27,7 @@ class Server
     Kemal.config.logging = false
     add_handler LogHandler.new @context.logger
     add_handler AuthHandler.new @context.storage
+    add_handler UploadHandler.new @context.config.upload_path
     {% if flag?(:release) %}
       # when building for relase, embed the static files in binary
       @context.debug "We are in release mode. Using embedded static files."
