@@ -19,3 +19,7 @@ dependencies:
     github: crystal-lang/crystal-sqlite3
   baked_file_system:
     github: schovi/baked_file_system
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba

@@ -1,0 +1,9 @@
+Lint/UselessAssign:
+  Excluded:
+    - src/routes/*
+    - src/server.cr
+Lint/UnusedArgument:
+  Excluded:
+    - src/routes/*
+Metrics/CyclomaticComplexity:
+  Enabled: false

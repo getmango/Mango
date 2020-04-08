@@ -22,6 +22,9 @@ run:
 test:
 	crystal spec
 
+check:
+	crystal tool format --check && ./bin/ameba
+
 install:
 	cp mango $(INSTALL_DIR)/mango
 
