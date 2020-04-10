@@ -33,10 +33,15 @@ class MainRouter < Router
     end
 
     get "/" do |env|
-      titles = @context.library.titles
-      username = get_username env
-      percentage = titles.map &.load_percetage username
-      layout "index"
+      begin
+        titles = @context.library.titles
+        username = get_username env
+        percentage = titles.map &.load_percetage username
+        layout "index"
+      rescue e
+        @context.error e
+        env.response.status_code = 500
+      end
     end
 
     get "/book/:title" do |env|
