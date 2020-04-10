@@ -79,28 +79,29 @@ class Storage
   end
 
   def verify_token(token)
+    username = nil
     DB.open "sqlite3://#{@path}" do |db|
       begin
         username = db.query_one "select username from users where " \
                                 "token = (?)", token, as: String
-        return username
       rescue e
         @logger.debug "Unable to verify token"
-        return nil
       end
     end
+    username
   end
 
   def verify_admin(token)
+    is_admin = false
     DB.open "sqlite3://#{@path}" do |db|
       begin
-        return db.query_one "select admin from users where " \
-                            "token = (?)", token, as: Bool
+        is_admin = db.query_one "select admin from users where " \
+                                "token = (?)", token, as: Bool
       rescue e
         @logger.debug "Unable to verify user as admin"
-        return false
       end
     end
+    is_admin
   end
 
   def list_users
@@ -156,17 +157,16 @@ class Storage
   end
 
   def get_id(path, is_title)
+    id = random_str
     DB.open "sqlite3://#{@path}" do |db|
       begin
         id = db.query_one "select id from ids where path = (?)", path,
           as: {String}
-        return id
       rescue
-        id = random_str
         db.exec "insert into ids values (?, ?, ?)", path, id, is_title ? 1 : 0
-        return id
       end
     end
+    id
   end
 
   def to_json(json : JSON::Builder)

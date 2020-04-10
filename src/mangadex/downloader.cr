@@ -177,16 +177,20 @@ module MangaDex
     end
 
     def count_status(status : JobStatus)
+      num = 0
       DB.open "sqlite3://#{@path}" do |db|
-        return db.query_one "select count(*) from queue where " \
-                            "status = (?)", status.to_i, as: Int32
+        num = db.query_one "select count(*) from queue where " \
+                           "status = (?)", status.to_i, as: Int32
       end
+      num
     end
 
     def count
+      num = 0
       DB.open "sqlite3://#{@path}" do |db|
-        return db.query_one "select count(*) from queue", as: Int32
+        num = db.query_one "select count(*) from queue", as: Int32
       end
+      num
     end
 
     def set_status(status : JobStatus, job : Job)
