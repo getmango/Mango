@@ -13,7 +13,8 @@ macro layout(name)
     render "src/views/#{{{name}}}.ecr", "src/views/layout.ecr"
   rescue e
     message = e.to_s
-    render "message"
+    @context.error message
+    render "src/views/message.ecr", "src/views/layout.ecr"
   end
 end
 
