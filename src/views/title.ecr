@@ -116,26 +116,35 @@
 				<input class="uk-input" type="text" name="display-name" id="display-name-field">
 			</div>
 		</div>
-		<label class="uk-form-label">Cover Image</label>
-		<div class="uk-grid">
-			<div class="uk-width-1-2@s">
- 				<img id="cover" data-title-cover="<%= title.cover_url %>" alt="" data-width data-height uk-img>
-			</div>
-			<div class="uk-width-1-2@s">
-				<div id="cover-upload" class="upload-field uk-placeholder uk-text-center uk-flex uk-flex-middle" data-title-id="<%= title.id %>">
-					<div>
-						<span uk-icon="icon: cloud-upload"></span>
-						<span class="uk-text-middle">Upload a cover image by dropping it here or</span>
-						<div uk-form-custom>
-							<input type="file" accept="image/*">
-							<span class="uk-link">selecting one</span>
+		<div class="uk-margin">
+			<label class="uk-form-label">Cover Image</label>
+			<div class="uk-grid">
+				<div class="uk-width-1-2@s">
+					<img id="cover" data-title-cover="<%= title.cover_url %>" alt="" data-width data-height uk-img>
+				</div>
+				<div class="uk-width-1-2@s">
+					<div id="cover-upload" class="upload-field uk-placeholder uk-text-center uk-flex uk-flex-middle" data-title-id="<%= title.id %>">
+						<div>
+							<span uk-icon="icon: cloud-upload"></span>
+							<span class="uk-text-middle">Upload a cover image by dropping it here or</span>
+							<div uk-form-custom>
+								<input type="file" accept="image/*">
+								<span class="uk-link">selecting one</span>
+							</div>
 						</div>
 					</div>
-				</div>
 
+				</div>
 			</div>
+			<progress id="upload-progress" class="uk-progress" value="0" max="100" hidden></progress>
 		</div>
-		<progress id="upload-progress" class="uk-progress" value="0" max="100" hidden></progress>
+		<div id="title-progress-control" hidden>
+			<label class="uk-form-label">Progress</label>
+			<p class="uk-margin-remove-vertical">
+			<button id="read-btn" class="uk-button uk-button-default" onclick="updateProgress('<%= title.id %>', null, 1)">Mark all as read (100%)</button>
+			<button id="unread-btn" class="uk-button uk-button-default" onclick="updateProgress('<%= title.id %>', null, 0)">Mark all as unread (0%)</button>
+			</p>
+		</div>
     </div>
   </div>
 </div>

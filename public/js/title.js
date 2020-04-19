@@ -97,6 +97,10 @@ const edit = (eid) => {
 		const item = $(`#${eid}`);
 		url = item.find('img').attr('data-src');
 		displayName = item.find('.uk-card-title').attr('data-title');
+		$('#title-progress-control').attr('hidden', '');
+	}
+	else {
+		$('#title-progress-control').removeAttr('hidden');
 	}
 
 	cover.attr('data-src', url);
