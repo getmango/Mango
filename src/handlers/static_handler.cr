@@ -1,16 +1,16 @@
 require "baked_file_system"
 require "kemal"
-require "./util"
+require "../util"
 
 class FS
   extend BakedFileSystem
   {% if flag?(:release) %}
-    {% if read_file? "#{__DIR__}/../dist/favicon.ico" %}
-      {% puts "baking ../dist" %}
-      bake_folder "../dist"
+    {% if read_file? "#{__DIR__}/../../dist/favicon.ico" %}
+      {% puts "baking ../../dist" %}
+      bake_folder "../../dist"
     {% else %}
-      {% puts "baking ../public" %}
-      bake_folder "../public"
+      {% puts "baking ../../public" %}
+      bake_folder "../../public"
     {% end %}
   {% end %}
 end

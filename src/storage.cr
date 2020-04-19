@@ -2,6 +2,7 @@ require "sqlite3"
 require "crypto/bcrypt"
 require "uuid"
 require "base64"
+require "./util"
 
 def hash_password(pw)
   Crypto::Bcrypt::Password.create(pw).to_s
@@ -9,10 +10,6 @@ end
 
 def verify_password(hash, pw)
   (Crypto::Bcrypt::Password.new hash).verify pw
-end
-
-def random_str
-  UUID.random.to_s.gsub "-", ""
 end
 
 class Storage

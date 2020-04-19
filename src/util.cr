@@ -1,6 +1,7 @@
 require "big"
 
-IMGS_PER_PAGE = 5
+IMGS_PER_PAGE     = 5
+UPLOAD_URL_PREFIX = "/uploads"
 
 macro layout(name)
   begin
@@ -12,7 +13,8 @@ macro layout(name)
     render "src/views/#{{{name}}}.ecr", "src/views/layout.ecr"
   rescue e
     message = e.to_s
-    render "message"
+    @context.error message
+    render "src/views/message.ecr", "src/views/layout.ecr"
   end
 end
 
@@ -27,9 +29,9 @@ macro get_username(env)
   (@context.storage.verify_token cookie.value).not_nil!
 end
 
-macro send_json(env, json)
-  {{env}}.response.content_type = "application/json"
-  {{json}}
+def send_json(env, json)
+  env.response.content_type = "application/json"
+  env.response.print json
 end
 
 def hash_to_query(hash)
@@ -92,4 +94,8 @@ def validate_zip(path : String) : Exception?
   return
 rescue e
   e
+end
+
+def random_str
+  UUID.random.to_s.gsub "-", ""
 end
