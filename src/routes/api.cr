@@ -69,16 +69,23 @@ class APIRouter < Router
       end
     end
 
-    post "/api/progress/:title/:entry/:page" do |env|
+    post "/api/progress/:title/:page" do |env|
       begin
         username = get_username env
         title = (@context.library.get_title env.params.url["title"])
           .not_nil!
-        entry = (title.get_entry env.params.url["entry"]).not_nil!
         page = env.params.url["page"].to_i
+        entry_id = env.params.query["entry"]?
 
-        raise "incorrect page value" if page < 0 || page > entry.pages
-        title.save_progress username, entry.title, page
+        if !entry_id.nil?
+          entry = title.get_entry(entry_id).not_nil!
+          raise "incorrect page value" if page < 0 || page > entry.pages
+          title.save_progress username, entry.title, page
+        elsif page == 0
+          title.unread_all username
+        else
+          title.read_all username
+        end
       rescue e
         @context.error e
         send_json env, {

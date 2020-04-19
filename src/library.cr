@@ -258,6 +258,26 @@ class Title
     end
   end
 
+  # Set the reading progress of all entries and nested libraries to 100%
+  def read_all(username)
+    @entries.each do |e|
+      save_progress username, e.title, e.pages
+    end
+    titles.each do |t|
+      t.read_all username
+    end
+  end
+
+  # Set the reading progress of all entries and nested libraries to 0%
+  def unread_all(username)
+    @entries.each do |e|
+      save_progress username, e.title, 0
+    end
+    titles.each do |t|
+      t.unread_all username
+    end
+  end
+
   # For backward backward compatibility with v0.1.0, we save entry titles
   #   instead of IDs in info.json
   def save_progress(username, entry, page)

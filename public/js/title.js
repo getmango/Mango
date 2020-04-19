@@ -38,8 +38,12 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 	styleModal();
 }
 
-function updateProgress(titleID, entryID, page) {
-	$.post('/api/progress/' + titleID + '/' + entryID + '/' + page, function(data) {
+const updateProgress = (tid, eid, page) => {
+	let url = `/api/progress/${tid}/${page}`
+	const query = $.param({entry: eid});
+	if (eid)
+		url += `?${query}`;
+	$.post(url, (data) => {
 		if (data.success) {
 			location.reload();
 		}
@@ -48,7 +52,7 @@ function updateProgress(titleID, entryID, page) {
 			alert('danger', error);
 		}
 	});
-}
+};
 
 const renameSubmit = (name, eid) => {
 	const upload = $('.upload-field');
