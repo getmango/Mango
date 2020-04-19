@@ -32,9 +32,12 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 		updateProgress(titleID, entryID, 0);
 	});
 
+	$('.uk-modal-title.break-word > a').attr('onclick', `edit("${entryID}")`);
+
 	UIkit.modal($('#modal')).show();
 	styleModal();
 }
+
 function updateProgress(titleID, entryID, page) {
 	$.post('/api/progress/' + titleID + '/' + entryID + '/' + page, function(data) {
 		if (data.success) {
@@ -47,33 +50,19 @@ function updateProgress(titleID, entryID, page) {
 	});
 }
 
-const rename = ele => {
-	const h2 = $(ele).parent();
-
-	$(h2).attr('hidden', true);
-	$(h2).next().removeAttr('hidden');
-};
-
-const renameSubmit = ele => {
-	const group = $(ele).closest('.title-rename');
-	const id = $(group).attr('data-id');
-	const eid = $(group).attr('data-entry-id');
-	const name = $(ele).next().val();
+const renameSubmit = (name, eid) => {
+	const upload = $('.upload-field');
+	const titleId = upload.attr('data-title-id');
 
 	console.log(name);
-
-	$(group).attr('hidden', true);
-	$(group).prev().removeAttr('hidden');
 
 	if (name.length === 0) {
 		alert('danger', 'The display name should not be empty');
 		return;
 	}
 
-	$(group).prev().find('span').text(name);
-
 	const query = $.param({ entry: eid });
-	let url = `/api/admin/display_name/${id}/${name}`;
+	let url = `/api/admin/display_name/${titleId}/${name}`;
 	if (eid)
 		url += `?${query}`;
 
@@ -84,7 +73,6 @@ const renameSubmit = ele => {
 		dataType: 'json'
 	})
 	.done(data => {
-		console.log(data);
 		if (data.error) {
 			alert('danger', `Failed to update display name. Error: ${data.error}`);
 			return;
@@ -96,10 +84,68 @@ const renameSubmit = ele => {
 	});
 };
 
-$(() => {
-	$('.uk-input.title-rename-field').keyup(event => {
+const edit = (eid) => {
+	const cover = $('#edit-modal #cover');
+	let url = cover.attr('data-title-cover');
+	let displayName = $('h2.uk-title > span').text();
+
+	if (eid) {
+		const item = $(`#${eid}`);
+		url = item.find('img').attr('data-src');
+		displayName = item.find('.uk-card-title').attr('data-title');
+	}
+
+	cover.attr('data-src', url);
+
+	const displayNameField = $('#display-name-field');
+	displayNameField.attr('value', displayName);
+	displayNameField.keyup(event => {
 		if (event.keyCode === 13) {
-			renameSubmit($(event.currentTarget).prev());
+			renameSubmit(displayNameField.val(), eid);
 		}
 	});
-});
+	displayNameField.siblings('a.uk-form-icon').click(() => {
+		renameSubmit(displayNameField.val(), eid);
+	});
+
+	setupUpload(eid);
+
+	UIkit.modal($('#edit-modal')).show();
+	styleModal();
+};
+
+const setupUpload = (eid) => {
+	const upload = $('.upload-field');
+	const bar = $('#upload-progress').get(0);
+	const titleId = upload.attr('data-title-id');
+	const queryObj = {title: titleId};
+	if (eid)
+		queryObj['entry'] = eid;
+	const query = $.param(queryObj);
+	const url = `/api/admin/upload/cover?${query}`;
+	console.log(url);
+	UIkit.upload('.upload-field', {
+		url: url,
+		name: 'file',
+		error: (e) => {
+			alert('danger', `Failed to upload cover image: ${e.toString()}`);
+		},
+		loadStart: (e) => {
+			$(bar).removeAttr('hidden');
+			bar.max = e.total;
+			bar.value = e.loaded;
+		},
+		progress: (e) => {
+			bar.max = e.total;
+			bar.value = e.loaded;
+		},
+		loadEnd: (e) => {
+			bar.max = e.total;
+			bar.value = e.loaded;
+		},
+		completeAll: () => {
+			$(bar).attr('hidden', '');
+			location.reload();
+		}
+	});
+};

@@ -2,15 +2,9 @@
 	<h2 class=uk-title><span><%= title.display_name %></span>
 		&nbsp;
 		<% if is_admin %>
-			<a onclick="rename(this)" class="uk-icon-button" uk-icon="icon:pencil"></a>
+			<a onclick="edit()" class="uk-icon-button" uk-icon="icon:pencil"></a>
 		<% end %>
 	</h2>
-	<div class="uk-margin title-rename" data-id="<%= title.id %>" hidden>
-		<div class="uk-inline">
-			<a class="uk-form-icon uk-form-icon-flip" onclick="renameSubmit(this)" uk-icon="icon:check"></a>
-			<input class="uk-input title-rename-field" type="text" value="<%= title.display_name.gsub("\"", "&quot;") %>">
-		</div>
-	</div>
 </div>
 <ul class="uk-breadcrumb">
 	<li><a href="/">Library</a></li>
@@ -59,7 +53,7 @@
 	</div>
 	<%- end -%>
   <%- title.entries.each_with_index do |e, i| -%>
-  <div class="item" data-mtime="<%= e.mtime.to_unix %>" data-progress="<%= percentage[i] %>">
+  <div class="item" data-mtime="<%= e.mtime.to_unix %>" data-progress="<%= percentage[i] %>" id="<%= e.id %>">
       <a class="acard">
 		  <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= e.encoded_path %>&quot;, '<%= e.pages %>', <%= (percentage[i] * 100).round(1) %>, &quot;<%= title.encoded_display_name %>&quot;, &quot;<%= e.encoded_display_name %>&quot;, '<%= e.title_id %>', '<%= e.id %>')">
           <div class="uk-card-media-top">
@@ -84,15 +78,9 @@
 		<h3 class="uk-modal-title break-word" id="modal-title"><span></span>
 			&nbsp;
 			<% if is_admin %>
-				<a onclick="rename(this)" class="uk-icon-button" uk-icon="icon:pencil"></a>
+				<a class="uk-icon-button" uk-icon="icon:pencil"></a>
 			<% end %>
 		</h3>
-		<div class="uk-margin title-rename" data-id="" data-entry-id="" hidden>
-			<div class="uk-inline">
-				<a class="uk-form-icon uk-form-icon-flip" onclick="renameSubmit(this)" uk-icon="icon:check"></a>
-				<input class="uk-input title-rename-field" type="text" value="">
-			</div>
-		</div>
 	</div>
       <p class="uk-text-meta uk-margin-remove-bottom break-word" id="path-text"></p>
       <p class="uk-text-meta uk-margin-remove-top" id="pages-text"></p>
@@ -108,6 +96,46 @@
         <button id="read-btn" class="uk-button uk-button-default">Mark as read (100%)</button>
         <button id="unread-btn" class="uk-button uk-button-default">Mark as unread (0%)</button>
       </p>
+    </div>
+  </div>
+</div>
+
+<div id="edit-modal" class="uk-flex-top" uk-modal>
+  <div class="uk-modal-dialog uk-margin-auto-vertical">
+    <button class="uk-modal-close-default" type="button" uk-close></button>
+    <div class="uk-modal-header">
+	<div>
+		<h3 class="uk-modal-title break-word" id="modal-title">Edit</h3>
+	</div>
+    </div>
+    <div class="uk-modal-body">
+		<div class="uk-margin">
+			<label class="uk-form-label" for="display-name">Display Name</label>
+			<div class="uk-inline">
+				<a class="uk-form-icon uk-form-icon-flip" uk-icon="icon:check"></a>
+				<input class="uk-input" type="text" name="display-name" id="display-name-field">
+			</div>
+		</div>
+		<label class="uk-form-label">Cover Image</label>
+		<div class="uk-grid">
+			<div class="uk-width-1-2@s">
+ 				<img id="cover" data-title-cover="<%= title.cover_url %>" alt="" data-width data-height uk-img>
+			</div>
+			<div class="uk-width-1-2@s">
+				<div id="cover-upload" class="upload-field uk-placeholder uk-text-center uk-flex uk-flex-middle" data-title-id="<%= title.id %>">
+					<div>
+						<span uk-icon="icon: cloud-upload"></span>
+						<span class="uk-text-middle">Upload a cover image by dropping it here or</span>
+						<div uk-form-custom>
+							<input type="file" accept="image/*">
+							<span class="uk-link">selecting one</span>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+		<progress id="upload-progress" class="uk-progress" value="0" max="100" hidden></progress>
     </div>
   </div>
 </div>
