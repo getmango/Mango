@@ -64,8 +64,9 @@ The default config file location is `~/.config/mango/config.yml`. It might be di
 ```yaml
 ---
 port: 9000
-library_path: ~/mango/library
-db_path: ~/mango/mango.db
+library_path: /home/alex_ling/mango/library
+upload_path: /home/alex_ling/mango/uploads
+db_path: /home/alex_ling/mango/mango.db
 scan_interval_minutes: 5
 log_level: info
 mangadex:
@@ -73,7 +74,7 @@ mangadex:
   api_url: https://mangadex.org/api
   download_wait_seconds: 5
   download_retries: 4
-  download_queue_db_path: ~/mango/queue.db
+  download_queue_db_path: /home/alex_ling/mango/queue.db
 ```
 
 - `scan_interval_minutes` can be any non-negative integer. Setting it to `0` disables the periodic scan
