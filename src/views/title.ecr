@@ -1,10 +1,17 @@
-<h2 class=uk-title><%= title.title %></h2>
+<div>
+	<h2 class=uk-title><span><%= title.display_name %></span>
+		&nbsp;
+		<% if is_admin %>
+			<a onclick="edit()" class="uk-icon-button" uk-icon="icon:pencil"></a>
+		<% end %>
+	</h2>
+</div>
 <ul class="uk-breadcrumb">
 	<li><a href="/">Library</a></li>
 	<%- title.parents.each do |t| -%>
-	<li><a href="/book/<%= t.id %>"><%= t.title %></a></li>
+	<li><a href="/book/<%= t.id %>"><%= t.display_name %></a></li>
 	<%- end -%>
-	<li class="uk-disabled"><a><%= title.title %></a></li>
+	<li class="uk-disabled"><a><%= title.display_name %></a></li>
 </ul>
 <p class="uk-text-meta"><%= title.size %> entries found</p>
 <div class="uk-grid-small" uk-grid>
@@ -35,14 +42,10 @@
       <a class="acard" href="/book/<%= t.id %>">
         <div class="uk-card uk-card-default">
             <div class="uk-card-media-top">
-			<%- if t.entries.size > 0 -%>
-              <img data-src="<%= t.entries[0].cover_url %>" data-width data-height alt="" uk-img>
-			<%- else -%>
-              <img data-src="/img/icon.png" data-width data-height alt="" uk-img>
-			<%- end -%>
+              <img data-src="<%= t.cover_url %>" data-width data-height alt="" uk-img>
             </div>
             <div class="uk-card-body">
-			<h3 class="uk-card-title break-word" data-title="<%= t.title.gsub("\"", "&quot;") %>"><%= t.title %></h3>
+			<h3 class="uk-card-title break-word" data-title="<%= t.display_name.gsub("\"", "&quot;") %>"><%= t.display_name %></h3>
               <p><%= t.size %> entries</p>
             </div>
         </div>
@@ -50,15 +53,15 @@
 	</div>
 	<%- end -%>
   <%- title.entries.each_with_index do |e, i| -%>
-  <div class="item" data-mtime="<%= e.mtime.to_unix %>" data-progress="<%= percentage[i] %>">
+  <div class="item" data-mtime="<%= e.mtime.to_unix %>" data-progress="<%= percentage[i] %>" id="<%= e.id %>">
       <a class="acard">
-		  <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= e.encoded_path %>&quot;, '<%= e.pages %>', <%= (percentage[i] * 100).round(1) %>, &quot;<%= title.encoded_title %>&quot;, &quot;<%= e.encoded_title %>&quot;, '<%= e.title_id %>', '<%= e.id %>')">
+		  <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= e.encoded_path %>&quot;, '<%= e.pages %>', <%= (percentage[i] * 100).round(1) %>, &quot;<%= title.encoded_display_name %>&quot;, &quot;<%= e.encoded_display_name %>&quot;, '<%= e.title_id %>', '<%= e.id %>')">
           <div class="uk-card-media-top">
             <img data-src="<%= e.cover_url %>" alt="" data-width data-height uk-img>
           </div>
           <div class="uk-card-body">
             <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
-			<h3 class="uk-card-title break-word" data-title="<%= e.title.gsub("\"", "&quot;") %>"><%= e.title %></h3>
+			<h3 class="uk-card-title break-word" data-title="<%= e.display_name.gsub("\"", "&quot;") %>"><%= e.display_name %></h3>
               <p><%= e.pages %> pages</p>
           </div>
       </div>
@@ -71,7 +74,14 @@
   <div class="uk-modal-dialog uk-margin-auto-vertical">
     <button class="uk-modal-close-default" type="button" uk-close></button>
     <div class="uk-modal-header">
-      <h3 class="uk-modal-title break-word" id="modal-title"></h3>
+	<div>
+		<h3 class="uk-modal-title break-word" id="modal-title"><span></span>
+			&nbsp;
+			<% if is_admin %>
+				<a class="uk-icon-button" uk-icon="icon:pencil"></a>
+			<% end %>
+		</h3>
+	</div>
       <p class="uk-text-meta uk-margin-remove-bottom break-word" id="path-text"></p>
       <p class="uk-text-meta uk-margin-remove-top" id="pages-text"></p>
     </div>
@@ -86,6 +96,55 @@
         <button id="read-btn" class="uk-button uk-button-default">Mark as read (100%)</button>
         <button id="unread-btn" class="uk-button uk-button-default">Mark as unread (0%)</button>
       </p>
+    </div>
+  </div>
+</div>
+
+<div id="edit-modal" class="uk-flex-top" uk-modal>
+  <div class="uk-modal-dialog uk-margin-auto-vertical">
+    <button class="uk-modal-close-default" type="button" uk-close></button>
+    <div class="uk-modal-header">
+	<div>
+		<h3 class="uk-modal-title break-word" id="modal-title">Edit</h3>
+	</div>
+    </div>
+    <div class="uk-modal-body">
+		<div class="uk-margin">
+			<label class="uk-form-label" for="display-name">Display Name</label>
+			<div class="uk-inline">
+				<a class="uk-form-icon uk-form-icon-flip" uk-icon="icon:check"></a>
+				<input class="uk-input" type="text" name="display-name" id="display-name-field">
+			</div>
+		</div>
+		<div class="uk-margin">
+			<label class="uk-form-label">Cover Image</label>
+			<div class="uk-grid">
+				<div class="uk-width-1-2@s">
+					<img id="cover" data-title-cover="<%= title.cover_url %>" alt="" data-width data-height uk-img>
+				</div>
+				<div class="uk-width-1-2@s">
+					<div id="cover-upload" class="upload-field uk-placeholder uk-text-center uk-flex uk-flex-middle" data-title-id="<%= title.id %>">
+						<div>
+							<span uk-icon="icon: cloud-upload"></span>
+							<span class="uk-text-middle">Upload a cover image by dropping it here or</span>
+							<div uk-form-custom>
+								<input type="file" accept="image/jpeg, image/png">
+								<span class="uk-link">selecting one</span>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+			<progress id="upload-progress" class="uk-progress" value="0" max="100" hidden></progress>
+		</div>
+		<div id="title-progress-control" hidden>
+			<label class="uk-form-label">Progress</label>
+			<p class="uk-margin-remove-vertical">
+			<button id="read-btn" class="uk-button uk-button-default" onclick="updateProgress('<%= title.id %>', null, 1)">Mark all as read (100%)</button>
+			<button id="unread-btn" class="uk-button uk-button-default" onclick="updateProgress('<%= title.id %>', null, 0)">Mark all as unread (0%)</button>
+			</p>
+		</div>
     </div>
   </div>
 </div>

@@ -1,5 +1,5 @@
 name: mango
-version: 0.2.5
+version: 0.3.0
 
 authors:
   - Alex Ling <hkalexling@gmail.com>
@@ -8,7 +8,7 @@ targets:
   mango:
     main: src/mango.cr
 
-crystal: 0.32.1
+crystal: 0.34.0
 
 license: MIT
 
@@ -19,3 +19,7 @@ dependencies:
     github: crystal-lang/crystal-sqlite3
   baked_file_system:
     github: schovi/baked_file_system
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba

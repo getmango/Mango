@@ -56,3 +56,18 @@
 td > .uk-dropdown {
 	white-space: pre-line;
 }
+#edit-modal .uk-grid > div {
+	height: 300px;
+}
+#edit-modal #cover {
+	height: 100%;
+	width: 100%;
+	object-fit: cover;
+}
+#edit-modal #cover-upload {
+	height: 100%;
+	box-sizing: border-box;
+}
+#edit-modal .uk-modal-body .uk-inline {
+	width: 100%;
+}

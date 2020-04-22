@@ -26,17 +26,13 @@
       <a class="acard" href="/book/<%= t.id %>">
         <div class="uk-card uk-card-default">
             <div class="uk-card-media-top">
-			<%- if t.entries.size > 0 -%>
-              <img data-src="<%= t.entries[0].cover_url %>" data-width data-height alt="" uk-img>
-			<%- else -%>
-              <img data-src="/img/icon.png" data-width data-height alt="" uk-img>
-			<%- end -%>
+              <img data-src="<%= t.cover_url %>" data-width data-height alt="" uk-img>
             </div>
             <div class="uk-card-body">
 			<%- if t.entries.size > 0 -%>
               <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
 			<%- end -%>
-			<h3 class="uk-card-title break-word" data-title="<%= t.title.gsub("\"", "&quot;") %>"><%= t.title %></h3>
+			<h3 class="uk-card-title break-word" data-title="<%= t.display_name.gsub("\"", "&quot;") %>"><%= t.display_name %></h3>
               <p><%= t.size %> entries</p>
             </div>
         </div>

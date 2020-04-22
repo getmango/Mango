@@ -4,18 +4,18 @@ require "./storage"
 require "./logger"
 
 class Context
-	property config : Config
-	property library : Library
-	property storage : Storage
-	property logger : MLogger
-	property queue : MangaDex::Queue
+  property config : Config
+  property library : Library
+  property storage : Storage
+  property logger : Logger
+  property queue : MangaDex::Queue
 
-	def initialize(@config, @logger, @library, @storage, @queue)
-	end
+  def initialize(@config, @logger, @library, @storage, @queue)
+  end
 
-	{% for lvl in LEVELS %}
-		def {{lvl.id}}(msg)
-			@logger.{{lvl.id}} msg
-		end
-	{% end %}
+  {% for lvl in Logger::LEVELS %}
+      def {{lvl.id}}(msg)
+          @logger.{{lvl.id}} msg
+      end
+  {% end %}
 end

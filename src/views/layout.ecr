@@ -21,8 +21,10 @@
           <div class="uk-offcanvas-bar uk-flex uk-flex-column">
             <ul class="uk-nav uk-nav-primary uk-nav-center uk-margin-auto-vertical">
               <li><a href="/">Home</a></li>
-              <li><a href="/admin">Admin</a></li>
-			  <li><a href="/download">Download</a></li>
+			  <% if is_admin %>
+				  <li><a href="/admin">Admin</a></li>
+				  <li><a href="/download">Download</a></li>
+			  <% end %>
               <hr uk-divider>
 			  <li><a onclick="toggleTheme()"><i class="fas fa-adjust"></i></a></li>
               <li><a href="/logout">Logout</a></li>
@@ -40,8 +42,10 @@
           <a class="uk-navbar-item uk-logo" href="/"><img src="/img/icon.png"></a>
           <ul class="uk-navbar-nav">
             <li><a href="/">Home</a></li>
-            <li><a href="/admin">Admin</a></li>
-            <li><a href="/download">Download</a></li>
+			<% if is_admin %>
+				<li><a href="/admin">Admin</a></li>
+				<li><a href="/download">Download</a></li>
+			<% end %>
           </ul>
         </div>
         <div class="uk-navbar-right uk-visible@s">
