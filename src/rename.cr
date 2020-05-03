@@ -1,7 +1,17 @@
 module Rename
   alias VHash = Hash(String, String)
 
-  class Variable
+  abstract class Base(T)
+    @ary = [] of T
+
+    def push(var)
+      @ary.push var
+    end
+
+    abstract def render(hash : VHash)
+  end
+
+  class Variable < Base(String)
     property id : String
 
     def initialize(@id)
@@ -12,13 +22,7 @@ module Rename
     end
   end
 
-  class Pattern
-    @ary = [] of Variable
-
-    def push(var)
-      @ary.push var
-    end
-
+  class Pattern < Base(Variable)
     def render(hash : VHash)
       @ary.each do |v|
         if hash.has_key? v.id
@@ -29,13 +33,7 @@ module Rename
     end
   end
 
-  class Group
-    @ary = [] of (Pattern | String)
-
-    def push(var)
-      @ary.push var
-    end
-
+  class Group < Base(Pattern | String)
     def render(hash : VHash)
       return "" if @ary.select(&.is_a? Pattern)
                      .any? &.as(Pattern).render(hash).empty?
@@ -49,10 +47,8 @@ module Rename
     end
   end
 
-  class Rule
+  class Rule < Base(Group | String | Pattern)
     ESCAPE = ['/']
-
-    @ary = [] of (Group | String | Pattern)
 
     def initialize(str : String)
       parse! str
