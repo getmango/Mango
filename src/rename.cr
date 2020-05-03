@@ -69,7 +69,7 @@ module Rename
         if ['[', ']', '{', '}', '|'].includes?(char) && !chars.empty?
           string = chars.join
           if !pattern.nil?
-            pattern.push Variable.new string
+            pattern.push Variable.new string.strip
           elsif !group.nil?
             group.push string
           else
