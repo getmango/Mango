@@ -110,6 +110,9 @@ module Rename
           end
           pattern = nil
         when '|'
+          if pattern.nil?
+            chars.push char
+          end
         else
           if ESCAPE.includes? char
             raise "the character #{char} at position #{i} is not allowed"
