@@ -97,7 +97,7 @@ class Title
     encoded_title : String, mtime : Time
 
   def initialize(@dir : String, @parent_id, storage,
-                 @logger : Logger, @library : Library)
+                 @library : Library)
     @id = storage.get_id @dir, true
     @title = File.basename dir
     @encoded_title = URI.encode @title
@@ -109,7 +109,7 @@ class Title
       next if fn.starts_with? "."
       path = File.join dir, fn
       if File.directory? path
-        title = Title.new path, @id, storage, @logger, library
+        title = Title.new path, @id, storage, library
         next if title.entries.size == 0 && title.titles.size == 0
         @library.title_hash[title.id] = title
         @title_ids << title.id
@@ -118,9 +118,9 @@ class Title
       if [".zip", ".cbz"].includes? File.extname path
         zip_exception = validate_zip path
         unless zip_exception.nil?
-          @logger.warn "File #{path} is corrupted or is not a valid zip " \
-                       "archive. Ignoring it."
-          @logger.debug "Zip error: #{zip_exception}"
+          Logger.warn "File #{path} is corrupted or is not a valid zip " \
+                      "archive. Ignoring it."
+          Logger.debug "Zip error: #{zip_exception}"
           next
         end
         entry = Entry.new path, self, @id, storage
@@ -367,9 +367,19 @@ end
 
 class Library
   property dir : String, title_ids : Array(String), scan_interval : Int32,
-    logger : Logger, storage : Storage, title_hash : Hash(String, Title)
+    storage : Storage, title_hash : Hash(String, Title)
 
-  def initialize(@dir, @scan_interval, @logger, @storage)
+  def self.default
+    unless @@default
+      @@default = new
+    end
+    @@default.not_nil!
+  end
+
+  def initialize
+    @storage = Storage.default
+    @dir = Config.current.library_path
+    @scan_interval = Config.current.scan_interval
     # explicitly initialize @titles to bypass the compiler check. it will
     #   be filled with actual Titles in the `scan` call below
     @title_ids = [] of String
@@ -381,7 +391,7 @@ class Library
         start = Time.local
         scan
         ms = (Time.local - start).total_milliseconds
-        @logger.info "Scanned #{@title_ids.size} titles in #{ms}ms"
+        Logger.info "Scanned #{@title_ids.size} titles in #{ms}ms"
         sleep @scan_interval * 60
       end
     end
@@ -410,8 +420,8 @@ class Library
 
   def scan
     unless Dir.exists? @dir
-      @logger.info "The library directory #{@dir} does not exist. " \
-                   "Attempting to create it"
+      Logger.info "The library directory #{@dir} does not exist. " \
+                  "Attempting to create it"
       Dir.mkdir_p @dir
     end
     @title_ids.clear
@@ -419,13 +429,13 @@ class Library
       .select { |fn| !fn.starts_with? "." }
       .map { |fn| File.join @dir, fn }
       .select { |path| File.directory? path }
-      .map { |path| Title.new path, "", @storage, @logger, self }
+      .map { |path| Title.new path, "", @storage, self }
       .select { |title| !(title.entries.empty? && title.titles.empty?) }
       .sort { |a, b| a.title <=> b.title }
       .each do |title|
         @title_hash[title.id] = title
         @title_ids << title.id
       end
-    @logger.debug "Scan completed"
+    Logger.debug "Scan completed"
   end
 end

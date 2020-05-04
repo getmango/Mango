@@ -13,14 +13,23 @@ def verify_password(hash, pw)
 end
 
 class Storage
-  def initialize(@path : String, @logger : Logger)
-    dir = File.dirname path
+  @path : String = Config.current.db_path
+
+  def self.default
+    unless @@default
+      @@default = new
+    end
+    @@default.not_nil!
+  end
+
+  def initialize
+    dir = File.dirname @path
     unless Dir.exists? dir
-      @logger.info "The DB directory #{dir} does not exist. " \
-                   "Attepmting to create it"
+      Logger.info "The DB directory #{dir} does not exist. " \
+                  "Attepmting to create it"
       Dir.mkdir_p dir
     end
-    DB.open "sqlite3://#{path}" do |db|
+    DB.open "sqlite3://#{@path}" do |db|
       begin
         # We create the `ids` table first. even if the uses has an
         #   early version installed and has the `user` table only,
@@ -34,19 +43,19 @@ class Storage
                 "(username text, password text, token text, admin integer)"
       rescue e
         unless e.message.not_nil!.ends_with? "already exists"
-          @logger.fatal "Error when checking tables in DB: #{e}"
+          Logger.fatal "Error when checking tables in DB: #{e}"
           raise e
         end
       else
-        @logger.debug "Creating DB file at #{@path}"
+        Logger.debug "Creating DB file at #{@path}"
         db.exec "create unique index username_idx on users (username)"
         db.exec "create unique index token_idx on users (token)"
         random_pw = random_str
         hash = hash_password random_pw
         db.exec "insert into users values (?, ?, ?, ?)",
           "admin", hash, nil, 1
-        @logger.log "Initial user created. You can log in with " \
-                    "#{{"username" => "admin", "password" => random_pw}}"
+        Logger.log "Initial user created. You can log in with " \
+                   "#{{"username" => "admin", "password" => random_pw}}"
       end
     end
   end
@@ -58,18 +67,18 @@ class Storage
                                    "users where username = (?)",
           username, as: {String, String?}
         unless verify_password hash, password
-          @logger.debug "Password does not match the hash"
+          Logger.debug "Password does not match the hash"
           return nil
         end
-        @logger.debug "User #{username} verified"
+        Logger.debug "User #{username} verified"
         return token if token
         token = random_str
-        @logger.debug "Updating token for #{username}"
+        Logger.debug "Updating token for #{username}"
         db.exec "update users set token = (?) where username = (?)",
           token, username
         return token
       rescue e
-        @logger.error "Error when verifying user #{username}: #{e}"
+        Logger.error "Error when verifying user #{username}: #{e}"
         return nil
       end
     end
@@ -82,7 +91,7 @@ class Storage
         username = db.query_one "select username from users where " \
                                 "token = (?)", token, as: String
       rescue e
-        @logger.debug "Unable to verify token"
+        Logger.debug "Unable to verify token"
       end
     end
     username
@@ -95,7 +104,7 @@ class Storage
         is_admin = db.query_one "select admin from users where " \
                                 "token = (?)", token, as: Bool
       rescue e
-        @logger.debug "Unable to verify user as admin"
+        Logger.debug "Unable to verify user as admin"
       end
     end
     is_admin

@@ -26,6 +26,16 @@ class Config
     "manga_rename_rule"   => "{title}",
   }
 
+  @@singlet : Config?
+
+  def self.current
+    @@singlet.not_nil!
+  end
+
+  def set_current
+    @@singlet = self
+  end
+
   def self.load(path : String?)
     path = "~/.config/mango/config.yml" if path.nil?
     cfg_path = File.expand_path path, home: true

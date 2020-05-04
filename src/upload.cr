@@ -1,10 +1,10 @@
 require "./util"
 
 class Upload
-  def initialize(@dir : String, @logger : Logger)
+  def initialize(@dir : String)
     unless Dir.exists? @dir
-      @logger.info "The uploads directory #{@dir} does not exist. " \
-                   "Attempting to create it"
+      Logger.info "The uploads directory #{@dir} does not exist. " \
+                  "Attempting to create it"
       Dir.mkdir_p @dir
     end
   end
@@ -19,7 +19,7 @@ class Upload
     file_path = File.join full_dir, filename
 
     unless Dir.exists? full_dir
-      @logger.debug "creating directory #{full_dir}"
+      Logger.debug "creating directory #{full_dir}"
       Dir.mkdir_p full_dir
     end
 
@@ -50,7 +50,7 @@ class Upload
     end
 
     if ary.empty?
-      @logger.warn "File #{path} is not in the upload directory #{@dir}"
+      Logger.warn "File #{path} is not in the upload directory #{@dir}"
       return
     end
 

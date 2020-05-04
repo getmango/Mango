@@ -3,7 +3,7 @@ require "../mangadex/*"
 require "../upload"
 
 class APIRouter < Router
-  def setup
+  def initialize
     get "/api/page/:tid/:eid/:page" do |env|
       begin
         tid = env.params.url["tid"]
@@ -123,7 +123,7 @@ class APIRouter < Router
     get "/api/admin/mangadex/manga/:id" do |env|
       begin
         id = env.params.url["id"]
-        api = MangaDex::API.new @context.config.mangadex["api_url"].to_s
+        api = MangaDex::API.default
         manga = api.get_manga id
         send_json env, manga.to_info_json
       rescue e
@@ -230,7 +230,7 @@ class APIRouter < Router
             end
 
             ext = File.extname filename
-            upload = Upload.new @context.config.upload_path, @context.logger
+            upload = Upload.new Config.current.upload_path
             url = upload.path_to_url upload.save "img", ext, part.body
 
             if url.nil?

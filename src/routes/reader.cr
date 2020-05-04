@@ -1,7 +1,7 @@
 require "./router"
 
 class ReaderRouter < Router
-  def setup
+  def initialize
     get "/reader/:title/:entry" do |env|
       begin
         title = (@context.library.get_title env.params.url["title"]).not_nil!

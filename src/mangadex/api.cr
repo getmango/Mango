@@ -133,7 +133,15 @@ module MangaDex
   end
 
   class API
-    def initialize(@base_url = "https://mangadex.org/api/")
+    def self.default
+      unless @@default
+        @@default = new
+      end
+      @@default.not_nil!
+    end
+
+    def initialize
+      @base_url = Config.current.mangadex["api_url"].to_s || "https://mangadex.org/api/"
       @lang = {} of String => String
       CSV.each_row {{read_file "src/assets/lang_codes.csv"}} do |row|
         @lang[row[1]] = row[0]

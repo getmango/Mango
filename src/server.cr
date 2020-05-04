@@ -1,11 +1,38 @@
 require "kemal"
-require "./context"
+require "./library"
 require "./handlers/*"
 require "./util"
 require "./routes/*"
 
+class Context
+  property library : Library
+  property storage : Storage
+  property queue : MangaDex::Queue
+
+  def self.default
+    unless @@default
+      @@default = new
+    end
+    @@default.not_nil!
+  end
+
+  def initialize
+    @storage = Storage.default
+    @library = Library.default
+    @queue = MangaDex::Queue.default
+  end
+
+  {% for lvl in Logger::LEVELS %}
+      def {{lvl.id}}(msg)
+          Logger.{{lvl.id}} msg
+      end
+  {% end %}
+end
+
 class Server
-  def initialize(@context : Context)
+  @context : Context = Context.default
+
+  def initialize
     error 403 do |env|
       message = "HTTP 403: You are not authorized to visit #{env.request.path}"
       layout "message"
@@ -19,15 +46,15 @@ class Server
       layout "message"
     end
 
-    MainRouter.new(@context).setup
-    AdminRouter.new(@context).setup
-    ReaderRouter.new(@context).setup
-    APIRouter.new(@context).setup
+    MainRouter.new
+    AdminRouter.new
+    ReaderRouter.new
+    APIRouter.new
 
     Kemal.config.logging = false
-    add_handler LogHandler.new @context.logger
+    add_handler LogHandler.new
     add_handler AuthHandler.new @context.storage
-    add_handler UploadHandler.new @context.config.upload_path
+    add_handler UploadHandler.new Config.current.upload_path
     {% if flag?(:release) %}
       # when building for relase, embed the static files in binary
       @context.debug "We are in release mode. Using embedded static files."
@@ -41,7 +68,7 @@ class Server
     {% if flag?(:release) %}
       Kemal.config.env = "production"
     {% end %}
-    Kemal.config.port = @context.config.port
+    Kemal.config.port = Config.current.port
     Kemal.run
   end
 end

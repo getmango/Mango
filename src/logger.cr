@@ -8,7 +8,15 @@ class Logger
 
   @@severity : Log::Severity = :info
 
-  def initialize(level : String)
+  def self.default
+    unless @@default
+      @@default = new
+    end
+    @@default.not_nil!
+  end
+
+  def initialize
+    level = Config.current.log_level
     {% begin %}
       case level.downcase
       when "off"
@@ -50,9 +58,16 @@ class Logger
     @backend.write Log::Entry.new "", Log::Severity::None, msg, nil
   end
 
+  def self.log(msg)
+    default.log msg
+  end
+
   {% for lvl in LEVELS %}
     def {{lvl.id}}(msg)
       @log.{{lvl.id}} { msg }
+    end
+    def self.{{lvl.id}}(msg)
+      default.not_nil!.{{lvl.id}} msg
     end
   {% end %}
 end

@@ -1,7 +1,7 @@
 require "./router"
 
 class AdminRouter < Router
-  def setup
+  def initialize
     get "/admin" do |env|
       layout "admin"
     end
@@ -96,7 +96,7 @@ class AdminRouter < Router
     end
 
     get "/admin/downloads" do |env|
-      base_url = @context.config.mangadex["base_url"]
+      base_url = Config.current.mangadex["base_url"]
       layout "download-manager"
     end
   end

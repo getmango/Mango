@@ -1,5 +1,6 @@
 require "./api"
 require "sqlite3"
+require "zip"
 
 module MangaDex
   class PageJob
@@ -79,12 +80,20 @@ module MangaDex
 
   class Queue
     property downloader : Downloader?
+    @path : String = Config.current.mangadex["download_queue_db_path"].to_s
 
-    def initialize(@path : String, @logger : Logger)
-      dir = File.dirname path
+    def self.default
+      unless @@default
+        @@default = new
+      end
+      @@default.not_nil!
+    end
+
+    def initialize
+      dir = File.dirname @path
       unless Dir.exists? dir
-        @logger.info "The queue DB directory #{dir} does not exist. " \
-                     "Attepmting to create it"
+        Logger.info "The queue DB directory #{dir} does not exist. " \
+                    "Attepmting to create it"
         Dir.mkdir_p dir
       end
       DB.open "sqlite3://#{@path}" do |db|
@@ -101,7 +110,7 @@ module MangaDex
           db.exec "create index if not exists status_idx " \
                   "on queue (status)"
         rescue e
-          @logger.error "Error when checking tables in DB: #{e}"
+          Logger.error "Error when checking tables in DB: #{e}"
           raise e
         end
       end
@@ -254,11 +263,22 @@ module MangaDex
 
   class Downloader
     property stopped = false
+    @wait_seconds : Int32 = Config.current.mangadex["download_wait_seconds"]
+      .to_i32
+    @retries : Int32 = Config.current.mangadex["download_retries"].to_i32
+    @library_path : String = Config.current.library_path
     @downloading = false
 
-    def initialize(@queue : Queue, @api : API, @library_path : String,
-                   @wait_seconds : Int32, @retries : Int32,
-                   @logger : Logger)
+    def self.default
+      unless @@default
+        @@default = new
+      end
+      @@default.not_nil!
+    end
+
+    def initialize
+      @queue = Queue.default
+      @api = API.default
       @queue.downloader = self
 
       spawn do
@@ -270,7 +290,7 @@ module MangaDex
             next if job.nil?
             download job
           rescue e
-            @logger.error e
+            Logger.error e
           end
         end
       end
@@ -282,7 +302,7 @@ module MangaDex
       begin
         chapter = @api.get_chapter(job.id)
       rescue e
-        @logger.error e
+        Logger.error e
         @queue.set_status JobStatus::Error, job
         unless e.message.nil?
           @queue.add_message e.message.not_nil!, job
@@ -310,16 +330,16 @@ module MangaDex
           ext = File.extname fn
           fn = "#{i.to_s.rjust len, '0'}#{ext}"
           page_job = PageJob.new url, fn, writer, @retries
-          @logger.debug "Downloading #{url}"
+          Logger.debug "Downloading #{url}"
           loop do
             sleep @wait_seconds.seconds
             download_page page_job
             break if page_job.success ||
                      page_job.tries_remaning <= 0
             page_job.tries_remaning -= 1
-            @logger.warn "Failed to download page #{url}. " \
-                         "Retrying... Remaining retries: " \
-                         "#{page_job.tries_remaning}"
+            Logger.warn "Failed to download page #{url}. " \
+                        "Retrying... Remaining retries: " \
+                        "#{page_job.tries_remaning}"
           end
 
           channel.send page_job
@@ -330,8 +350,8 @@ module MangaDex
         page_jobs = [] of PageJob
         chapter.pages.size.times do
           page_job = channel.receive
-          @logger.debug "[#{page_job.success ? "success" : "failed"}] " \
-                        "#{page_job.url}"
+          Logger.debug "[#{page_job.success ? "success" : "failed"}] " \
+                       "#{page_job.url}"
           page_jobs << page_job
           if page_job.success
             @queue.add_success job
@@ -339,14 +359,14 @@ module MangaDex
             @queue.add_fail job
             msg = "Failed to download page #{page_job.url}"
             @queue.add_message msg, job
-            @logger.error msg
+            Logger.error msg
           end
         end
         fail_count = page_jobs.count { |j| !j.success }
-        @logger.debug "Download completed. " \
-                      "#{fail_count}/#{page_jobs.size} failed"
+        Logger.debug "Download completed. " \
+                     "#{fail_count}/#{page_jobs.size} failed"
         writer.close
-        @logger.debug "cbz File created at #{zip_path}"
+        Logger.debug "cbz File created at #{zip_path}"
 
         zip_exception = validate_zip zip_path
         if !zip_exception.nil?
@@ -363,7 +383,7 @@ module MangaDex
     end
 
     private def download_page(job : PageJob)
-      @logger.debug "downloading #{job.url}"
+      Logger.debug "downloading #{job.url}"
       headers = HTTP::Headers{
         "User-agent" => "Mangadex.cr",
       }
@@ -377,7 +397,7 @@ module MangaDex
         end
         job.success = true
       rescue e
-        @logger.error e
+        Logger.error e
         job.success = false
       end
     end

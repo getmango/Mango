@@ -1,6 +1,3 @@
-require "../context"
-
 class Router
-  def initialize(@context : Context)
-  end
+  @context : Context = Context.default
 end
