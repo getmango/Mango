@@ -19,7 +19,8 @@ OptionParser.parse do |parser|
     exit
   end
   parser.on "-c PATH", "--config=PATH",
-    "Path to the config file. Default is `~/.config/mango/config.yml`" do |path|
+    "Path to the config file. " \
+    "Default is `~/.config/mango/config.yml`" do |path|
     config_path = path
   end
 end

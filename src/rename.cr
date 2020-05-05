@@ -85,8 +85,8 @@ module Rename
             raise "unmatched ] at position #{i}"
           end
           if !pattern.nil?
-            raise "patterns (`{}`) should be closed before closing the group " \
-                  "(`[]`)"
+            raise "patterns (`{}`) should be closed before closing the " \
+                  "group (`[]`)"
           end
           @ary.push group
           group = nil

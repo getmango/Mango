@@ -11,7 +11,9 @@ class UploadHandler < Kemal::Handler
       return call_next env
     end
 
-    ary = env.request.path.split(File::SEPARATOR).select { |part| !part.empty? }
+    ary = env.request.path.split(File::SEPARATOR).select do |part|
+      !part.empty?
+    end
     ary[0] = @upload_dir
     path = File.join ary
 

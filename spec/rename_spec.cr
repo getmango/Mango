@@ -64,7 +64,8 @@ describe Rule do
   it "renders a few examples correctly" do
     rule = Rule.new "[Ch. {chapter }] {title | id} testing"
     rule.render({"id" => "ID"}).should eq "ID testing"
-    rule.render({"chapter" => "CH", "id" => "ID"}).should eq "Ch. CH ID testing"
+    rule.render({"chapter" => "CH", "id" => "ID"})
+      .should eq "Ch. CH ID testing"
     rule.render({} of String => String).should eq "testing"
   end
 end
