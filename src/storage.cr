@@ -13,7 +13,7 @@ def verify_password(hash, pw)
 end
 
 class Storage
-  @path : String = Config.current.db_path
+  @path : String
 
   def self.default
     unless @@default
@@ -22,7 +22,8 @@ class Storage
     @@default.not_nil!
   end
 
-  def initialize
+  def initialize(db_path : String? = nil)
+    @path = db_path || Config.current.db_path
     dir = File.dirname @path
     unless Dir.exists? dir
       Logger.info "The DB directory #{dir} does not exist. " \
