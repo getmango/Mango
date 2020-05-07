@@ -26,6 +26,7 @@ OptionParser.parse do |parser|
 end
 
 Config.load(config_path).set_current
+MangaDex::Downloader.default
 
 server = Server.new
 server.start
