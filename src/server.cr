@@ -41,10 +41,13 @@ class Server
       message = "HTTP 404: Mango cannot find the page #{env.request.path}"
       layout "message"
     end
-    error 500 do |env|
-      message = "HTTP 500: Internal server error. Please try again later."
-      layout "message"
-    end
+
+    {% if flag?(:release) %}
+      error 500 do |env|
+        message = "HTTP 500: Internal server error. Please try again later."
+        layout "message"
+      end
+    {% end %}
 
     MainRouter.new
     AdminRouter.new
