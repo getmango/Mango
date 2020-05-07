@@ -1,6 +1,6 @@
 require "spec"
-require "../src/context"
 require "../src/server"
+require "../src/config"
 
 class State
   @@hash = {} of String => String
@@ -37,15 +37,15 @@ end
 def with_default_config
   temp_config = get_tempfile "mango-test-config"
   config = Config.load temp_config.path
-  logger = Logger.new config.log_level
-  yield config, logger, temp_config.path
+  config.set_current
+  yield config, temp_config.path
   temp_config.delete
 end
 
 def with_storage
-  with_default_config do |_, logger|
+  with_default_config do
     temp_db = get_tempfile "mango-test-db"
-    storage = Storage.new temp_db.path, logger
+    storage = Storage.new temp_db.path
     clear = yield storage, temp_db.path
     if clear == true
       temp_db.delete
@@ -54,9 +54,9 @@ def with_storage
 end
 
 def with_queue
-  with_default_config do |_, logger|
+  with_default_config do
     temp_queue_db = get_tempfile "mango-test-queue-db"
-    queue = MangaDex::Queue.new temp_queue_db.path, logger
+    queue = MangaDex::Queue.new temp_queue_db.path
     clear = yield queue, temp_queue_db.path
     if clear == true
       temp_queue_db.delete

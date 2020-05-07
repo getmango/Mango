@@ -2,7 +2,7 @@ require "./spec_helper"
 
 describe Config do
   it "creates config if it does not exist" do
-    with_default_config do |_, _, path|
+    with_default_config do |_, path|
       File.exists?(path).should be_true
     end
   end
