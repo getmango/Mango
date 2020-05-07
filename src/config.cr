@@ -22,6 +22,8 @@ class Config
     "download_retries"       => 4,
     "download_queue_db_path" => File.expand_path("~/mango/queue.db",
       home: true),
+    "chapter_rename_rule" => "[Vol.{volume} ][Ch.{chapter} ]{title|id}",
+    "manga_rename_rule"   => "{title}",
   }
 
   def self.load(path : String?)
