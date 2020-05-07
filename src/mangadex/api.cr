@@ -14,6 +14,14 @@ macro parse_strings_from_json(names)
   {% end %}
 end
 
+macro properties_to_hash(names)
+  {
+    {% for name in names %}
+      "{{name.id}}" => @{{name.id}}.to_s,
+    {% end %}
+  }
+end
+
 module MangaDex
   class Chapter
     string_properties ["lang_code", "title", "volume", "chapter"]
@@ -74,6 +82,13 @@ module MangaDex
     rescue e
       raise "failed to parse json: #{e}"
     end
+
+    def rename(rule : Rename::Rule)
+      hash = properties_to_hash ["id", "title", "volume", "chapter",
+                                 "lang_code", "language", "pages"]
+      hash["groups"] = @groups.map { |g| g[1] }.join ","
+      rule.render hash
+    end
   end
 
   class Manga
@@ -110,6 +125,10 @@ module MangaDex
                                "artist"]
     rescue e
       raise "failed to parse json: #{e}"
+    end
+
+    def rename(rule : Rename::Rule)
+      rule.render properties_to_hash ["id", "title", "author", "artist"]
     end
   end
 
