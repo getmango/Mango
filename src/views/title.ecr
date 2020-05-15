@@ -45,7 +45,7 @@
               <img data-src="<%= t.cover_url %>" data-width data-height alt="" uk-img>
             </div>
             <div class="uk-card-body">
-			<h3 class="uk-card-title break-word" data-title="<%= t.display_name.gsub("\"", "&quot;") %>"><%= t.display_name %></h3>
+				<h3 class="uk-card-title break-word" uk-tooltip="<%= t.display_name.gsub("\"", "&quot;") %>" data-title="<%= t.display_name.gsub("\"", "&quot;") %>"><%= t.display_name %></h3>
               <p><%= t.size %> entries</p>
             </div>
         </div>
@@ -61,7 +61,7 @@
           </div>
           <div class="uk-card-body">
             <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
-			<h3 class="uk-card-title break-word" data-title="<%= e.display_name.gsub("\"", "&quot;") %>"><%= e.display_name %></h3>
+			<h3 class="uk-card-title break-word" uk-tooltip="<%= e.display_name.gsub("\"", "&quot;") %>" data-title="<%= e.display_name.gsub("\"", "&quot;") %>"><%= e.display_name %></h3>
               <p><%= e.pages %> pages</p>
           </div>
       </div>
@@ -150,8 +150,10 @@
 </div>
 
 <% content_for "script" do %>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery.dotdotdot/4.0.11/dotdotdot.js"></script>
-<script src="/js/dots.js"></script>
+<% if use_dotdotdot %>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery.dotdotdot/4.0.11/dotdotdot.js"></script>
+	<script src="/js/dots.js"></script>
+<% end %>
 <script src="/js/alert.js"></script>
 <script src="/js/title.js"></script>
 <script src="/js/search.js"></script>

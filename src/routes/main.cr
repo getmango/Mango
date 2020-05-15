@@ -37,6 +37,7 @@ class MainRouter < Router
         titles = @context.library.titles
         username = get_username env
         percentage = titles.map &.load_percetage username
+        use_dotdotdot = !@context.config.disable_ellipsis_truncation
         layout "index"
       rescue e
         @context.error e
@@ -51,6 +52,7 @@ class MainRouter < Router
         percentage = title.entries.map { |e|
           title.load_percetage username, e.title
         }
+        use_dotdotdot = !@context.config.disable_ellipsis_truncation
         layout "title"
       rescue e
         @context.error e

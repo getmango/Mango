@@ -19,6 +19,7 @@
 }
 .uk-card-title {
 	height: 3em;
+	overflow: hidden;
 }
 .acard:hover {
 	text-decoration: none;

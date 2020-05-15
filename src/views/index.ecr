@@ -32,7 +32,7 @@
 			<%- if t.entries.size > 0 -%>
               <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
 			<%- end -%>
-			<h3 class="uk-card-title break-word" data-title="<%= t.display_name.gsub("\"", "&quot;") %>"><%= t.display_name %></h3>
+			<h3 class="uk-card-title break-word" uk-tooltip="<%= t.display_name.gsub("\"", "&quot;") %>" data-title="<%= t.display_name.gsub("\"", "&quot;") %>"><%= t.display_name %></h3>
               <p><%= t.size %> entries</p>
             </div>
         </div>
@@ -42,8 +42,10 @@
 </div>
 
 <% content_for "script" do %>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery.dotdotdot/4.0.11/dotdotdot.js"></script>
-<script src="/js/dots.js"></script>
+<% if use_dotdotdot %>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery.dotdotdot/4.0.11/dotdotdot.js"></script>
+	<script src="/js/dots.js"></script>
+<% end %>
 <script src="/js/search.js"></script>
 <script src="/js/sort-items.js"></script>
 <% end %>

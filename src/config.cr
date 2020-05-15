@@ -12,6 +12,7 @@ class Config
   property log_level : String = "info"
   property upload_path : String = File.expand_path "~/mango/uploads",
     home: true
+  property disable_ellipsis_truncation : Bool = false
   property mangadex = Hash(String, String | Int32).new
 
   @[YAML::Field(ignore: true)]
