@@ -25,7 +25,7 @@ test:
 check:
 	crystal tool format --check
 	./bin/ameba
-	./scripts/linewidth.sh
+	./dev/linewidth.sh
 
 install:
 	cp mango $(INSTALL_DIR)/mango
