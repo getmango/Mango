@@ -133,7 +133,7 @@ module MangaDex
   end
 
   class API
-    def self.default
+    def self.default : self
       unless @@default
         @@default = new
       end

@@ -9,7 +9,7 @@ class Context
   property storage : Storage
   property queue : MangaDex::Queue
 
-  def self.default
+  def self.default : self
     unless @@default
       @@default = new
     end

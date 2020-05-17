@@ -369,7 +369,7 @@ class Library
   property dir : String, title_ids : Array(String), scan_interval : Int32,
     storage : Storage, title_hash : Hash(String, Title)
 
-  def self.default
+  def self.default : self
     unless @@default
       @@default = new
     end

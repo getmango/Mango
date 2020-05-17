@@ -15,7 +15,7 @@ end
 class Storage
   @path : String
 
-  def self.default
+  def self.default : self
     unless @@default
       @@default = new
     end

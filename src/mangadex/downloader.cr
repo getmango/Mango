@@ -82,7 +82,7 @@ module MangaDex
     property downloader : Downloader?
     @path : String
 
-    def self.default
+    def self.default : self
       unless @@default
         @@default = new
       end
@@ -270,7 +270,7 @@ module MangaDex
     @library_path : String = Config.current.library_path
     @downloading = false
 
-    def self.default
+    def self.default : self
       unless @@default
         @@default = new
       end

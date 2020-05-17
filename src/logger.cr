@@ -8,7 +8,7 @@ class Logger
 
   @@severity : Log::Severity = :info
 
-  def self.default
+  def self.default : self
     unless @@default
       @@default = new
     end
