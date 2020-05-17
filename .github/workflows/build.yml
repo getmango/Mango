@@ -19,8 +19,13 @@ jobs:
     - name: Install dependencies
       run: apk add --no-cache yarn yaml sqlite-static
     - name: Build
-      run: make
+      run: make static
     - name: Linter
       run: make check
     - name: Run tests
       run: make test
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: mango
+        path: mango
