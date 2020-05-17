@@ -1,6 +1,7 @@
 require "http/client"
 require "json"
 require "csv"
+require "../rename"
 
 macro string_properties(names)
   {% for name in names %}
@@ -72,13 +73,10 @@ module MangaDex
         gname = obj["group_name#{s}"].as_s
         @groups << {gid, gname}
       end
-      @full_title = @title
-      unless @chapter.empty?
-        @full_title = "Ch.#{@chapter} " + @full_title
-      end
-      unless @volume.empty?
-        @full_title = "Vol.#{@volume} " + @full_title
-      end
+
+      rename_rule = Rename::Rule.new \
+        Config.current.mangadex["chapter_rename_rule"].to_s
+      @full_title = rename rename_rule
     rescue e
       raise "failed to parse json: #{e}"
     end

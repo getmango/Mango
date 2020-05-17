@@ -313,7 +313,9 @@ module MangaDex
       end
       @queue.set_pages chapter.pages.size, job
       lib_dir = @library_path
-      manga_dir = File.join lib_dir, chapter.manga.title
+      rename_rule = Rename::Rule.new \
+        Config.current.mangadex["manga_rename_rule"].to_s
+      manga_dir = File.join lib_dir, chapter.manga.rename rename_rule
       unless File.exists? manga_dir
         Dir.mkdir_p manga_dir
       end
