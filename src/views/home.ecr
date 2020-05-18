@@ -1,0 +1,62 @@
+<%- unless on_deck_entries.empty? -%>
+<h2 class="uk-title home-headings">On Deck</h2>
+<div id="item-container-continue" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
+  <%- on_deck_entries.each_with_index do |e, i| -%>
+  <div class="item" data-mtime="<%= e.mtime.to_unix %>" data-progress="" id="<%= e.id %>"> <!-- TODO: add percentage -->
+      <a class="acard">                                                              <!-- Add percentage rounded below  v  -->
+		  <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= e.encoded_path %>&quot;, '<%= e.pages %>', <%= "0" %>, &quot;<%= e.book.encoded_display_name %>&quot;, &quot;<%= e.encoded_display_name %>&quot;, '<%= e.title_id %>', '<%= e.id %>')">
+          <div class="uk-card-media-top">
+            <img data-src="<%= e.cover_url %>" alt="" data-width data-height uk-img>
+          </div>
+          <div class="uk-card-body">
+            <div class="uk-card-badge uk-label"><%= "" %>%</div> <!-- TODO: add percentage rounded -->
+			<h3 class="uk-card-title break-word" data-title="<%= e.display_name.gsub("\"", "&quot;") %>"><%= e.display_name %></h3>
+              <p><%= e.pages %> pages</p>
+          </div>
+      </div>
+      </a>
+    </div>
+  <%- end -%>
+</div>
+<%- end -%>
+
+
+<!-- TODO: DRY this code with calls in other ecr files? eg. title.ecr -->
+<div id="modal" class="uk-flex-top" uk-modal>
+  <div class="uk-modal-dialog uk-margin-auto-vertical">
+    <button class="uk-modal-close-default" type="button" uk-close></button>
+    <div class="uk-modal-header">
+	<div>
+		<h3 class="uk-modal-title break-word" id="modal-title"><span></span>
+			&nbsp;
+			<% if is_admin %>
+				<a class="uk-icon-button" uk-icon="icon:pencil"></a>
+			<% end %>
+		</h3>
+	</div>
+      <p class="uk-text-meta uk-margin-remove-bottom break-word" id="path-text"></p>
+      <p class="uk-text-meta uk-margin-remove-top" id="pages-text"></p>
+    </div>
+    <div class="uk-modal-body">
+      <p>Read</p>
+      <p uk-margin>
+        <a id="beginning-btn" class="uk-button uk-button-default">From beginning</a>
+        <a id="continue-btn" class="uk-button uk-button-primary"></a>
+      </p>
+      <p>Progress</p>
+      <p uk-margin>
+        <button id="read-btn" class="uk-button uk-button-default">Mark as read (100%)</button>
+        <button id="unread-btn" class="uk-button uk-button-default">Mark as unread (0%)</button>
+      </p>
+    </div>
+  </div>
+</div>
+
+<% content_for "script" do %>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery.dotdotdot/4.0.11/dotdotdot.js"></script>
+<script src="/js/dots.js"></script>
+<script src="/js/alert.js"></script>
+<script src="/js/title.js"></script>
+<script src="/js/search.js"></script>
+<script src="/js/sort-items.js"></script>
+<% end %>

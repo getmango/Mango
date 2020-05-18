@@ -32,12 +32,12 @@ class MainRouter < Router
       end
     end
 
-    get "/" do |env|
+    get "/library" do |env|
       begin
         titles = @context.library.titles
         username = get_username env
         percentage = titles.map &.load_percentage username
-        layout "index"
+        layout "library"
       rescue e
         @context.error e
         env.response.status_code = 500
@@ -61,6 +61,24 @@ class MainRouter < Router
     get "/download" do |env|
       base_url = @context.config.mangadex["base_url"]
       layout "download"
+    end
+
+    get "/" do |env|
+      begin
+        titles = @context.library.titles
+        username = get_username env
+
+        on_deck_entries = [] of Entry
+        titles.each do |title|
+          on_deck_entry = title.get_on_deck_entry username
+          on_deck_entries << on_deck_entry if on_deck_entry # ingnore titles without latest on deck entry
+        end
+
+        layout "home"
+      rescue e
+        @context.error e
+        env.response.status_code = 500
+      end
     end
   end
 end
