@@ -36,7 +36,7 @@ class MainRouter < Router
       begin
         titles = @context.library.titles
         username = get_username env
-        percentage = titles.map &.load_percetage username
+        percentage = titles.map &.load_percentage username
         layout "index"
       rescue e
         @context.error e
@@ -49,7 +49,7 @@ class MainRouter < Router
         title = (@context.library.get_title env.params.url["title"]).not_nil!
         username = get_username env
         percentage = title.entries.map { |e|
-          title.load_percetage username, e.title
+          title.load_percentage username, e.title
         }
         layout "title"
       rescue e

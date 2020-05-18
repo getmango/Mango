@@ -302,14 +302,14 @@ class Title
     progress
   end
 
-  def load_percetage(username, entry)
+  def load_percentage(username, entry)
     page = load_progress username, entry
     entry_obj = @entries.find { |e| e.title == entry }
     return 0.0 if entry_obj.nil?
     page / entry_obj.pages
   end
 
-  def load_percetage(username)
+  def load_percentage(username)
     return 0.0 if @entries.empty?
     read_pages = total_pages = 0
     @entries.each do |e|
