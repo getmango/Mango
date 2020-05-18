@@ -327,7 +327,6 @@ class Title
 
   def get_on_deck_entry(username)
     # this assumes @entries is in order (low to high), otherwise we would need to sort first
-    # TODO: what happens if no entry has progress > 0
     idx_latest_read_entry_reverse = -99 # hack to set var, refactor this and `return nil if` below
     @entries.reverse.each_with_index do |e, i|
       if load_progress(username, e.title) > 0
@@ -335,7 +334,7 @@ class Title
         break
       end
     end
-    return nil if idx_latest_read_entry_reverse == -99 
+    return nil if idx_latest_read_entry_reverse == -99 # handle if no matching entry
     latest_read_entry = @entries.reverse[idx_latest_read_entry_reverse]
     if load_progress(username, latest_read_entry.title) == latest_read_entry.pages
       # return next entry (if exists)
