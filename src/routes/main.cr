@@ -68,11 +68,12 @@ class MainRouter < Router
         titles = @context.library.titles
         username = get_username env
 
-        on_deck_entries = [] of Entry
-        titles.each do |title|
-          on_deck_entry = title.get_on_deck_entry username
-          on_deck_entries << on_deck_entry if on_deck_entry # ingnore titles without latest on deck entry
-        end
+        # map: get the on-deck entry or nil for each Title
+        # select: select only entries (and ignore Nil's) from the array
+        #   produced by map
+        on_deck_entries = titles.map { |t|
+          t.get_on_deck_entry username
+        }.select Entry
 
         layout "home"
       rescue e
