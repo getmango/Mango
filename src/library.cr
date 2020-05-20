@@ -325,7 +325,7 @@ class Title
     @entries[idx + 1]
   end
 
-  def get_on_deck_entry(username)
+  def get_continue_reading_entry(username)
     in_progress_entries = @entries.select do |e|
       load_progress(username, e.title) > 0
     end

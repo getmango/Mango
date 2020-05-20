@@ -71,9 +71,13 @@ class MainRouter < Router
         # map: get the on-deck entry or nil for each Title
         # select: select only entries (and ignore Nil's) from the array
         #   produced by map
-        on_deck_entries = titles.map { |t|
-          t.get_on_deck_entry username
+        continue_reading_entries = titles.map { |t|
+          t.get_continue_reading_entry username
         }.select Entry
+
+        percentage = continue_reading_entries.map do |e|
+          e.book.load_percentage username, e.title
+        end
 
         layout "home"
       rescue e

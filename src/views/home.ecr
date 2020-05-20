@@ -1,15 +1,15 @@
-<%- unless on_deck_entries.empty? -%>
-<h2 class="uk-title home-headings">On Deck</h2>
+<%- unless continue_reading_entries.empty? -%>
+<h2 class="uk-title home-headings">Continue Reading</h2>
 <div id="item-container-continue" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
-  <%- on_deck_entries.each_with_index do |e, i| -%>
-  <div class="item" data-mtime="<%= e.mtime.to_unix %>" data-progress="" id="<%= e.id %>"> <!-- TODO: add percentage -->
-      <a class="acard">                                                              <!-- Add percentage rounded below  v  -->
-		  <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= e.encoded_path %>&quot;, '<%= e.pages %>', <%= "0" %>, &quot;<%= e.book.encoded_display_name %>&quot;, &quot;<%= e.encoded_display_name %>&quot;, '<%= e.title_id %>', '<%= e.id %>')">
+  <%- continue_reading_entries.each_with_index do |e, i| -%>
+  <div class="item" data-mtime="<%= e.mtime.to_unix %>" data-progress="<%= percentage[i] %>" id="<%= e.id %>">
+      <a class="acard">
+		  <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= e.encoded_path %>&quot;, '<%= e.pages %>', <%= (percentage[i] * 100).round(1) %>, &quot;<%= e.book.encoded_display_name %>&quot;, &quot;<%= e.encoded_display_name %>&quot;, '<%= e.title_id %>', '<%= e.id %>')">
           <div class="uk-card-media-top">
             <img data-src="<%= e.cover_url %>" alt="" data-width data-height uk-img>
           </div>
           <div class="uk-card-body">
-            <div class="uk-card-badge uk-label"><%= "" %>%</div> <!-- TODO: add percentage rounded -->
+            <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
 			<h3 class="uk-card-title break-word" data-title="<%= e.display_name.gsub("\"", "&quot;") %>"><%= e.display_name %></h3>
               <p><%= e.pages %> pages</p>
           </div>
