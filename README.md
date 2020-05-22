@@ -45,6 +45,38 @@ The official docker images are available on [Dockerhub](https://hub.docker.com/r
 4. Start Mango by running the command `mango`
 5. Head over to `localhost:9000` to log in
 
+### Systemd
+
+1. Paste the service file example into `/etc/systemd/system/mango.service`
+2. `sudo systemctl start mango`
+3. Optional: To enable Mango on startup: `sudo systemctl enable mango`
+
+```
+# Service file example for Mango
+[Unit]
+Description=Mango - Manga Server and Web Reader
+After=network.target
+
+[Service]
+User=mango # Replace this with the user you want to run Mango
+ExecStart=/usr/local/bin/mango # Replace this with the path of your binary
+Restart=on-abort
+TimeoutSec=20
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### Reverse Proxy
+
+If you use Nginx, paste the following into your `nginx.conf`
+
+```
+location / {
+    proxy_pass http://127.0.0.1:9000/;
+}
+```
+
 ## Usage
 
 ### CLI
