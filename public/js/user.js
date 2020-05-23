@@ -1,5 +1,5 @@
 function remove(username) {
-	$.post('/api/admin/user/delete/' + username, function(data) {
+	$.post(base_url + 'api/admin/user/delete/' + username, function(data) {
 		if (data.success) {
 			location.reload();
 		}

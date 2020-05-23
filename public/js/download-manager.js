@@ -22,7 +22,7 @@ const loadConfig = () => {
 	globalConfig.autoRefresh = $('#auto-refresh').prop('checked');
 };
 const remove = (id) => {
-	var url = '/api/admin/mangadex/queue/delete';
+	var url = base_url + 'api/admin/mangadex/queue/delete';
 	if (id !== undefined)
 		url += '?' + $.param({id: id});
 	console.log(url);
@@ -43,7 +43,7 @@ const remove = (id) => {
 	});
 };
 const refresh = (id) => {
-	var url = '/api/admin/mangadex/queue/retry';
+	var url = base_url + 'api/admin/mangadex/queue/retry';
 	if (id !== undefined)
 		url += '?' + $.param({id: id});
 	console.log(url);
@@ -67,7 +67,7 @@ const toggle = () => {
 	$('#pause-resume-btn').attr('disabled', '');
 	const paused = $('#pause-resume-btn').text() === 'Resume download';
 	const action = paused ? 'resume' : 'pause';
-	const url = `/api/admin/mangadex/queue/${action}`;
+	const url = `${base_url}api/admin/mangadex/queue/${action}`;
 	$.ajax({
 		type: 'POST',
 		url: url,
@@ -87,7 +87,7 @@ const load = () => {
 	console.log('fetching');
 	$.ajax({
 		type: 'GET',
-		url: '/api/admin/mangadex/queue',
+		url: base_url + 'api/admin/mangadex/queue',
 		dataType: 'json'
 	})
 	.done(data => {

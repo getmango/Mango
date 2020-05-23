@@ -22,8 +22,8 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 	$('#path-text').text(zipPath);
 	$('#pages-text').text(pages + ' pages');
 
-	$('#beginning-btn').attr('href', '/reader/' + titleID + '/' + entryID + '/1');
-	$('#continue-btn').attr('href', '/reader/' + titleID + '/' + entryID);
+	$('#beginning-btn').attr('href', `${base_url}reader/${titleID}/${entryID}/1`);
+	$('#continue-btn').attr('href', `${base_url}reader/${titleID}/${entryID}`);
 
 	$('#read-btn').click(function(){
 		updateProgress(titleID, entryID, pages);
@@ -39,7 +39,7 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 }
 
 const updateProgress = (tid, eid, page) => {
-	let url = `/api/progress/${tid}/${page}`
+	let url = `${base_url}api/progress/${tid}/${page}`
 	const query = $.param({entry: eid});
 	if (eid)
 		url += `?${query}`;
@@ -66,7 +66,7 @@ const renameSubmit = (name, eid) => {
 	}
 
 	const query = $.param({ entry: eid });
-	let url = `/api/admin/display_name/${titleId}/${name}`;
+	let url = `${base_url}api/admin/display_name/${titleId}/${name}`;
 	if (eid)
 		url += `?${query}`;
 
@@ -130,7 +130,7 @@ const setupUpload = (eid) => {
 	if (eid)
 		queryObj['entry'] = eid;
 	const query = $.param(queryObj);
-	const url = `/api/admin/upload/cover?${query}`;
+	const url = `${base_url}api/admin/upload/cover?${query}`;
 	console.log(url);
 	UIkit.upload('.upload-field', {
 		url: url,

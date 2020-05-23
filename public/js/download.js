@@ -33,7 +33,7 @@ const download = () => {
 		console.log(ids);
 		$.ajax({
 			type: 'POST',
-			url: '/api/admin/mangadex/download',
+			url: base_url + 'api/admin/mangadex/download',
 			data: JSON.stringify({chapters: chapters}),
 			contentType: "application/json",
 			dataType: 'json'
@@ -47,7 +47,7 @@ const download = () => {
 			const successCount = parseInt(data.success);
 			const failCount = parseInt(data.fail);
 			UIkit.modal.confirm(`${successCount} of ${successCount + failCount} chapters added to the download queue. Proceed to the download manager?`).then(() => {
-				window.location.href = '/admin/downloads';
+				window.location.href = base_url + 'admin/downloads';
 			});
 			styleModal();
 		})
@@ -109,7 +109,7 @@ const search = () => {
 		return;
 	}
 
-	$.getJSON("/api/admin/mangadex/manga/" + int_id)
+	$.getJSON(`${base_url}api/admin/mangadex/manga/${int_id}`)
 		.done((data) => {
 			if (data.error) {
 				alert('danger', 'Failed to get manga info. Error: ' + data.error);

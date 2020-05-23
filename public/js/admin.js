@@ -5,7 +5,7 @@ function scan() {
 	$('#scan-status > span').attr('hidden', '');
 	var color = $('#scan').css('color');
 	$('#scan').css('color', 'gray');
-	$.post('/api/admin/scan', function (data) {
+	$.post(base_url + 'api/admin/scan', function (data) {
 		var ms = data.milliseconds;
 		var titles = data.titles;
 		$('#scan-status > span').text('Scanned ' + titles + ' titles in ' + ms + 'ms');
