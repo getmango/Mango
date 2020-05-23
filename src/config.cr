@@ -42,6 +42,7 @@ class Config
     cfg_path = File.expand_path path, home: true
     if File.exists? cfg_path
       config = self.from_yaml File.read cfg_path
+      config.preprocess
       config.fill_defaults
       return config
     end
@@ -70,5 +71,14 @@ class Config
         end
       end
     {% end %}
+  end
+
+  def preprocess
+    unless base_url.starts_with? "/"
+      raise "base url (#{base_url}) should start with `/`"
+    end
+    unless base_url.ends_with? "/"
+      @base_url += "/"
+    end
   end
 end
