@@ -24,6 +24,8 @@ class ReaderRouter < Router
 
     get "/reader/:title/:entry/:page" do |env|
       begin
+        base_url = Config.current.base_url
+
         title = (@context.library.get_title env.params.url["title"]).not_nil!
         entry = (title.get_entry env.params.url["entry"]).not_nil!
         page = env.params.url["page"].to_i
@@ -35,23 +37,22 @@ class ReaderRouter < Router
 
         pages = (page...[entry.pages + 1, page + IMGS_PER_PAGE].min)
         urls = pages.map { |idx|
-          "/api/page/#{title.id}/#{entry.id}/#{idx}"
+          "#{base_url}api/page/#{title.id}/#{entry.id}/#{idx}"
         }
         reader_urls = pages.map { |idx|
-          "/reader/#{title.id}/#{entry.id}/#{idx}"
+          "#{base_url}reader/#{title.id}/#{entry.id}/#{idx}"
         }
         next_page = page + IMGS_PER_PAGE
         next_url = next_entry_url = nil
-        exit_url = "/book/#{title.id}"
+        exit_url = "#{base_url}book/#{title.id}"
         next_entry = title.next_entry entry
         unless next_page > entry.pages
-          next_url = "/reader/#{title.id}/#{entry.id}/#{next_page}"
+          next_url = "#{base_url}reader/#{title.id}/#{entry.id}/#{next_page}"
         end
         unless next_entry.nil?
-          next_entry_url = "/reader/#{title.id}/#{next_entry.id}"
+          next_entry_url = "#{base_url}reader/#{title.id}/#{next_entry.id}"
         end
 
-        base_url = Config.current.base_url
         render "src/views/reader.ecr"
       rescue e
         @context.error e
