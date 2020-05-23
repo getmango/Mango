@@ -36,7 +36,8 @@
 	word-wrap: break-word;
 }
 .uk-logo > img {
-	max-height: 90px;
+	height: 90px;
+	width: 90px;
 }
 .uk-search {
 	width: 100%;
