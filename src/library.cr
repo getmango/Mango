@@ -57,7 +57,7 @@ class Entry
   end
 
   def cover_url
-    url = "/api/page/#{@title_id}/#{@id}/1"
+    url = "#{Config.current.base_url}api/page/#{@title_id}/#{@id}/1"
     TitleInfo.new @book.dir do |info|
       info_url = info.entry_cover_url[@title]?
       unless info_url.nil? || info_url.empty?
