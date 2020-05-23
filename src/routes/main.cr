@@ -13,7 +13,7 @@ class MainRouter < Router
       rescue e
         @context.error "Error when attempting to log out: #{e}"
       ensure
-        env.redirect "/login"
+        redirect env, "/login"
       end
     end
 
@@ -26,9 +26,9 @@ class MainRouter < Router
         cookie = HTTP::Cookie.new "token", token
         cookie.expires = Time.local.shift years: 1
         env.response.cookies << cookie
-        env.redirect "/"
+        redirect env, "/"
       rescue
-        env.redirect "/login"
+        redirect env, "/login"
       end
     end
 

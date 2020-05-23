@@ -99,3 +99,8 @@ end
 def random_str
   UUID.random.to_s.gsub "-", ""
 end
+
+def redirect(env, path)
+  base = Config.current.base_url
+  env.redirect File.join base, path
+end

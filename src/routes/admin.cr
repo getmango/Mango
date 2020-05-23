@@ -48,13 +48,13 @@ class AdminRouter < Router
 
       @context.storage.new_user username, password, admin
 
-      env.redirect "/admin/user"
+      redirect env, "/admin/user"
     rescue e
       @context.error e
       redirect_url = URI.new \
         path: "/admin/user/edit",
         query: hash_to_query({"error" => e.message})
-      env.redirect redirect_url.to_s
+      redirect env, redirect_url.to_s
     end
 
     post "/admin/user/edit/:original_username" do |env|
@@ -85,14 +85,14 @@ class AdminRouter < Router
       @context.storage.update_user \
         original_username, username, password, admin
 
-      env.redirect "/admin/user"
+      redirect env, "/admin/user"
     rescue e
       @context.error e
       redirect_url = URI.new \
         path: "/admin/user/edit",
         query: hash_to_query({"username" => original_username, \
                                  "admin" => admin, "error" => e.message})
-      env.redirect redirect_url.to_s
+      redirect env, redirect_url.to_s
     end
 
     get "/admin/downloads" do |env|

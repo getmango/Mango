@@ -11,7 +11,7 @@ class AuthHandler < Kemal::Handler
 
     cookie = env.request.cookies.find { |c| c.name == "token" }
     if cookie.nil? || !@storage.verify_token cookie.value
-      return env.redirect "/login"
+      return redirect env, "/login"
     end
 
     if request_path_startswith env, ["/admin", "/api/admin", "/download"]

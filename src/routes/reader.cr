@@ -15,7 +15,7 @@ class ReaderRouter < Router
         #   might not have actually read them
         page = [page - 2 * IMGS_PER_PAGE, 1].max
 
-        env.redirect "/reader/#{title.id}/#{entry.id}/#{page}"
+        redirect env, "/reader/#{title.id}/#{entry.id}/#{page}"
       rescue e
         @context.error e
         env.response.status_code = 404
