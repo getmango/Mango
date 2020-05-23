@@ -4,6 +4,7 @@ class Config
   include YAML::Serializable
 
   property port : Int32 = 9000
+  property base_url : String = "/"
   property library_path : String = File.expand_path "~/mango/library",
     home: true
   property db_path : String = File.expand_path "~/mango/mango.db", home: true
