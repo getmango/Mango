@@ -4,6 +4,7 @@ IMGS_PER_PAGE     = 5
 UPLOAD_URL_PREFIX = "/uploads"
 
 macro layout(name)
+  base_url = Config.current.base_url
   begin
     cookie = env.request.cookies.find { |c| c.name == "token" }
     is_admin = false

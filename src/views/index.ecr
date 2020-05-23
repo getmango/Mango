@@ -23,7 +23,7 @@
 <div id="item-container" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
   <%- titles.each_with_index do |t, i| -%>
   <div class="item" data-mtime="<%= t.mtime.to_unix %>" data-progress="<%= percentage[i] %>">
-      <a class="acard" href="/book/<%= t.id %>">
+	  <a class="acard" href="<%= base_url %>book/<%= t.id %>">
         <div class="uk-card uk-card-default">
             <div class="uk-card-media-top">
               <img data-src="<%= t.cover_url %>" data-width data-height alt="" uk-img>
@@ -43,7 +43,7 @@
 
 <% content_for "script" do %>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery.dotdotdot/4.0.11/dotdotdot.js"></script>
-<script src="/js/dots.js"></script>
-<script src="/js/search.js"></script>
-<script src="/js/sort-items.js"></script>
+<script src="<%= base_url %>js/dots.js"></script>
+<script src="<%= base_url %>js/search.js"></script>
+<script src="<%= base_url %>js/sort-items.js"></script>
 <% end %>

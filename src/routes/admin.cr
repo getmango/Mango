@@ -96,7 +96,7 @@ class AdminRouter < Router
     end
 
     get "/admin/downloads" do |env|
-      base_url = Config.current.mangadex["base_url"]
+      mangadex_base_url = Config.current.mangadex["base_url"]
       layout "download-manager"
     end
   end

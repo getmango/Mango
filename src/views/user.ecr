@@ -12,7 +12,7 @@
 		<td><%= u[0] %></td>
 		<td><%= u[1] %></td>
 		<td>
-			<a href="/admin/user/edit?username=<%= u[0] %>&admin=<%= u[1] %>" uk-icon="file-edit"></a>
+			<a href="<%= base_url %>admin/user/edit?username=<%= u[0] %>&admin=<%= u[1] %>" uk-icon="file-edit"></a>
 			<%- if u[0] != username %>
 			<a href="#" onclick="remove('<%= u[0] %>');return false;" uk-icon="trash"></a>
 			<%- end %>
@@ -22,10 +22,10 @@
   </tbody>
 </table>
 
-<a href="/admin/user/edit" class="uk-button uk-button-primary">New User</a>
+<a href="<%= base_url %>admin/user/edit" class="uk-button uk-button-primary">New User</a>
 
 
 <% content_for "script" do %>
-<script src="/js/alert.js"></script>
-<script src="/js/user.js"></script>
+<script src="<%= base_url %>js/alert.js"></script>
+<script src="<%= base_url %>js/user.js"></script>
 <% end %>

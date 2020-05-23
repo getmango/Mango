@@ -1,4 +1,4 @@
-<form action="/admin/user/edit" method="post" accept-charset="utf-8">
+<form action="<%= base_url %>admin/user/edit" method="post" accept-charset="utf-8">
 
   <div class="uk-margin">
     <label class="uk-form-label" for="form-stacked-text">Username</label>
@@ -49,6 +49,6 @@
     error = '<%= error %>';
   <%- end -%>
 </script>
-<script src="/js/alert.js"></script>
-<script src="/js/user-edit.js"></script>
+<script src="<%= base_url %>js/alert.js"></script>
+<script src="<%= base_url %>js/user-edit.js"></script>
 <% end %>

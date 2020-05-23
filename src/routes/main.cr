@@ -3,6 +3,7 @@ require "./router"
 class MainRouter < Router
   def initialize
     get "/login" do |env|
+      base_url = Config.current.base_url
       render "src/views/login.ecr"
     end
 
@@ -59,7 +60,7 @@ class MainRouter < Router
     end
 
     get "/download" do |env|
-      base_url = Config.current.mangadex["base_url"]
+      mangadex_base_url = Config.current.mangadex["base_url"]
       layout "download"
     end
   end

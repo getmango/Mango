@@ -1,5 +1,5 @@
 <ul class="uk-list uk-list-large uk-list-divider">
-  <li data-url="/admin/user">User Managerment</li>
+  <li data-url="<%= base_url %>admin/user">User Managerment</li>
   <li onclick="if(!scanning){scan()}">
     <span id="scan">Scan Library Files</span>
     <span id="scan-status" class="uk-align-right">
@@ -7,12 +7,12 @@
       <span hidden></span>
     </span>
   </li>
-  <li data-url="/admin/downloads">Download Manager</li>
+  <li data-url="<%= base_url %>admin/downloads">Download Manager</li>
 </ul>
 
 <hr class="uk-divider-icon">
-<a class="uk-button uk-button-danger" href="/logout">Log Out</a>
+<a class="uk-button uk-button-danger" href="<%= base_url %>logout">Log Out</a>
 
 <% content_for "script" do %>
-<script src="/js/admin.js"></script>
+<script src="<%= base_url %>js/admin.js"></script>
 <% end %>

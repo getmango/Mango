@@ -24,9 +24,9 @@
 
 <% content_for "script" do %>
 <script>
-	var baseURL = "<%= base_url %>".replace(/\/$/, "");
+	var baseURL = "<%= mangadex_base_url %>".replace(/\/$/, "");
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
-<script src="/js/alert.js"></script>
-<script src="/js/download-manager.js"></script>
+<script src="<%= base_url %>js/alert.js"></script>
+<script src="<%= base_url %>js/download-manager.js"></script>
 <% end %>

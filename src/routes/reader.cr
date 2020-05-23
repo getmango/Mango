@@ -51,6 +51,7 @@ class ReaderRouter < Router
           next_entry_url = "/reader/#{title.id}/#{next_entry.id}"
         end
 
+        base_url = Config.current.base_url
         render "src/views/reader.ecr"
       rescue e
         @context.error e
