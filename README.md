@@ -50,7 +50,7 @@ The official docker images are available on [Dockerhub](https://hub.docker.com/r
 ### CLI
 
 ```
-Mango e-manga server/reader. Version 0.3.0
+Mango e-manga server/reader. Version 0.4.0
 
     -v, --version                    Show version
     -h, --help                       Show help
