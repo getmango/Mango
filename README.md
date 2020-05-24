@@ -35,7 +35,7 @@ Simply download the pre-built binary file `mango` for the latest [release](https
 
 ### Docker (via Dockerhub)
 
-The official docker images are available on [Dockerhub](https://hub.docker.com/r/hkalexling/mango). 
+The official docker images are available on [Dockerhub](https://hub.docker.com/r/hkalexling/mango).
 
 ### Build from source
 
@@ -65,7 +65,6 @@ The default config file location is `~/.config/mango/config.yml`. It might be di
 ---
 port: 9000
 base_url: /
-library_path: ~/mango/library
 db_path: ~/mango/mango.db
 scan_interval_minutes: 5
 log_level: info
@@ -97,8 +96,8 @@ You can organize your `.cbz/.zip` files in nested folders in the library directo
 └── Manga 2
     └── Vol. 1
         └── Ch.1 - Ch.3
-            ├── 1.zip 
-            ├── 2.zip 
+            ├── 1.zip
+            ├── 2.zip
             └── 3.zip
 ```
 
