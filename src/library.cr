@@ -287,6 +287,15 @@ class Title
       else
         info.progress[username][entry] = page
       end
+      # should this be a separate method?
+      # eg. def save_last_read(username, entry)
+      # if so, we would need to open the json file twice every
+      # time we save. Does that matter?
+      if info.last_read[username]?.nil?
+        info.last_read[username] = {entry => Time.utc}
+      else
+        info.last_read[username][entry] = Time.utc
+      end
       info.save
     end
   end
@@ -317,6 +326,18 @@ class Title
       total_pages += e.pages
     end
     read_pages / total_pages
+  end
+
+  def load_last_read(username, entry)
+    last_read = nil
+    TitleInfo.new @dir do |info|
+      unless info.last_read[username]?.nil? ||
+             info.last_read[username][entry]?.nil?
+        last_read = info.last_read[username][entry]
+      end
+    end
+    return nil if last_read.nil?
+    last_read
   end
 
   def next_entry(current_entry_obj)
@@ -350,6 +371,7 @@ class TitleInfo
   property entry_display_name = {} of String => String
   property cover_url = ""
   property entry_cover_url = {} of String => String
+  property last_read = {} of String => Hash(String, Time)
 
   @[JSON::Field(ignore: true)]
   property dir : String = ""

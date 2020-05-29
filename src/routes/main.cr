@@ -77,6 +77,7 @@ class MainRouter < Router
 
         percentage = continue_reading_entries.map do |e|
           e.book.load_percentage username, e.title
+          pp e.book.load_last_read username, e.title
         end
 
         layout "home"
