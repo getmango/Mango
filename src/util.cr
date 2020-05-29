@@ -85,12 +85,8 @@ def compare_alphanumerically(a : String, b : String)
   compare_alphanumerically split_by_alphanumeric(a), split_by_alphanumeric(b)
 end
 
-# When downloading from MangaDex, the zip/cbz file would not be valid
-#   before the download is completed. If we scan the zip file,
-#   Entry.new would throw, so we use this method to check before
-#   constructing Entry
-def validate_zip(path : String) : Exception?
-  file = Zip::File.new path
+def validate_archive(path : String) : Exception?
+  file = ArchiveFile.new path
   file.close
   return
 rescue e

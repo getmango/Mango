@@ -1,8 +1,8 @@
-require "zip"
 require "mime"
 require "json"
 require "uri"
 require "./util"
+require "./archive"
 
 struct Image
   property data : Bytes
@@ -25,7 +25,7 @@ class Entry
     @title = File.basename path, File.extname path
     @encoded_title = URI.encode @title
     @size = (File.size path).humanize_bytes
-    file = Zip::File.new path
+    file = ArchiveFile.new path
     @pages = file.entries.count do |e|
       ["image/jpeg", "image/png"].includes? \
         MIME.from_filename? e.filename
@@ -68,7 +68,8 @@ class Entry
   end
 
   def read_page(page_num)
-    Zip::File.open @zip_path do |file|
+    img = nil
+    ArchiveFile.open @zip_path do |file|
       page = file.entries
         .select { |e|
           ["image/jpeg", "image/png"].includes? \
@@ -78,16 +79,13 @@ class Entry
           compare_alphanumerically a.filename, b.filename
         }
         .[page_num - 1]
-      page.open do |io|
-        slice = Bytes.new page.uncompressed_size
-        bytes_read = io.read_fully? slice
-        unless bytes_read
-          return nil
-        end
-        return Image.new slice, MIME.from_filename(page.filename),
-          page.filename, bytes_read
+      data = file.read_entry page
+      if data
+        img = Image.new data, MIME.from_filename(page.filename), page.filename,
+          data.size
       end
     end
+    img
   end
 end
 
@@ -115,12 +113,12 @@ class Title
         @title_ids << title.id
         next
       end
-      if [".zip", ".cbz"].includes? File.extname path
-        zip_exception = validate_zip path
-        unless zip_exception.nil?
-          Logger.warn "File #{path} is corrupted or is not a valid zip " \
-                      "archive. Ignoring it."
-          Logger.debug "Zip error: #{zip_exception}"
+      if [".zip", ".cbz", ".rar", ".cbr"].includes? File.extname path
+        archive_exception = validate_archive path
+        unless archive_exception.nil?
+          Logger.warn "File #{path} is corrupted or is not a valid archive. " \
+                      "Ignoring it."
+          Logger.debug "Archive error: #{archive_exception}"
           next
         end
         entry = Entry.new path, self, @id, storage

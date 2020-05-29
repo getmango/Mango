@@ -371,7 +371,7 @@ module MangaDex
         writer.close
         Logger.debug "cbz File created at #{zip_path}"
 
-        zip_exception = validate_zip zip_path
+        zip_exception = validate_archive zip_path
         if !zip_exception.nil?
           @queue.add_message "The downloaded archive is corrupted. " \
                              "Error: #{zip_exception}", job

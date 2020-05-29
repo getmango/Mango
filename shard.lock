@@ -4,6 +4,10 @@ shards:
     github: crystal-ameba/ameba
     version: 0.12.0
 
+  archive:
+    github: hkalexling/archive.cr
+    commit: 64223b64d79afafcec67a127b92f21f6625ce5ce
+
   baked_file_system:
     github: schovi/baked_file_system
     version: 0.9.8
