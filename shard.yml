@@ -21,7 +21,5 @@ dependencies:
     github: schovi/baked_file_system
   archive:
     github: hkalexling/archive.cr
-
-development_dependencies:
   ameba:
     github: crystal-ameba/ameba
