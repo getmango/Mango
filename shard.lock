@@ -2,7 +2,7 @@ version: 1.0
 shards:
   ameba:
     github: crystal-ameba/ameba
-    version: 0.12.0
+    version: 0.12.1
 
   archive:
     github: hkalexling/archive.cr
@@ -11,6 +11,10 @@ shards:
   baked_file_system:
     github: schovi/baked_file_system
     version: 0.9.8
+
+  clim:
+    github: at-grandpa/clim
+    version: 0.12.0
 
   db:
     github: crystal-lang/crystal-db
