@@ -127,6 +127,8 @@ class Storage
   end
 
   def new_user(username, password, admin)
+    validate_username username
+    validate_password password
     admin = (admin ? 1 : 0)
     DB.open "sqlite3://#{@path}" do |db|
       hash = hash_password password
@@ -137,8 +139,10 @@ class Storage
 
   def update_user(original_username, username, password, admin)
     admin = (admin ? 1 : 0)
+    validate_username username
+    validate_password password unless password.empty?
     DB.open "sqlite3://#{@path}" do |db|
-      if password.size == 0
+      if password.empty?
         db.exec "update users set username = (?), admin = (?) " \
                 "where username = (?)",
           username, admin, original_username
