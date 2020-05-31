@@ -45,26 +45,50 @@ class CLI < Clim
         usage "mango admin user [arguments] [options]"
         help short: "-h"
         argument "action", type: String,
-          desc: "Action to make. Can be add/delete/update", required: true
+          desc: "Action to perform. Can be add/delete/update/list"
         argument "username", type: String,
           desc: "Username to update or delete"
         option "-u USERNAME", "--username=USERNAME", type: String,
           desc: "Username"
         option "-p PASSWORD", "--password=PASSWORD", type: String,
           desc: "Password"
-        option "--admin", desc: "Admin flag", type: Bool, default: false
+        option "-a", "--admin", desc: "Admin flag", type: Bool, default: false
         common_option
         run do |opts, args|
           Config.load(opts.config).set_current
+          storage = Storage.new nil, false
 
           case args.action
           when "add"
             throw "Options `-u` and `-p` required." if opts.username.nil? ||
                                                        opts.password.nil?
+            storage.new_user opts.username.not_nil!,
+              opts.password.not_nil!, opts.admin
           when "delete"
             throw "Argument `username` required." if args.username.nil?
+            storage.delete_user args.username
           when "update"
             throw "Argument `username` required." if args.username.nil?
+            username = opts.username || args.username
+            password = opts.password || ""
+            storage.update_user args.username, username.not_nil!,
+              password.not_nil!, opts.admin
+          when "list"
+            users = storage.list_users
+            name_length = users.map(&.[0].size).max
+            l_cell_width = ["username".size, name_length].max
+            r_cell_width = "admin access".size
+            header = " #{"username".ljust l_cell_width} | admin access "
+            puts "-" * header.size
+            puts header
+            puts "-" * header.size
+            users.each do |name, admin|
+              puts " #{name.ljust l_cell_width} | " \
+                   "#{admin.to_s.ljust r_cell_width} "
+            end
+            puts "-" * header.size
+          when nil
+            puts opts.help_string
           else
             throw "Unknown action \"#{args.action}\"."
           end
