@@ -22,7 +22,7 @@ class Storage
     @@default.not_nil!
   end
 
-  def initialize(db_path : String? = nil)
+  def initialize(db_path : String? = nil, init_user = true)
     @path = db_path || Config.current.db_path
     dir = File.dirname @path
     unless Dir.exists? dir
@@ -51,12 +51,15 @@ class Storage
         Logger.debug "Creating DB file at #{@path}"
         db.exec "create unique index username_idx on users (username)"
         db.exec "create unique index token_idx on users (token)"
-        random_pw = random_str
-        hash = hash_password random_pw
-        db.exec "insert into users values (?, ?, ?, ?)",
-          "admin", hash, nil, 1
-        Logger.log "Initial user created. You can log in with " \
-                   "#{{"username" => "admin", "password" => random_pw}}"
+
+        if init_user
+          random_pw = random_str
+          hash = hash_password random_pw
+          db.exec "insert into users values (?, ?, ?, ?)",
+            "admin", hash, nil, 1
+          Logger.log "Initial user created. You can log in with " \
+                     "#{{"username" => "admin", "password" => random_pw}}"
+        end
       end
     end
   end
