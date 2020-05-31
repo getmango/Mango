@@ -25,6 +25,7 @@ class MainRouter < Router
         token = @context.storage.verify_user(username, password).not_nil!
 
         cookie = HTTP::Cookie.new "token", token
+        cookie.path = Config.current.base_url
         cookie.expires = Time.local.shift years: 1
         env.response.cookies << cookie
         redirect env, "/"
