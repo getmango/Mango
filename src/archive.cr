@@ -50,4 +50,10 @@ class ArchiveFile
       e.read
     end
   end
+
+  def check
+    if @archive_file.is_a? Archive::File
+      @archive_file.as(Archive::File).check
+    end
+  end
 end

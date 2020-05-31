@@ -6,7 +6,7 @@ shards:
 
   archive:
     github: hkalexling/archive.cr
-    version: 0.1.0
+    version: 0.2.0
 
   baked_file_system:
     github: schovi/baked_file_system

@@ -87,6 +87,7 @@ end
 
 def validate_archive(path : String) : Exception?
   file = ArchiveFile.new path
+  file.check
   file.close
   return
 rescue e
