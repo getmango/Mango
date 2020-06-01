@@ -53,6 +53,7 @@ class Server
     AdminRouter.new
     ReaderRouter.new
     APIRouter.new
+    OPDSRouter.new
 
     Kemal.config.logging = false
     add_handler LogHandler.new
