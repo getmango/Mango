@@ -6,7 +6,9 @@ UPLOAD_URL_PREFIX = "/uploads"
 macro layout(name)
   base_url = Config.current.base_url
   begin
-    cookie = env.request.cookies.find { |c| c.name == "token" }
+    cookie = env.request.cookies.find do |c|
+      c.name == "token-#{Config.current.port}"
+    end
     is_admin = false
     unless cookie.nil?
       is_admin = @context.storage.verify_admin cookie.value
@@ -26,7 +28,9 @@ end
 macro get_username(env)
   # if the request gets here, it has gone through the auth handler, and
   #   we can be sure that a valid token exists, so we can use not_nil! here
-  cookie = {{env}}.request.cookies.find { |c| c.name == "token" }.not_nil!
+  cookie = {{env}}.request.cookies.find do |c|
+    c.name == "token-#{Config.current.port}"
+  end.not_nil!
   (@context.storage.verify_token cookie.value).not_nil!
 end
 

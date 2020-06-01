@@ -9,7 +9,9 @@ class AuthHandler < Kemal::Handler
   def call(env)
     return call_next(env) if request_path_startswith env, ["/login", "/logout"]
 
-    cookie = env.request.cookies.find { |c| c.name == "token" }
+    cookie = env.request.cookies.find do |c|
+      c.name == "token-#{Config.current.port}"
+    end
     if cookie.nil? || !@storage.verify_token cookie.value
       return redirect env, "/login"
     end
