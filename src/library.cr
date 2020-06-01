@@ -287,10 +287,7 @@ class Title
       else
         info.progress[username][entry] = page
       end
-      # should this be a separate method?
-      # eg. def save_last_read(username, entry)
-      # if so, we would need to open the json file twice every
-      # time we save. Does that matter?
+      # save last_read timestamp
       if info.last_read[username]?.nil?
         info.last_read[username] = {entry => Time.utc}
       else
@@ -336,7 +333,6 @@ class Title
         last_read = info.last_read[username][entry]
       end
     end
-    return nil if last_read.nil?
     last_read
   end
 
@@ -344,6 +340,12 @@ class Title
     idx = @entries.index current_entry_obj
     return nil if idx.nil? || idx == @entries.size - 1
     @entries[idx + 1]
+  end
+
+  def previous_entry(current_entry_obj)
+    idx = @entries.index current_entry_obj
+    return nil if idx.nil? || idx == 0
+    @entries[idx - 1]
   end
 
   def get_continue_reading_entry(username)
@@ -359,6 +361,16 @@ class Title
     else
       latest_read_entry
     end
+  end
+
+  # TODO: More concise title?
+  def get_last_read_for_continue_reading(username, entry_obj)
+    last_read = load_last_read username, entry_obj.title
+    if last_read.nil? # grab from previous entry if current entry hasn't been started yet
+      previous_entry = previous_entry(entry_obj)
+      return load_last_read username, previous_entry.title if previous_entry
+    end
+    last_read
   end
 end
 

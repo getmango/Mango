@@ -1,17 +1,17 @@
 <%- unless continue_reading_entries.empty? -%>
 <h2 class="uk-title home-headings">Continue Reading</h2>
 <div id="item-container-continue" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
-  <%- continue_reading_entries.each_with_index do |e, i| -%>
-  <div class="item" data-mtime="<%= e.mtime.to_unix %>" data-progress="<%= percentage[i] %>" id="<%= e.id %>">
+  <%- continue_reading.each do |cr| -%>
+  <div class="item" data-mtime="<%= cr[:entry].mtime.to_unix %>" data-progress="<%= cr[:percentage] %>" id="<%= cr[:entry].id %>">
       <a class="acard">
-		  <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= e.encoded_path %>&quot;, '<%= e.pages %>', <%= (percentage[i] * 100).round(1) %>, &quot;<%= e.book.encoded_display_name %>&quot;, &quot;<%= e.encoded_display_name %>&quot;, '<%= e.title_id %>', '<%= e.id %>')">
+		  <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= cr[:entry].encoded_path %>&quot;, '<%= cr[:entry].pages %>', <%= (cr[:percentage] * 100).round(1) %>, &quot;<%= cr[:entry].book.encoded_display_name %>&quot;, &quot;<%= cr[:entry].encoded_display_name %>&quot;, '<%= cr[:entry].title_id %>', '<%= cr[:entry].id %>')">
           <div class="uk-card-media-top">
-            <img data-src="<%= e.cover_url %>" alt="" data-width data-height uk-img>
+            <img data-src="<%= cr[:entry].cover_url %>" alt="" data-width data-height uk-img>
           </div>
           <div class="uk-card-body">
-            <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
-			<h3 class="uk-card-title break-word" data-title="<%= e.display_name.gsub("\"", "&quot;") %>"><%= e.display_name %></h3>
-              <p><%= e.pages %> pages</p>
+            <div class="uk-card-badge uk-label"><%= (cr[:percentage] * 100).round(1) %>%</div>
+			<h3 class="uk-card-title break-word" data-title="<%= cr[:entry].display_name.gsub("\"", "&quot;") %>"><%= cr[:entry].display_name %></h3>
+              <p><%= cr[:entry].pages %> pages</p>
           </div>
       </div>
       </a>
