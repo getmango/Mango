@@ -121,9 +121,8 @@ class Title
         end
         archive_exception = validate_archive path
         unless archive_exception.nil?
-          Logger.warn "File #{path} is corrupted or is not a valid archive. " \
-                      "Ignoring it."
-          Logger.debug "Archive error: #{archive_exception}"
+          Logger.warn "Unable to extract archive #{path}. Ignoring it. " \
+                      "Archive error: #{archive_exception}"
           next
         end
         entry = Entry.new path, self, @id, storage
