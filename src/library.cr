@@ -114,6 +114,11 @@ class Title
         next
       end
       if [".zip", ".cbz", ".rar", ".cbr"].includes? File.extname path
+        unless File.readable? path
+          Logger.warn "File #{path} is not readable. Please make sure the " \
+                      "file permission is configured correctly."
+          next
+        end
         archive_exception = validate_archive path
         unless archive_exception.nil?
           Logger.warn "File #{path} is corrupted or is not a valid archive. " \
