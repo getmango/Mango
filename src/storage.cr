@@ -22,7 +22,7 @@ class Storage
     @@default.not_nil!
   end
 
-  def initialize(db_path : String? = nil)
+  def initialize(db_path : String? = nil, init_user = true)
     @path = db_path || Config.current.db_path
     dir = File.dirname @path
     unless Dir.exists? dir
@@ -51,12 +51,15 @@ class Storage
         Logger.debug "Creating DB file at #{@path}"
         db.exec "create unique index username_idx on users (username)"
         db.exec "create unique index token_idx on users (token)"
-        random_pw = random_str
-        hash = hash_password random_pw
-        db.exec "insert into users values (?, ?, ?, ?)",
-          "admin", hash, nil, 1
-        Logger.log "Initial user created. You can log in with " \
-                   "#{{"username" => "admin", "password" => random_pw}}"
+
+        if init_user
+          random_pw = random_str
+          hash = hash_password random_pw
+          db.exec "insert into users values (?, ?, ?, ?)",
+            "admin", hash, nil, 1
+          Logger.log "Initial user created. You can log in with " \
+                     "#{{"username" => "admin", "password" => random_pw}}"
+        end
       end
     end
   end
@@ -124,6 +127,8 @@ class Storage
   end
 
   def new_user(username, password, admin)
+    validate_username username
+    validate_password password
     admin = (admin ? 1 : 0)
     DB.open "sqlite3://#{@path}" do |db|
       hash = hash_password password
@@ -134,8 +139,10 @@ class Storage
 
   def update_user(original_username, username, password, admin)
     admin = (admin ? 1 : 0)
+    validate_username username
+    validate_password password unless password.empty?
     DB.open "sqlite3://#{@path}" do |db|
-      if password.size == 0
+      if password.empty?
         db.exec "update users set username = (?), admin = (?) " \
                 "where username = (?)",
           username, admin, original_username

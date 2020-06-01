@@ -32,20 +32,6 @@ class AdminRouter < Router
       #   would not contain `admin`
       admin = !env.params.body["admin"]?.nil?
 
-      if username.size < 3
-        raise "Username should contain at least 3 characters"
-      end
-      if (username =~ /^[A-Za-z0-9_]+$/).nil?
-        raise "Username should contain alphanumeric characters " \
-              "and underscores only"
-      end
-      if password.size < 6
-        raise "Password should contain at least 6 characters"
-      end
-      if (password =~ /^[[:ascii:]]+$/).nil?
-        raise "password should contain ASCII characters only"
-      end
-
       @context.storage.new_user username, password, admin
 
       redirect env, "/admin/user"
@@ -64,23 +50,6 @@ class AdminRouter < Router
       # if `admin` is unchecked, the body hash would not contain `admin`
       admin = !env.params.body["admin"]?.nil?
       original_username = env.params.url["original_username"]
-
-      if username.size < 3
-        raise "Username should contain at least 3 characters"
-      end
-      if (username =~ /^[A-Za-z0-9_]+$/).nil?
-        raise "Username should contain alphanumeric characters " \
-              "and underscores only"
-      end
-
-      if password.size != 0
-        if password.size < 6
-          raise "Password should contain at least 6 characters"
-        end
-        if (password =~ /^[[:ascii:]]+$/).nil?
-          raise "password should contain ASCII characters only"
-        end
-      end
 
       @context.storage.update_user \
         original_username, username, password, admin
