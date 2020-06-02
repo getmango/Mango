@@ -11,7 +11,7 @@ Mango is a self-hosted manga server and reader. Its features include
 
 - Multi-user support
 - Dark/light mode switch
-- Supports both `.zip` and `.cbz` formats
+- Supported formats: `.cbz`, `.zip`, `.cbr` and `.rar`
 - Supports nested folders in library
 - Automatically stores reading progress
 - Built-in [MangaDex](https://mangadex.org/) downloader
@@ -35,7 +35,7 @@ Simply download the pre-built binary file `mango` for the latest [release](https
 
 ### Docker (via Dockerhub)
 
-The official docker images are available on [Dockerhub](https://hub.docker.com/r/hkalexling/mango). 
+The official docker images are available on [Dockerhub](https://hub.docker.com/r/hkalexling/mango).
 
 ### Build from source
 
@@ -85,7 +85,7 @@ mangadex:
 
 ### Library Structure
 
-You can organize your `.cbz/.zip` files in nested folders in the library directory. Here's an example:
+You can organize your archive files in nested folders in the library directory. Here's an example:
 
 ```
 .
@@ -97,8 +97,8 @@ You can organize your `.cbz/.zip` files in nested folders in the library directo
 └── Manga 2
     └── Vol. 1
         └── Ch.1 - Ch.3
-            ├── 1.zip 
-            ├── 2.zip 
+            ├── 1.zip
+            ├── 2.zip
             └── 3.zip
 ```
 
