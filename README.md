@@ -75,6 +75,7 @@ The default config file location is `~/.config/mango/config.yml`. It might be di
 ---
 port: 9000
 base_url: /
+library_path: ~/mango/library
 db_path: ~/mango/mango.db
 scan_interval_minutes: 5
 log_level: info
