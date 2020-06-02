@@ -45,7 +45,7 @@ end
 def with_storage
   with_default_config do
     temp_db = get_tempfile "mango-test-db"
-    storage = Storage.new temp_db.path
+    storage = Storage.new temp_db.path, false
     clear = yield storage, temp_db.path
     if clear == true
       temp_db.delete

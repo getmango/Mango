@@ -242,7 +242,10 @@ const buildTable = () => {
 	Object.entries(filters).forEach(([k, v]) => {
 		if (v === 'All') return;
 		if (k === 'group') {
-			chapters = chapters.filter(c => v in c.groups);
+			chapters = chapters.filter(c => {
+				unescaped_groups = Object.entries(c.groups).map(([g, id]) => unescapeHTML(g));
+				return unescaped_groups.indexOf(v) >= 0;
+			});
 			return;
 		}
 		if (k === 'lang') {
@@ -296,4 +299,10 @@ const buildTable = () => {
 		filter: 'tr'
 	});
 	$('#selection-controls').removeAttr('hidden');
+};
+
+const unescapeHTML = (str) => {
+   var elt = document.createElement("span");
+   elt.innerHTML = str;
+   return elt.innerText;
 };

@@ -11,7 +11,7 @@ Mango is a self-hosted manga server and reader. Its features include
 
 - Multi-user support
 - Dark/light mode switch
-- Supports both `.zip` and `.cbz` formats
+- Supported formats: `.cbz`, `.zip`, `.cbr` and `.rar`
 - Supports nested folders in library
 - Automatically stores reading progress
 - Built-in [MangaDex](https://mangadex.org/) downloader
@@ -39,7 +39,7 @@ The official docker images are available on [Dockerhub](https://hub.docker.com/r
 
 ### Build from source
 
-1. Make sure you have `crystal`, `shards` and `yarn` installed. You might also need to install the development headers for `libsqlite3` and `libyaml`.
+1. Make sure you have `crystal`, `shards` and `yarn` installed. You might also need to install the development headers of some libraries. Please see the [Dockerfile](https://github.com/hkalexling/Mango/blob/master/Dockerfile) for the full list of dependencies
 2. Clone the repository
 3. `make && sudo make install`
 4. Start Mango by running the command `mango`
@@ -50,11 +50,21 @@ The official docker images are available on [Dockerhub](https://hub.docker.com/r
 ### CLI
 
 ```
-Mango e-manga server/reader. Version 0.4.0
+  Mango - Manga Server and Web Reader. Version 0.5.0
 
-    -v, --version                    Show version
-    -h, --help                       Show help
-    -c PATH, --config=PATH           Path to the config file. Default is `~/.config/mango/config.yml`
+  Usage:
+
+    mango [sub_command] [options]
+
+  Options:
+
+    -c PATH, --config=PATH           Path to the config file [type:String]
+    -h, --help                       Show this help.
+    -v, --version                    Show version.
+
+  Sub Commands:
+
+    admin   Run admin tools
 ```
 
 ### Config
@@ -84,7 +94,7 @@ mangadex:
 
 ### Library Structure
 
-You can organize your `.cbz/.zip` files in nested folders in the library directory. Here's an example:
+You can organize your archive files in nested folders in the library directory. Here's an example:
 
 ```
 .

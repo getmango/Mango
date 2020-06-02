@@ -9,7 +9,9 @@ class MainRouter < Router
 
     get "/logout" do |env|
       begin
-        cookie = env.request.cookies.find { |c| c.name == "token" }.not_nil!
+        cookie = env.request.cookies.find do |c|
+          c.name == "token-#{Config.current.port}"
+        end.not_nil!
         @context.storage.logout cookie.value
       rescue e
         @context.error "Error when attempting to log out: #{e}"
@@ -24,7 +26,8 @@ class MainRouter < Router
         password = env.params.body["password"]
         token = @context.storage.verify_user(username, password).not_nil!
 
-        cookie = HTTP::Cookie.new "token", token
+        cookie = HTTP::Cookie.new "token-#{Config.current.port}", token
+        cookie.path = Config.current.base_url
         cookie.expires = Time.local.shift years: 1
         env.response.cookies << cookie
         redirect env, "/"

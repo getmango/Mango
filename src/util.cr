@@ -6,7 +6,9 @@ UPLOAD_URL_PREFIX = "/uploads"
 macro layout(name)
   base_url = Config.current.base_url
   begin
-    cookie = env.request.cookies.find { |c| c.name == "token" }
+    cookie = env.request.cookies.find do |c|
+      c.name == "token-#{Config.current.port}"
+    end
     is_admin = false
     unless cookie.nil?
       is_admin = @context.storage.verify_admin cookie.value
@@ -26,7 +28,9 @@ end
 macro get_username(env)
   # if the request gets here, it has gone through the auth handler, and
   #   we can be sure that a valid token exists, so we can use not_nil! here
-  cookie = {{env}}.request.cookies.find { |c| c.name == "token" }.not_nil!
+  cookie = {{env}}.request.cookies.find do |c|
+    c.name == "token-#{Config.current.port}"
+  end.not_nil!
   (@context.storage.verify_token cookie.value).not_nil!
 end
 
@@ -85,12 +89,9 @@ def compare_alphanumerically(a : String, b : String)
   compare_alphanumerically split_by_alphanumeric(a), split_by_alphanumeric(b)
 end
 
-# When downloading from MangaDex, the zip/cbz file would not be valid
-#   before the download is completed. If we scan the zip file,
-#   Entry.new would throw, so we use this method to check before
-#   constructing Entry
-def validate_zip(path : String) : Exception?
-  file = Zip::File.new path
+def validate_archive(path : String) : Exception?
+  file = ArchiveFile.new path
+  file.check
   file.close
   return
 rescue e
@@ -104,4 +105,23 @@ end
 def redirect(env, path)
   base = Config.current.base_url
   env.redirect File.join base, path
+end
+
+def validate_username(username)
+  if username.size < 3
+    raise "Username should contain at least 3 characters"
+  end
+  if (username =~ /^[A-Za-z0-9_]+$/).nil?
+    raise "Username should contain alphanumeric characters " \
+          "and underscores only"
+  end
+end
+
+def validate_password(password)
+  if password.size < 6
+    raise "Password should contain at least 6 characters"
+  end
+  if (password =~ /^[[:ascii:]]+$/).nil?
+    raise "password should contain ASCII characters only"
+  end
 end
