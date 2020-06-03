@@ -77,7 +77,7 @@ class CLI < Clim
               password.not_nil!, opts.admin
           when "list"
             users = storage.list_users
-            name_length = users.map(&.[0].size).max
+            name_length = users.map(&.[0].size).max? || 0
             l_cell_width = ["username".size, name_length].max
             r_cell_width = "admin access".size
             header = " #{"username".ljust l_cell_width} | admin access "
