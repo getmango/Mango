@@ -47,21 +47,28 @@ class Storage
           Logger.fatal "Error when checking tables in DB: #{e}"
           raise e
         end
+
+        # If the DB is initialized through CLI but no user is added, we need
+        #   to create the admin user when first starting the app
+        user_count = db.query_one "select count(*) from users", as: Int32
+        init_admin if init_user && user_count == 0
       else
         Logger.debug "Creating DB file at #{@path}"
         db.exec "create unique index username_idx on users (username)"
         db.exec "create unique index token_idx on users (token)"
 
-        if init_user
-          random_pw = random_str
-          hash = hash_password random_pw
-          db.exec "insert into users values (?, ?, ?, ?)",
-            "admin", hash, nil, 1
-          Logger.log "Initial user created. You can log in with " \
-                     "#{{"username" => "admin", "password" => random_pw}}"
-        end
+        init_admin if init_user
       end
     end
+  end
+
+  macro init_admin
+    random_pw = random_str
+    hash = hash_password random_pw
+    db.exec "insert into users values (?, ?, ?, ?)",
+      "admin", hash, nil, 1
+    Logger.log "Initial user created. You can log in with " \
+               "#{{"username" => "admin", "password" => random_pw}}"
   end
 
   def verify_user(username, password)
