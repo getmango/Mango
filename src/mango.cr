@@ -29,6 +29,8 @@ class CLI < Clim
       Config.load(opts.config).set_current
       MangaDex::Downloader.default
 
+      # empty ARGV so it won't be passed to Kemal
+      ARGV.clear
       server = Server.new
       server.start
     end
