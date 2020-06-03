@@ -1,4 +1,4 @@
-<%- unless continue_reading_entries.empty? -%>
+<%- unless continue_reading.empty? -%>
 <h2 class="uk-title home-headings">Continue Reading</h2>
 <div id="item-container-continue" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
   <%- continue_reading.each do |cr| -%>
@@ -19,7 +19,6 @@
   <%- end -%>
 </div>
 <%- end -%>
-
 
 <!-- TODO: DRY this code with calls in other ecr files? eg. title.ecr -->
 <div id="modal" class="uk-flex-top" uk-modal>

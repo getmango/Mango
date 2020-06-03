@@ -477,4 +477,54 @@ class Library
       end
     @logger.debug "Scan completed"
   end
+
+  def get_continue_reading_entries(username)
+    # map: get the continue-reading entry or nil for each Title
+    # select: select only entries (and ignore Nil's) from the array
+    #   produced by map
+    continue_reading_entries = titles.map { |t|
+      get_continue_reading_entry username, t
+    }.select Entry
+
+    continue_reading = continue_reading_entries.map_with_index { |e, i|
+      {
+        entry: e,
+        percentage: e.book.load_percentage(username, e.title),
+        last_read: get_relevant_last_read(username, e)
+      }
+    }
+
+    # Sort by by last_read, most recent first (nils at the end)
+    continue_reading.sort! do |a, b|
+      next 0 if a[:last_read].nil? && b[:last_read].nil?
+      next 1 if a[:last_read].nil?
+      next -1 if b[:last_read].nil?
+      b[:last_read].not_nil! <=> a[:last_read].not_nil!
+    end
+  end
+
+  
+  private def get_continue_reading_entry(username, title)
+    in_progress_entries = title.entries.select do |e|
+      title.load_progress(username, e.title) > 0
+    end
+    return nil if in_progress_entries.empty?
+
+    latest_read_entry = in_progress_entries[-1]
+    if title.load_progress(username, latest_read_entry.title) ==
+        latest_read_entry.pages
+      title.next_entry latest_read_entry
+    else
+      latest_read_entry
+    end
+  end
+
+  private def get_relevant_last_read(username, entry_obj)
+    last_read = entry_obj.book.load_last_read username, entry_obj.title
+    if last_read.nil? # grab from previous entry if current entry hasn't been started yet
+      previous_entry = entry_obj.book.previous_entry(entry_obj)
+      return entry_obj.book.load_last_read username, previous_entry.title if previous_entry
+    end
+    last_read
+  end
 end
