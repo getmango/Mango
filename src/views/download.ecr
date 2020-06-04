@@ -1,80 +1,80 @@
 <h2 class=uk-title>Download from MangaDex</h2>
 <div class="uk-grid-small" uk-grid>
-	<div class="uk-width-3-4">
-		<input id="search-input" class="uk-input" type="text" placeholder="MangaDex manga ID or URL">
-	</div>
-	<div class="uk-width-1-4">
-		<div id="spinner" uk-spinner class="uk-align-center" hidden></div>
-		<button id="search-btn" class="uk-button uk-button-default" onclick="search()">Search</button>
-	</div>
+  <div class="uk-width-3-4">
+    <input id="search-input" class="uk-input" type="text" placeholder="MangaDex manga ID or URL">
+  </div>
+  <div class="uk-width-1-4">
+    <div id="spinner" uk-spinner class="uk-align-center" hidden></div>
+    <button id="search-btn" class="uk-button uk-button-default" onclick="search()">Search</button>
+  </div>
 </div>
 <div class"uk-grid-small" uk-grid hidden id="manga-details">
-	<div class="uk-width-1-4@s">
-		<img id="cover">
-	</div>
-	<div class="uk-width-1-4@s">
-		<p id="title"></p>
-		<p id="artist"></p>
-		<p id="author"></p>
-	</div>
-	<div id="filter-form" class="uk-form-stacked uk-width-1-2@s" hidden>
-		<p class="uk-text-lead uk-margin-remove-bottom">Filter Chapters</p>
-		<p class="uk-text-meta uk-margin-remove-top" id="count-text"></p>
-			<div class="uk-margin">
-				<label class="uk-form-label" for="lang-select">Language</label>
-				<div class="uk-form-controls">
-					<select class="uk-select filter-field" id="lang-select">
-					</select>
-				</div>
-			</div>
-			<div class="uk-margin">
-				<label class="uk-form-label" for="group-select">Group</label>
-				<div class="uk-form-controls">
-					<select class="uk-select filter-field" id="group-select">
-					</select>
-				</div>
-			</div>
-			<div class="uk-margin">
-				<label class="uk-form-label" for="volume-range">Volume</label>
-				<div class="uk-form-controls">
-					<input class="uk-input filter-field" type="text" id="volume-range" placeholder="e.g., 127, 10-14, >30, <=212, or leave it empty.">
-				</div>
-			</div>
-			<div class="uk-margin">
-				<label class="uk-form-label" for="chapter-range">Chapter</label>
-				<div class="uk-form-controls">
-					<input class="uk-input filter-field" type="text" id="chapter-range" placeholder="e.g., 127, 10-14, >30, <=212, or leave it empty.">
-				</div>
-			</div>
-	</div>
+  <div class="uk-width-1-4@s">
+    <img id="cover">
+  </div>
+  <div class="uk-width-1-4@s">
+    <p id="title"></p>
+    <p id="artist"></p>
+    <p id="author"></p>
+  </div>
+  <div id="filter-form" class="uk-form-stacked uk-width-1-2@s" hidden>
+    <p class="uk-text-lead uk-margin-remove-bottom">Filter Chapters</p>
+    <p class="uk-text-meta uk-margin-remove-top" id="count-text"></p>
+    <div class="uk-margin">
+      <label class="uk-form-label" for="lang-select">Language</label>
+      <div class="uk-form-controls">
+        <select class="uk-select filter-field" id="lang-select">
+        </select>
+      </div>
+    </div>
+    <div class="uk-margin">
+      <label class="uk-form-label" for="group-select">Group</label>
+      <div class="uk-form-controls">
+        <select class="uk-select filter-field" id="group-select">
+        </select>
+      </div>
+    </div>
+    <div class="uk-margin">
+      <label class="uk-form-label" for="volume-range">Volume</label>
+      <div class="uk-form-controls">
+        <input class="uk-input filter-field" type="text" id="volume-range" placeholder="e.g., 127, 10-14, >30, <=212, or leave it empty.">
+      </div>
+    </div>
+    <div class="uk-margin">
+      <label class="uk-form-label" for="chapter-range">Chapter</label>
+      <div class="uk-form-controls">
+        <input class="uk-input filter-field" type="text" id="chapter-range" placeholder="e.g., 127, 10-14, >30, <=212, or leave it empty.">
+      </div>
+    </div>
+  </div>
 </div>
 <div id="selection-controls" class="uk-margin" hidden>
-	<div class="uk-margin">
-		<button class="uk-button uk-button-default" onclick="selectAll()">Select All</button>
-		<button class="uk-button uk-button-default" onclick="unselect()">Clear Selections</button>
-		<button class="uk-button uk-button-primary" id="download-btn" onclick="download()">Download Selected</button>
-		<div id="download-spinner" uk-spinner class="uk-margin-left" hidden></div>
-	</div>
-	<p class="uk-text-meta">Click on a table row to select the chapter. Drag your mouse over multiple rows to select them all. Hold Ctrl to make multiple non-adjacent selections.</p>
+  <div class="uk-margin">
+    <button class="uk-button uk-button-default" onclick="selectAll()">Select All</button>
+    <button class="uk-button uk-button-default" onclick="unselect()">Clear Selections</button>
+    <button class="uk-button uk-button-primary" id="download-btn" onclick="download()">Download Selected</button>
+    <div id="download-spinner" uk-spinner class="uk-margin-left" hidden></div>
+  </div>
+  <p class="uk-text-meta">Click on a table row to select the chapter. Drag your mouse over multiple rows to select them all. Hold Ctrl to make multiple non-adjacent selections.</p>
 </div>
 <p id="filter-notification" hidden></p>
 <table class="uk-table uk-table-striped uk-overflow-auto" hidden>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Language</th>
-			<th>Group</th>
-			<th>Volume</th>
-			<th>Chapter</th>
-			<th>Timestamp</th>
-        </tr>
-    </thead>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Title</th>
+      <th>Language</th>
+      <th>Group</th>
+      <th>Volume</th>
+      <th>Chapter</th>
+      <th>Timestamp</th>
+    </tr>
+  </thead>
 </table>
 
 <% content_for "script" do %>
 <script>
-	var baseURL = "<%= mangadex_base_url %>".replace(/\/$/, "");
+  var baseURL = "<%= mangadex_base_url %>".replace(/\/$/, "");
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>

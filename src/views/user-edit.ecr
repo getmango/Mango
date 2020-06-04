@@ -2,11 +2,7 @@
 
   <div class="uk-margin">
     <label class="uk-form-label" for="form-stacked-text">Username</label>
-    <input class="uk-input" type="text" name="username"
-      <%- if username -%>
-      value=<%= username %>
-      <%- end -%>
-    >
+    <input class="uk-input" type="text" name="username" <%- if username -%> value=<%= username %> <%- end -%>>
   </div>
   <%- if new_user -%>
   <div class="uk-margin">
@@ -16,11 +12,7 @@
   <%- end -%>
   <div class="uk-margin">
     <label class="uk-form-label" for="form-stacked-text">Admin Access</label>
-    <input class="uk-checkbox" type="checkbox" name="admin"
-    <%- if admin == true -%>
-      checked
-    <%- end -%>
-    >
+    <input class="uk-checkbox" type="checkbox" name="admin" <%- if admin == true -%> checked <%- end -%>>
   </div>
 
   <%- if !new_user -%>
@@ -43,10 +35,10 @@
   var username;
   var error;
   <%- if !new_user -%>
-    username = '/<%= username %>';
+  username = '/<%= username %>';
   <%- end -%>
-    <%- if error -%>
-    error = '<%= error %>';
+  <%- if error -%>
+  error = '<%= error %>';
   <%- end -%>
 </script>
 <script src="<%= base_url %>js/alert.js"></script>

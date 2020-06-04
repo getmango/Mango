@@ -1,30 +1,30 @@
 <div class="uk-margin">
-	<div id="actions" class="uk-margin">
-		<button class="uk-button uk-button-default" onclick="remove()">Delete Completed Tasks</button>
-		<button class="uk-button uk-button-default" onclick="refresh()">Retry Failed Tasks</button>
-		<button class="uk-button uk-button-default" onclick="load()">Refresh Queue</button>
-		<button class="uk-button uk-button-default" onclick="toggle()" id="pause-resume-btn" hidden></button>
-	</div>
-	<div id="config" class="uk-margin">
-		<label><input id="auto-refresh" class="uk-checkbox" type="checkbox" checked> Auto Refresh</label>
-	</div>
+  <div id="actions" class="uk-margin">
+    <button class="uk-button uk-button-default" onclick="remove()">Delete Completed Tasks</button>
+    <button class="uk-button uk-button-default" onclick="refresh()">Retry Failed Tasks</button>
+    <button class="uk-button uk-button-default" onclick="load()">Refresh Queue</button>
+    <button class="uk-button uk-button-default" onclick="toggle()" id="pause-resume-btn" hidden></button>
+  </div>
+  <div id="config" class="uk-margin">
+    <label><input id="auto-refresh" class="uk-checkbox" type="checkbox" checked> Auto Refresh</label>
+  </div>
 </div>
 <table class="uk-table uk-table-striped uk-overflow-auto">
-    <thead>
-        <tr>
-			<th>Chapter</th>
-			<th>Manga</th>
-			<th>Progress</th>
-			<th>Time</th>
-			<th>Status</th>
-			<th>Actions</th>
-        </tr>
-    </thead>
+  <thead>
+    <tr>
+      <th>Chapter</th>
+      <th>Manga</th>
+      <th>Progress</th>
+      <th>Time</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
 </table>
 
 <% content_for "script" do %>
 <script>
-	var baseURL = "<%= mangadex_base_url %>".replace(/\/$/, "");
+  var baseURL = "<%= mangadex_base_url %>".replace(/\/$/, "");
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
 <script src="<%= base_url %>js/alert.js"></script>
