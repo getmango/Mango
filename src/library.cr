@@ -61,7 +61,7 @@ class Entry
     TitleInfo.new @book.dir do |info|
       info_url = info.entry_cover_url[@title]?
       unless info_url.nil? || info_url.empty?
-        url = info_url
+        url = File.join Config.current.base_url, info_url
       end
     end
     url
@@ -233,14 +233,14 @@ class Title
   end
 
   def cover_url
-    url = "img/icon.png"
+    url = "#{Config.current.base_url}img/icon.png"
     if @entries.size > 0
       url = @entries[0].cover_url
     end
     TitleInfo.new @dir do |info|
       info_url = info.cover_url
       unless info_url.nil? || info_url.empty?
-        url = info_url
+        url = File.join Config.current.base_url, info_url
       end
     end
     url
