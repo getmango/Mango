@@ -17,7 +17,8 @@ end
 class Entry
   property zip_path : String, book : Title, title : String,
     size : String, pages : Int32, id : String, title_id : String,
-    encoded_path : String, encoded_title : String, mtime : Time
+    encoded_path : String, encoded_title : String, mtime : Time,
+    date_added : Time
 
   def initialize(path, @book, @title_id, storage)
     @zip_path = path
@@ -33,6 +34,7 @@ class Entry
     file.close
     @id = storage.get_id @zip_path, false
     @mtime = File.info(@zip_path).modification_time
+    @date_added = load_date_added
   end
 
   def to_json(json : JSON::Builder)
@@ -88,6 +90,20 @@ class Entry
           page.filename, bytes_read
       end
     end
+  end
+
+  private def load_date_added
+    date_added = nil
+    TitleInfo.new @book.dir do |info|
+      info_da = info.date_added[@title]?
+      if info_da.nil?
+        date_added = info.date_added[@title] = ctime @zip_path
+        info.save
+      else
+        date_added = info_da
+      end
+    end
+    date_added.not_nil! # is it ok to set not_nil! here?
   end
 end
 
@@ -384,6 +400,7 @@ class TitleInfo
   property cover_url = ""
   property entry_cover_url = {} of String => String
   property last_read = {} of String => Hash(String, Time)
+  property date_added = {} of String => Time
 
   @[JSON::Field(ignore: true)]
   property dir : String = ""
@@ -486,7 +503,7 @@ class Library
       get_continue_reading_entry username, t
     }.select Entry
 
-    continue_reading = continue_reading_entries.map_with_index { |e, i|
+    continue_reading = continue_reading_entries.map { |e|
       {
         entry: e,
         percentage: e.book.load_percentage(username, e.title),
@@ -495,12 +512,26 @@ class Library
     }
 
     # Sort by by last_read, most recent first (nils at the end)
-    continue_reading.sort! do |a, b|
+    continue_reading.sort! { |a, b|
       next 0 if a[:last_read].nil? && b[:last_read].nil?
       next 1 if a[:last_read].nil?
       next -1 if b[:last_read].nil?
       b[:last_read].not_nil! <=> a[:last_read].not_nil!
+    }[0..11]
+  end
+
+  def get_recently_added_entries(username)
+    entries = [] of Entry
+    titles.each do |t|
+      t.entries.each { |e| entries << e }
     end
+    recently_added = entries.map { |e|
+      {
+        entry: e,
+        percentage: e.book.load_percentage(username, e.title)
+      }
+    }
+    recently_added.sort! { |a, b| b[:entry].date_added <=> a[:entry].date_added }[0..11]
   end
 
   

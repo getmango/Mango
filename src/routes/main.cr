@@ -67,6 +67,7 @@ class MainRouter < Router
       begin
         username = get_username env
         continue_reading = @context.library.get_continue_reading_entries username
+        recently_added = @context.library.get_recently_added_entries username
 
         layout "home"
       rescue e
