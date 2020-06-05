@@ -39,6 +39,12 @@ def send_json(env, json)
   env.response.print json
 end
 
+def send_attachment(env, path)
+  MIME.register ".cbz", "application/vnd.comicbook+zip"
+  MIME.register ".cbr", "application/vnd.comicbook-rar"
+  send_file env, path, filename: File.basename(path), disposition: "attachment"
+end
+
 def hash_to_query(hash)
   hash.map { |k, v| "#{k}=#{v}" }.join("&")
 end
@@ -124,4 +130,8 @@ def validate_password(password)
   if (password =~ /^[[:ascii:]]+$/).nil?
     raise "password should contain ASCII characters only"
   end
+end
+
+macro render_xml(path)
+  send_file env, ECR.render({{path}}).to_slice, "application/xml"
 end
