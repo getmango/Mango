@@ -4,8 +4,8 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>urn:mango:index</id>
 
-  <link rel="self" href="/opds/" type="application/atom+xml;profile=opds-catalog;kind=navigation" />
-  <link rel="start" href="/opds/" type="application/atom+xml;profile=opds-catalog;kind=navigation" />
+  <link rel="self" href="<%= base_url %>opds/" type="application/atom+xml;profile=opds-catalog;kind=navigation" />
+  <link rel="start" href="<%= base_url %>opds/" type="application/atom+xml;profile=opds-catalog;kind=navigation" />
 
   <title>Library</title>
 
@@ -18,7 +18,7 @@
   <entry>
     <title><%= t.display_name %></title>
     <id>urn:mango:<%= t.id %></id>
-    <link type="application/atom+xml;profile=opds-catalog;kind=navigation" rel="subsection" href="/opds/book/<%= t.id %>" />
+    <link type="application/atom+xml;profile=opds-catalog;kind=navigation" rel="subsection" href="<%= base_url %>opds/book/<%= t.id %>" />
   </entry>
   <% end %>
 </feed>

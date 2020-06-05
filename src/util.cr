@@ -133,6 +133,7 @@ def validate_password(password)
 end
 
 macro render_xml(path)
+  base_url = Config.current.base_url
   send_file env, ECR.render({{path}}).to_slice, "application/xml"
 end
 
