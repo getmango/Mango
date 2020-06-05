@@ -26,10 +26,7 @@ class MainRouter < Router
         password = env.params.body["password"]
         token = @context.storage.verify_user(username, password).not_nil!
 
-        cookie = HTTP::Cookie.new "token-#{Config.current.port}", token
-        cookie.path = Config.current.base_url
-        cookie.expires = Time.local.shift years: 1
-        env.response.cookies << cookie
+        set_token_cookie env, token
         redirect env, "/"
       rescue
         redirect env, "/login"

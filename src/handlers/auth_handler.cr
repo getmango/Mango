@@ -43,12 +43,7 @@ class AuthHandler < Kemal::Handler
           token = verify_user value
           return false if token.nil?
 
-          # TODO use port number in token key
-          cookie = HTTP::Cookie.new "token", token
-          cookie.path = Config.current.base_url
-          cookie.expires = Time.local.shift years: 1
-          env.response.cookies << cookie
-
+          set_token_cookie env, token
           return true
         end
       end

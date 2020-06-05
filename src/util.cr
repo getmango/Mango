@@ -135,3 +135,10 @@ end
 macro render_xml(path)
   send_file env, ECR.render({{path}}).to_slice, "application/xml"
 end
+
+def set_token_cookie(env, token)
+  cookie = HTTP::Cookie.new "token-#{Config.current.port}", token
+  cookie.path = Config.current.base_url
+  cookie.expires = Time.local.shift years: 1
+  env.response.cookies << cookie
+end
