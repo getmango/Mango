@@ -1,6 +1,3 @@
-
-
-
 ![banner](./public/img/banner-paddings.png)
 
 # Mango
@@ -10,6 +7,7 @@
 Mango is a self-hosted manga server and reader. Its features include
 
 - Multi-user support
+- OPDS support
 - Dark/light mode switch
 - Supported formats: `.cbz`, `.zip`, `.cbr` and `.rar`
 - Supports nested folders in library
