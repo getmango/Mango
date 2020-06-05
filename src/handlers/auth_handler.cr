@@ -15,7 +15,6 @@ class AuthHandler < Kemal::Handler
   end
 
   def require_basic_auth(env)
-    headers = HTTP::Headers.new
     env.response.status_code = 401
     env.response.headers["WWW-Authenticate"] = HEADER_LOGIN_REQUIRED
     env.response.print AUTH_MESSAGE
@@ -59,9 +58,8 @@ class AuthHandler < Kemal::Handler
 
   def handle_opds_auth(env)
     if validate_cookie_token(env) || validate_auth_header(env)
-      return call_next env
+      call_next env
     else
-      headers = HTTP::Headers.new
       env.response.status_code = 401
       env.response.headers["WWW-Authenticate"] = HEADER_LOGIN_REQUIRED
       env.response.print AUTH_MESSAGE
