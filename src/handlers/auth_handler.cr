@@ -36,7 +36,16 @@ class AuthHandler < Kemal::Handler
     if env.request.headers[AUTH]?
       if value = env.request.headers[AUTH]
         if value.size > 0 && value.starts_with?(BASIC)
-          return !verify_user(value).nil?
+          token = verify_user value
+          return false if token.nil?
+
+          # TODO use port number in token key
+          cookie = HTTP::Cookie.new "token", token
+          cookie.path = Config.current.base_url
+          cookie.expires = Time.local.shift years: 1
+          env.response.cookies << cookie
+
+          return true
         end
       end
     end
