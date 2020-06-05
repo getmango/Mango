@@ -127,3 +127,7 @@ def validate_password(password)
     raise "password should contain ASCII characters only"
   end
 end
+
+macro render_xml(path)
+  send_file env, ECR.render({{path}}).to_slice, "application/xml"
+end
