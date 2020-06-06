@@ -1,0 +1,8 @@
+<div class="uk-form-horizontal">
+  <select class="uk-select" id="sort-select">
+    <% hash.each do |k, v| %>
+    <option id="<%= k %>-up">▲ <%= v %></option>
+    <option id="<%= k %>-down">▼ <%= v %></option>
+    <% end %>
+  </select>
+</div>

@@ -143,3 +143,7 @@ def set_token_cookie(env, token)
   cookie.expires = Time.local.shift years: 1
   env.response.cookies << cookie
 end
+
+macro render_component(filename)
+  render "src/views/components/#{{{filename}}}.ecr"
+end

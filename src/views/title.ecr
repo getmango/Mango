@@ -22,52 +22,24 @@
     </form>
   </div>
   <div class="uk-margin-bottom uk-width-1-4@s">
-    <div class="uk-form-horizontal">
-      <select class="uk-select" id="sort-select">
-        <option id="auto-up">▲ Auto</option>
-        <option id="auto-down">▼ Auto</option>
-        <option id="name-up">▲ Name</option>
-        <option id="name-down">▼ Name</option>
-        <option id="date-up">▲ Date Modified</option>
-        <option id="date-down">▼ Date Modified</option>
-        <option id="progress-up">▲ Progress</option>
-        <option id="progress-down">▼ Progress</option>
-      </select>
-    </div>
+    <% hash = {
+      "auto" => "Auto",
+      "name" => "Name",
+      "date" => "Date Modified",
+      "progress" => "Progress"
+    } %>
+    <%= render_component "sort-form" %>
   </div>
 </div>
 <div id="item-container" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
-  <%- title.titles.each_with_index do |t, i| -%>
-  <div class="item" data-mtime="<%= t.mtime.to_unix %>" data-progress="0.0">
-    <a class="acard" href="<%= base_url %>book/<%= t.id %>">
-      <div class="uk-card uk-card-default">
-        <div class="uk-card-media-top">
-          <img data-src="<%= t.cover_url %>" data-width data-height alt="" uk-img>
-        </div>
-        <div class="uk-card-body">
-          <h3 class="uk-card-title break-word" data-title="<%= t.display_name.gsub("\"", "&quot;") %>"><%= t.display_name %></h3>
-          <p><%= t.size %> entries</p>
-        </div>
-      </div>
-    </a>
-  </div>
-  <%- end -%>
-  <%- title.entries.each_with_index do |e, i| -%>
-  <div class="item" data-mtime="<%= e.mtime.to_unix %>" data-progress="<%= percentage[i] %>" id="<%= e.id %>">
-    <a class="acard">
-      <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= e.encoded_path %>&quot;, '<%= e.pages %>', <%= (percentage[i] * 100).round(1) %>, &quot;<%= title.encoded_display_name %>&quot;, &quot;<%= e.encoded_display_name %>&quot;, '<%= e.title_id %>', '<%= e.id %>')">
-        <div class="uk-card-media-top">
-          <img data-src="<%= e.cover_url %>" alt="" data-width data-height uk-img>
-        </div>
-        <div class="uk-card-body">
-          <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
-          <h3 class="uk-card-title break-word" data-title="<%= e.display_name.gsub("\"", "&quot;") %>"><%= e.display_name %></h3>
-          <p><%= e.pages %> pages</p>
-        </div>
-      </div>
-    </a>
-  </div>
-  <%- end -%>
+  <% title.titles.each_with_index do |item, i| %>
+  <% progress = nil %>
+  <%= render_component "card" %>
+  <% end %>
+  <% title.entries.each_with_index do |item, i| %>
+  <% progress = percentage[i] %>
+  <%= render_component "card" %>
+  <% end %>
 </div>
 
 <div id="modal" class="uk-flex-top" uk-modal>

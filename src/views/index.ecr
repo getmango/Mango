@@ -8,37 +8,19 @@
     </form>
   </div>
   <div class="uk-margin-bottom uk-width-1-4@s">
-    <div class="uk-form-horizontal">
-      <select class="uk-select" id="sort-select">
-        <option id="name-up">▲ Name</option>
-        <option id="name-down">▼ Name</option>
-        <option id="date-up">▲ Date Modified</option>
-        <option id="date-down">▼ Date Modified</option>
-        <option id="progress-up">▲ Progress</option>
-        <option id="progress-down">▼ Progress</option>
-      </select>
-    </div>
+    <% hash = {
+      "name" => "Name",
+      "date" => "Date Modified",
+      "progress" => "Progress"
+    } %>
+    <%= render_component "sort-form" %>
   </div>
 </div>
 <div id="item-container" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
-  <%- titles.each_with_index do |t, i| -%>
-  <div class="item" data-mtime="<%= t.mtime.to_unix %>" data-progress="<%= percentage[i] %>">
-    <a class="acard" href="<%= base_url %>book/<%= t.id %>">
-      <div class="uk-card uk-card-default">
-        <div class="uk-card-media-top">
-          <img data-src="<%= t.cover_url %>" data-width data-height alt="" uk-img>
-        </div>
-        <div class="uk-card-body">
-          <%- if t.entries.size > 0 -%>
-          <div class="uk-card-badge uk-label"><%= (percentage[i] * 100).round(1) %>%</div>
-          <%- end -%>
-          <h3 class="uk-card-title break-word" data-title="<%= t.display_name.gsub("\"", "&quot;") %>"><%= t.display_name %></h3>
-          <p><%= t.size %> entries</p>
-        </div>
-      </div>
-    </a>
-  </div>
-  <%- end -%>
+  <% titles.each_with_index do |item, i| %>
+  <% progress = percentage[i] %>
+  <%= render_component "card" %>
+  <% end %>
 </div>
 
 <% content_for "script" do %>
