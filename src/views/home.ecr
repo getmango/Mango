@@ -1,89 +1,127 @@
-<%- unless continue_reading.empty? -%>
-<h2 class="uk-title home-headings">Continue Reading</h2>
-<div id="item-container-continue" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
-  <%- continue_reading.each do |cr| -%>
-  <div class="item" data-mtime="<%= cr[:entry].mtime.to_unix %>" data-progress="<%= cr[:percentage] %>" id="<%= cr[:entry].id %>">
-      <a class="acard">
-      <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= cr[:entry].encoded_path %>&quot;, '<%= cr[:entry].pages %>', <%= (cr[:percentage] * 100).round(1) %>, &quot;<%= cr[:entry].book.encoded_display_name %>&quot;, &quot;<%= cr[:entry].encoded_display_name %>&quot;, '<%= cr[:entry].title_id %>', '<%= cr[:entry].id %>')">
-          <div class="uk-card-media-top">
-            <img data-src="<%= cr[:entry].cover_url %>" alt="" data-width data-height uk-img>
-          </div>
-          <div class="uk-card-body">
-            <div class="uk-card-badge uk-label"><%= (cr[:percentage] * 100).round(1) %>%</div>
-      <h3 class="uk-card-title break-word" data-title="<%= cr[:entry].display_name.gsub("\"", "&quot;") %>"><%= cr[:entry].display_name %></h3>
-              <p><%= cr[:entry].pages %> pages</p>
-          </div>
-      </div>
-      </a>
-    </div>
-  <%- end -%>
-</div>
-<%- end -%>
+<%- if new_user && empty_library -%>
 
-<%- unless recently_added.empty? -%>
-<h2 class="uk-title home-headings">Recently Added</h2>
-<div id="item-container-continue" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
-  <%- recently_added.each do |ra| -%>
-    <%- if ra[:grouped_count] == 1 -%>
-    <div class="item" data-progress="<%= ra[:percentage] %>" id="<%= ra[:entry].id %>">
-      <a class="acard">
-        <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= ra[:entry].encoded_path %>&quot;, '<%= ra[:entry].pages %>', <%= (ra[:percentage] * 100).round(1) %>, &quot;<%= ra[:entry].book.encoded_display_name %>&quot;, &quot;<%= ra[:entry].encoded_display_name %>&quot;, '<%= ra[:entry].title_id %>', '<%= ra[:entry].id %>')">
-          <div class="uk-card-media-top">
-            <img data-src="<%= ra[:entry].cover_url %>" alt="" data-width data-height uk-img>
-          </div>
-          <div class="uk-card-body">
-            <div class="uk-card-badge uk-label"><%= (ra[:percentage] * 100).round(1) %>%</div>
-            <h3 class="uk-card-title break-word" data-title="<%= ra[:entry].display_name.gsub("\"", "&quot;") %>"><%= ra[:entry].display_name %></h3>
-            <p><%= ra[:entry].pages %> pages</p>
-          </div>
+  <div class="uk-container uk-text-center">
+    <i class="fas fa-plus" style="font-size: 80px;"></i>
+    <h2>Add your first manga</h2>
+    <p style="margin-bottom: 40px;">We can't find any files yet. Add some to your library and they'll appear here.</p>
+    <dl class="uk-description-list">
+      <dt style="font-weight: 500;">Current library path</dt>
+      <dd><code><%= @context.config.library_path %></code></dd>
+      <dt style="font-weight: 500;">Want to change your library path?</dt>
+      <dd>Update <code>config.yml</code> located at: <code>/can/I/access/config_path/from/view?</code></dd>
+      <dt style="font-weight: 500;">Can't see your files yet?</dt>
+      <dd>You must wait <%= @context.config.scan_interval %> minutes for the library scan to complete, or restart Mango.</dd>
+    </dl>
+  </div>
+
+<%- elsif new_user && empty_library == false -%>
+
+  <div class="uk-container uk-text-center">
+    <i class="fas fa-book-open" style="font-size: 80px;"></i>
+    <h2>Read your first manga</h2>
+    <p>Once you start reading, Mango will remember where you left off
+    and show your entries here.</p>
+    <a href="/library" class="uk-button uk-button-default">View library</a>
+  </div>
+
+<%- elsif new_user == false && empty_library == false -%>
+
+  <%- if continue_reading.empty? && recently_added.empty? -%>
+  <div class="uk-container uk-text-center">
+    <img src="/img/banner.png" style="max-width: 400px; padding: 0 20px;">
+    <p>A self-hosted manga server and reader</p>
+    <a href="/library" class="uk-button uk-button-default">View library</a>
+  </div>
+  <%- end -%>
+
+  <%- unless continue_reading.empty? -%>
+  <h2 class="uk-title home-headings">Continue Reading</h2>
+  <div id="item-container-continue" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
+    <%- continue_reading.each do |cr| -%>
+    <div class="item" data-mtime="<%= cr[:entry].mtime.to_unix %>" data-progress="<%= cr[:percentage] %>" id="<%= cr[:entry].id %>">
+        <a class="acard">
+        <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= cr[:entry].encoded_path %>&quot;, '<%= cr[:entry].pages %>', <%= (cr[:percentage] * 100).round(1) %>, &quot;<%= cr[:entry].book.encoded_display_name %>&quot;, &quot;<%= cr[:entry].encoded_display_name %>&quot;, '<%= cr[:entry].title_id %>', '<%= cr[:entry].id %>')">
+            <div class="uk-card-media-top">
+              <img data-src="<%= cr[:entry].cover_url %>" alt="" data-width data-height uk-img>
+            </div>
+            <div class="uk-card-body">
+              <div class="uk-card-badge uk-label"><%= (cr[:percentage] * 100).round(1) %>%</div>
+        <h3 class="uk-card-title break-word" data-title="<%= cr[:entry].display_name.gsub("\"", "&quot;") %>"><%= cr[:entry].display_name %></h3>
+                <p><%= cr[:entry].pages %> pages</p>
+            </div>
         </div>
-      </a>
-    </div>
-    <%- else -%>
-    <div class="item">
-      <a class="acard" href="/book/<%= ra[:entry].book.id %>">
-        <div class="uk-card uk-card-default">
-          <div class="uk-card-media-top">
-            <img data-src="<%= ra[:entry].cover_url %>" data-width data-height alt="" uk-img>
-          </div>
-          <div class="uk-card-body">
-            <h3 class="uk-card-title break-word" data-title="<%= ra[:entry].book.display_name.gsub("\"", "&quot;") %>"><%= ra[:entry].book.display_name %></h3>
-            <p><%= ra[:grouped_count] %> new entries</p>
-          </div>
-        </div>
-      </a>
-    </div>
+        </a>
+      </div>
     <%- end -%>
+  </div>
   <%- end -%>
-</div>
-<%- end -%>
 
-<!-- TODO: DRY this code with calls in other ecr files? eg. title.ecr -->
-<div id="modal" class="uk-flex-top" uk-modal>
-  <div class="uk-modal-dialog uk-margin-auto-vertical">
-    <button class="uk-modal-close-default" type="button" uk-close></button>
-    <div class="uk-modal-header">
-      <div>
-        <h4 class="uk-margin-remove-bottom"><a id="modal-title-link"></a></h4>
-    <h3 class="uk-modal-title break-word uk-margin-remove-top" id="modal-entry-title"><span></span></h3>
+  <%- unless recently_added.empty? -%>
+  <h2 class="uk-title home-headings">Recently Added</h2>
+  <div id="item-container-continue" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
+    <%- recently_added.each do |ra| -%>
+      <%- if ra[:grouped_count] == 1 -%>
+      <div class="item" data-progress="<%= ra[:percentage] %>" id="<%= ra[:entry].id %>">
+        <a class="acard">
+          <div class="uk-card uk-card-default" onclick="showModal(&quot;<%= ra[:entry].encoded_path %>&quot;, '<%= ra[:entry].pages %>', <%= (ra[:percentage] * 100).round(1) %>, &quot;<%= ra[:entry].book.encoded_display_name %>&quot;, &quot;<%= ra[:entry].encoded_display_name %>&quot;, '<%= ra[:entry].title_id %>', '<%= ra[:entry].id %>')">
+            <div class="uk-card-media-top">
+              <img data-src="<%= ra[:entry].cover_url %>" alt="" data-width data-height uk-img>
+            </div>
+            <div class="uk-card-body">
+              <div class="uk-card-badge uk-label"><%= (ra[:percentage] * 100).round(1) %>%</div>
+              <h3 class="uk-card-title break-word" data-title="<%= ra[:entry].display_name.gsub("\"", "&quot;") %>"><%= ra[:entry].display_name %></h3>
+              <p><%= ra[:entry].pages %> pages</p>
+            </div>
+          </div>
+        </a>
       </div>
-      <p class="uk-text-meta uk-margin-remove-bottom break-word" id="path-text"></p>
-      <p class="uk-text-meta uk-margin-remove-top" id="pages-text"></p>
-    </div>
-    <div class="uk-modal-body">
-      <p>Read</p>
-      <p uk-margin>
-        <a id="beginning-btn" class="uk-button uk-button-default">From beginning</a>
-        <a id="continue-btn" class="uk-button uk-button-primary"></a>
-      </p>
-      <p>Progress</p>
-      <p uk-margin>
-        <button id="read-btn" class="uk-button uk-button-default">Mark as read (100%)</button>
-        <button id="unread-btn" class="uk-button uk-button-default">Mark as unread (0%)</button>
-      </p>
+      <%- else -%>
+      <div class="item">
+        <a class="acard" href="/book/<%= ra[:entry].book.id %>">
+          <div class="uk-card uk-card-default">
+            <div class="uk-card-media-top">
+              <img data-src="<%= ra[:entry].cover_url %>" data-width data-height alt="" uk-img>
+            </div>
+            <div class="uk-card-body">
+              <h3 class="uk-card-title break-word" data-title="<%= ra[:entry].book.display_name.gsub("\"", "&quot;") %>"><%= ra[:entry].book.display_name %></h3>
+              <p><%= ra[:grouped_count] %> new entries</p>
+            </div>
+          </div>
+        </a>
+      </div>
+      <%- end -%>
+    <%- end -%>
+  </div>
+  <%- end -%>
+
+  <!-- TODO: DRY this code with calls in other ecr files? eg. title.ecr -->
+  <div id="modal" class="uk-flex-top" uk-modal>
+    <div class="uk-modal-dialog uk-margin-auto-vertical">
+      <button class="uk-modal-close-default" type="button" uk-close></button>
+      <div class="uk-modal-header">
+        <div>
+          <h4 class="uk-margin-remove-bottom"><a id="modal-title-link"></a></h4>
+      <h3 class="uk-modal-title break-word uk-margin-remove-top" id="modal-entry-title"><span></span></h3>
+        </div>
+        <p class="uk-text-meta uk-margin-remove-bottom break-word" id="path-text"></p>
+        <p class="uk-text-meta uk-margin-remove-top" id="pages-text"></p>
+      </div>
+      <div class="uk-modal-body">
+        <p>Read</p>
+        <p uk-margin>
+          <a id="beginning-btn" class="uk-button uk-button-default">From beginning</a>
+          <a id="continue-btn" class="uk-button uk-button-primary"></a>
+        </p>
+        <p>Progress</p>
+        <p uk-margin>
+          <button id="read-btn" class="uk-button uk-button-default">Mark as read (100%)</button>
+          <button id="unread-btn" class="uk-button uk-button-default">Mark as unread (0%)</button>
+        </p>
+      </div>
     </div>
   </div>
-</div>
+
+<%- end -%>
 
 <% content_for "script" do %>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery.dotdotdot/4.0.11/dotdotdot.js"></script>
