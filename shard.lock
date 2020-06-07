@@ -28,6 +28,10 @@ shards:
     github: kemalcr/kemal
     version: 0.26.1
 
+  kemal-session:
+    github: kemalcr/kemal-session
+    version: 0.12.1
+
   kilt:
     github: jeromegn/kilt
     version: 0.4.0

@@ -6,12 +6,9 @@ UPLOAD_URL_PREFIX = "/uploads"
 macro layout(name)
   base_url = Config.current.base_url
   begin
-    cookie = env.request.cookies.find do |c|
-      c.name == "token-#{Config.current.port}"
-    end
     is_admin = false
-    unless cookie.nil?
-      is_admin = @context.storage.verify_admin cookie.value
+    if token = env.session.string? "token"
+      is_admin = @context.storage.verify_admin token
     end
     render "src/views/#{{{name}}}.ecr", "src/views/layout.ecr"
   rescue e
@@ -28,10 +25,8 @@ end
 macro get_username(env)
   # if the request gets here, it has gone through the auth handler, and
   #   we can be sure that a valid token exists, so we can use not_nil! here
-  cookie = {{env}}.request.cookies.find do |c|
-    c.name == "token-#{Config.current.port}"
-  end.not_nil!
-  (@context.storage.verify_token cookie.value).not_nil!
+  token = env.session.string "token"
+  (@context.storage.verify_token token).not_nil!
 end
 
 def send_json(env, json)
@@ -135,13 +130,6 @@ end
 macro render_xml(path)
   base_url = Config.current.base_url
   send_file env, ECR.render({{path}}).to_slice, "application/xml"
-end
-
-def set_token_cookie(env, token)
-  cookie = HTTP::Cookie.new "token-#{Config.current.port}", token
-  cookie.path = Config.current.base_url
-  cookie.expires = Time.local.shift years: 1
-  env.response.cookies << cookie
 end
 
 macro render_component(filename)

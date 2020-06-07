@@ -1,4 +1,5 @@
 require "kemal"
+require "kemal-session"
 require "./library"
 require "./handlers/*"
 require "./util"
@@ -65,6 +66,13 @@ class Server
       serve_static false
       add_handler StaticHandler.new
     {% end %}
+
+    Kemal::Session.config do |c|
+      c.timeout = 365.days
+      c.secret = Config.current.session_secret
+      c.cookie_name = "mango-sessid-#{Config.current.port}"
+      c.path = Config.current.base_url
+    end
   end
 
   def start

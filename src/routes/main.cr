@@ -9,10 +9,7 @@ class MainRouter < Router
 
     get "/logout" do |env|
       begin
-        cookie = env.request.cookies.find do |c|
-          c.name == "token-#{Config.current.port}"
-        end.not_nil!
-        @context.storage.logout cookie.value
+        env.session.delete_string "token"
       rescue e
         @context.error "Error when attempting to log out: #{e}"
       ensure
@@ -26,8 +23,15 @@ class MainRouter < Router
         password = env.params.body["password"]
         token = @context.storage.verify_user(username, password).not_nil!
 
-        set_token_cookie env, token
-        redirect env, "/"
+        env.session.string "token", token
+
+        callback = env.session.string? "callback"
+        if callback
+          env.session.delete_string "callback"
+          redirect env, callback
+        else
+          redirect env, "/"
+        end
       rescue
         redirect env, "/login"
       end

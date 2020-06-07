@@ -15,6 +15,8 @@ license: MIT
 dependencies:
   kemal:
     github: kemalcr/kemal
+  kemal-session:
+    github: kemalcr/kemal-session
   sqlite3:
     github: crystal-lang/crystal-sqlite3
   baked_file_system:

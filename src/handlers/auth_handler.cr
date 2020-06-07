@@ -21,18 +21,14 @@ class AuthHandler < Kemal::Handler
     call_next env
   end
 
-  def validate_cookie_token(env)
-    cookie = env.request.cookies.find do |c|
-      c.name == "token-#{Config.current.port}"
-    end
-    !cookie.nil? && @storage.verify_token cookie.value
+  def validate_token(env)
+    token = env.session.string? "token"
+    !token.nil? && @storage.verify_token token
   end
 
-  def validate_cookie_token_admin(env)
-    cookie = env.request.cookies.find do |c|
-      c.name == "token-#{Config.current.port}"
-    end
-    !cookie.nil? && @storage.verify_admin cookie.value
+  def validate_token_admin(env)
+    token = env.session.string? "token"
+    !token.nil? && @storage.verify_admin token
   end
 
   def validate_auth_header(env)
@@ -42,7 +38,7 @@ class AuthHandler < Kemal::Handler
           token = verify_user value
           return false if token.nil?
 
-          set_token_cookie env, token
+          env.session.string "token", token
           return true
         end
       end
@@ -57,7 +53,7 @@ class AuthHandler < Kemal::Handler
   end
 
   def handle_opds_auth(env)
-    if validate_cookie_token(env) || validate_auth_header(env)
+    if validate_token(env) || validate_auth_header(env)
       call_next env
     else
       env.response.status_code = 401
@@ -69,12 +65,13 @@ class AuthHandler < Kemal::Handler
   def handle_auth(env)
     return call_next(env) if request_path_startswith env, ["/login", "/logout"]
 
-    unless validate_cookie_token env
+    unless validate_token env
+      env.session.string "callback", env.request.path
       return redirect env, "/login"
     end
 
     if request_path_startswith env, ["/admin", "/api/admin", "/download"]
-      unless validate_cookie_token_admin env
+      unless validate_token_admin env
         env.response.status_code = 403
       end
     end
