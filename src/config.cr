@@ -3,6 +3,8 @@ require "yaml"
 class Config
   include YAML::Serializable
 
+  @[YAML::Field(ignore: true)]
+  property path : String = ""
   property port : Int32 = 9000
   property base_url : String = "/"
   property session_secret : String = "mango-session-secret"
@@ -44,6 +46,7 @@ class Config
     if File.exists? cfg_path
       config = self.from_yaml File.read cfg_path
       config.preprocess
+      config.path = path
       config.fill_defaults
       return config
     end
@@ -54,6 +57,7 @@ class Config
       abort "Aborting..."
     end
     default = self.allocate
+    default.path = path
     default.fill_defaults
     cfg_dir = File.dirname cfg_path
     unless Dir.exists? cfg_dir

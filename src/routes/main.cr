@@ -37,12 +37,12 @@ class MainRouter < Router
       end
     end
 
-    get "/" do |env|
+    get "/library" do |env|
       begin
         titles = @context.library.titles
         username = get_username env
-        percentage = titles.map &.load_percetage username
-        layout "index"
+        percentage = titles.map &.load_percentage username
+        layout "library"
       rescue e
         @context.error e
         env.response.status_code = 500
@@ -54,7 +54,7 @@ class MainRouter < Router
         title = (@context.library.get_title env.params.url["title"]).not_nil!
         username = get_username env
         percentage = title.entries.map { |e|
-          title.load_percetage username, e.title
+          title.load_percentage username, e.title
         }
         layout "title"
       rescue e
@@ -66,6 +66,21 @@ class MainRouter < Router
     get "/download" do |env|
       mangadex_base_url = Config.current.mangadex["base_url"]
       layout "download"
+    end
+
+    get "/" do |env|
+      begin
+        username = get_username env
+        continue_reading = @context.library.get_continue_reading_entries username
+        recently_added = @context.library.get_recently_added_entries username
+        titles = @context.library.titles
+        new_user = ! titles.any? { |t| t.load_percentage(username) > 0 }
+        empty_library = titles.size == 0
+        layout "home"
+      rescue e
+        @context.error e
+        env.response.status_code = 500
+      end
     end
   end
 end

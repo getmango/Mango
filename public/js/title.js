@@ -15,10 +15,14 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 	if (percentage === 100) {
 		$('#read-btn').attr('hidden', '');
 	}
-	$('#modal-title').find('span').text(entry);
-	$('#modal-title').next().attr('data-id', titleID);
-	$('#modal-title').next().attr('data-entry-id', entryID);
-	$('#modal-title').next().find('.title-rename-field').val(entry);
+
+	$('#modal-title-link').text(title);
+	$('#modal-title-link').attr('href', '/book/' + titleID);
+
+	$('#modal-entry-title').find('span').text(entry);
+	$('#modal-entry-title').next().attr('data-id', titleID);
+	$('#modal-entry-title').next().attr('data-entry-id', entryID);
+	$('#modal-entry-title').next().find('.title-rename-field').val(entry);
 	$('#path-text').text(zipPath);
 	$('#pages-text').text(pages + ' pages');
 

@@ -17,7 +17,8 @@ end
 class Entry
   property zip_path : String, book : Title, title : String,
     size : String, pages : Int32, id : String, title_id : String,
-    encoded_path : String, encoded_title : String, mtime : Time
+    encoded_path : String, encoded_title : String, mtime : Time,
+    date_added : Time
 
   def initialize(path, @book, @title_id, storage)
     @zip_path = path
@@ -33,6 +34,7 @@ class Entry
     file.close
     @id = storage.get_id @zip_path, false
     @mtime = File.info(@zip_path).modification_time
+    @date_added = load_date_added
   end
 
   def to_json(json : JSON::Builder)
@@ -86,6 +88,20 @@ class Entry
       end
     end
     img
+  end
+
+  private def load_date_added
+    date_added = nil
+    TitleInfo.new @book.dir do |info|
+      info_da = info.date_added[@title]?
+      if info_da.nil?
+        date_added = info.date_added[@title] = ctime @zip_path
+        info.save
+      else
+        date_added = info_da
+      end
+    end
+    date_added.not_nil! # is it ok to set not_nil! here?
   end
 end
 
@@ -289,6 +305,12 @@ class Title
       else
         info.progress[username][entry] = page
       end
+      # save last_read timestamp
+      if info.last_read[username]?.nil?
+        info.last_read[username] = {entry => Time.utc}
+      else
+        info.last_read[username][entry] = Time.utc
+      end
       info.save
     end
   end
@@ -304,14 +326,14 @@ class Title
     progress
   end
 
-  def load_percetage(username, entry)
+  def load_percentage(username, entry)
     page = load_progress username, entry
     entry_obj = @entries.find { |e| e.title == entry }
     return 0.0 if entry_obj.nil?
     page / entry_obj.pages
   end
 
-  def load_percetage(username)
+  def load_percentage(username)
     return 0.0 if @entries.empty?
     read_pages = total_pages = 0
     @entries.each do |e|
@@ -321,10 +343,52 @@ class Title
     read_pages / total_pages
   end
 
+  def load_last_read(username, entry)
+    last_read = nil
+    TitleInfo.new @dir do |info|
+      unless info.last_read[username]?.nil? ||
+             info.last_read[username][entry]?.nil?
+        last_read = info.last_read[username][entry]
+      end
+    end
+    last_read
+  end
+
   def next_entry(current_entry_obj)
     idx = @entries.index current_entry_obj
     return nil if idx.nil? || idx == @entries.size - 1
     @entries[idx + 1]
+  end
+
+  def previous_entry(current_entry_obj)
+    idx = @entries.index current_entry_obj
+    return nil if idx.nil? || idx == 0
+    @entries[idx - 1]
+  end
+
+  def get_continue_reading_entry(username)
+    in_progress_entries = @entries.select do |e|
+      load_progress(username, e.title) > 0
+    end
+    return nil if in_progress_entries.empty?
+
+    latest_read_entry = in_progress_entries[-1]
+    if load_progress(username, latest_read_entry.title) ==
+         latest_read_entry.pages
+      next_entry latest_read_entry
+    else
+      latest_read_entry
+    end
+  end
+
+  # TODO: More concise title?
+  def get_last_read_for_continue_reading(username, entry_obj)
+    last_read = load_last_read username, entry_obj.title
+    if last_read.nil? # grab from previous entry if current entry hasn't been started yet
+      previous_entry = previous_entry(entry_obj)
+      return load_last_read username, previous_entry.title if previous_entry
+    end
+    last_read
   end
 end
 
@@ -337,6 +401,8 @@ class TitleInfo
   property entry_display_name = {} of String => String
   property cover_url = ""
   property entry_cover_url = {} of String => String
+  property last_read = {} of String => Hash(String, Time)
+  property date_added = {} of String => Time
 
   @[JSON::Field(ignore: true)]
   property dir : String = ""
@@ -439,5 +505,86 @@ class Library
         @title_ids << title.id
       end
     Logger.debug "Scan completed"
+  end
+
+  def get_continue_reading_entries(username)
+    # map: get the continue-reading entry or nil for each Title
+    # select: select only entries (and ignore Nil's) from the array
+    #   produced by map
+    continue_reading_entries = titles.map { |t|
+      get_continue_reading_entry username, t
+    }.select Entry
+
+    continue_reading = continue_reading_entries.map { |e|
+      {
+        entry: e,
+        percentage: e.book.load_percentage(username, e.title),
+        last_read: get_relevant_last_read(username, e)
+      }
+    }
+
+    # Sort by by last_read, most recent first (nils at the end)
+    continue_reading.sort! { |a, b|
+      next 0 if a[:last_read].nil? && b[:last_read].nil?
+      next 1 if a[:last_read].nil?
+      next -1 if b[:last_read].nil?
+      b[:last_read].not_nil! <=> a[:last_read].not_nil!
+    }[0..11]
+  end
+
+  alias RA = NamedTuple(entry: Entry, percentage: Float64, grouped_count: Int32)
+
+  def get_recently_added_entries(username)
+    entries = [] of Entry
+    titles.each do |t|
+      t.entries.each { |e| entries << e }
+    end
+    entries.sort! { |a, b| b.date_added <=> a.date_added }
+    entries.select! { |e| e.date_added > 3.months.ago }
+
+    # Group Entries if neighbour is same Title
+    recently_added = [] of RA
+    entries.each do |e|
+      last = recently_added.last?
+      if last && e.title_id == last[:entry].title_id
+        # A NamedTuple is immutable, so we have to cast it to a Hash first
+        last_hash = last.to_h
+        count = last_hash[:grouped_count].as(Int32)
+        last_hash[:grouped_count] = count + 1
+        recently_added[recently_added.size - 1] = RA.from last_hash
+      else
+        recently_added << {
+          entry:         e,
+          percentage:    e.book.load_percentage(username, e.title),
+          grouped_count: 1,
+        }
+      end
+    end
+
+    recently_added[0..11]
+  end
+  
+  private def get_continue_reading_entry(username, title)
+    in_progress_entries = title.entries.select do |e|
+      title.load_progress(username, e.title) > 0
+    end
+    return nil if in_progress_entries.empty?
+
+    latest_read_entry = in_progress_entries[-1]
+    if title.load_progress(username, latest_read_entry.title) ==
+        latest_read_entry.pages
+      title.next_entry latest_read_entry
+    else
+      latest_read_entry
+    end
+  end
+
+  private def get_relevant_last_read(username, entry_obj)
+    last_read = entry_obj.book.load_last_read username, entry_obj.title
+    if last_read.nil? # grab from previous entry if current entry hasn't been started yet
+      previous_entry = entry_obj.book.previous_entry(entry_obj)
+      return entry_obj.book.load_last_read username, previous_entry.title if previous_entry
+    end
+    last_read
   end
 end

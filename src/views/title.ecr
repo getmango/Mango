@@ -7,7 +7,7 @@
   </h2>
 </div>
 <ul class="uk-breadcrumb">
-  <li><a href="<%= base_url %>">Library</a></li>
+  <li><a href="<%= base_url %>library">Library</a></li>
   <%- title.parents.each do |t| -%>
   <li><a href="<%= base_url %>book/<%= t.id %>"><%= t.display_name %></a></li>
   <%- end -%>
@@ -47,7 +47,7 @@
     <button class="uk-modal-close-default" type="button" uk-close></button>
     <div class="uk-modal-header">
       <div>
-        <h3 class="uk-modal-title break-word" id="modal-title"><span></span>
+        <h3 class="uk-modal-title break-word" id="modal-entry-title"><span></span>
           &nbsp;
           <% if is_admin %>
           <a class="uk-icon-button" uk-icon="icon:pencil"></a>
@@ -77,7 +77,7 @@
     <button class="uk-modal-close-default" type="button" uk-close></button>
     <div class="uk-modal-header">
       <div>
-        <h3 class="uk-modal-title break-word">Edit</h3>
+        <h3 class="uk-modal-title break-word" id="modal-entry-title">Edit</h3>
       </div>
     </div>
     <div class="uk-modal-body">
