@@ -2,14 +2,13 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 	const zipPath = decodeURIComponent(encodedPath);
 	const title = decodeURIComponent(encodedeTitle);
 	const entry = decodeURIComponent(encodedEntryTitle);
-	$('#modal button, #modal a').each(function(){
+	$('#modal button, #modal a').each(function() {
 		$(this).removeAttr('hidden');
 	});
 	if (percentage === 0) {
 		$('#continue-btn').attr('hidden', '');
 		$('#unread-btn').attr('hidden', '');
-	}
-	else {
+	} else {
 		$('#continue-btn').text('Continue from ' + percentage + '%');
 	}
 	if (percentage === 100) {
@@ -17,7 +16,7 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 	}
 
 	$('#modal-title-link').text(title);
-	$('#modal-title-link').attr('href', '/book/' + titleID);
+	$('#modal-title-link').attr('href', `${base_url}book/${titleID}`);
 
 	$('#modal-entry-title').find('span').text(entry);
 	$('#modal-entry-title').next().attr('data-id', titleID);
@@ -29,10 +28,10 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 	$('#beginning-btn').attr('href', `${base_url}reader/${titleID}/${entryID}/1`);
 	$('#continue-btn').attr('href', `${base_url}reader/${titleID}/${entryID}`);
 
-	$('#read-btn').click(function(){
+	$('#read-btn').click(function() {
 		updateProgress(titleID, entryID, pages);
 	});
-	$('#unread-btn').click(function(){
+	$('#unread-btn').click(function() {
 		updateProgress(titleID, entryID, 0);
 	});
 
@@ -44,14 +43,15 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 
 const updateProgress = (tid, eid, page) => {
 	let url = `${base_url}api/progress/${tid}/${page}`
-	const query = $.param({entry: eid});
+	const query = $.param({
+		entry: eid
+	});
 	if (eid)
 		url += `?${query}`;
 	$.post(url, (data) => {
 		if (data.success) {
 			location.reload();
-		}
-		else {
+		} else {
 			error = data.error;
 			alert('danger', error);
 		}
@@ -69,27 +69,29 @@ const renameSubmit = (name, eid) => {
 		return;
 	}
 
-	const query = $.param({ entry: eid });
+	const query = $.param({
+		entry: eid
+	});
 	let url = `${base_url}api/admin/display_name/${titleId}/${name}`;
 	if (eid)
 		url += `?${query}`;
 
 	$.ajax({
-		type: 'POST',
-		url: url,
-		contentType: "application/json",
-		dataType: 'json'
-	})
-	.done(data => {
-		if (data.error) {
-			alert('danger', `Failed to update display name. Error: ${data.error}`);
-			return;
-		}
-		location.reload();
-	})
-	.fail((jqXHR, status) => {
-		alert('danger', `Failed to update display name. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
-	});
+			type: 'POST',
+			url: url,
+			contentType: "application/json",
+			dataType: 'json'
+		})
+		.done(data => {
+			if (data.error) {
+				alert('danger', `Failed to update display name. Error: ${data.error}`);
+				return;
+			}
+			location.reload();
+		})
+		.fail((jqXHR, status) => {
+			alert('danger', `Failed to update display name. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+		});
 };
 
 const edit = (eid) => {
@@ -102,8 +104,7 @@ const edit = (eid) => {
 		url = item.find('img').attr('data-src');
 		displayName = item.find('.uk-card-title').attr('data-title');
 		$('#title-progress-control').attr('hidden', '');
-	}
-	else {
+	} else {
 		$('#title-progress-control').removeAttr('hidden');
 	}
 
@@ -130,7 +131,9 @@ const setupUpload = (eid) => {
 	const upload = $('.upload-field');
 	const bar = $('#upload-progress').get(0);
 	const titleId = upload.attr('data-title-id');
-	const queryObj = {title: titleId};
+	const queryObj = {
+		title: titleId
+	};
 	if (eid)
 		queryObj['entry'] = eid;
 	const query = $.param(queryObj);

@@ -11,7 +11,7 @@
     <dd>Update <code>config.yml</code> located at: <code><%= Config.current.path %></code></dd>
     <dt style="font-weight: 500;">Can't see your files yet?</dt>
     <dd>You must wait <%= Config.current.scan_interval %> minutes for the library scan to complete
-      <% if is_admin %>, or manually re-scan from <a href="/admin">Admin</a><% end %>.</dd>
+      <% if is_admin %>, or manually re-scan from <a href="<%= base_url %>admin">Admin</a><% end %>.</dd>
   </dl>
 </div>
 
@@ -22,16 +22,16 @@
   <h2>Read your first manga</h2>
   <p>Once you start reading, Mango will remember where you left off
     and show your entries here.</p>
-  <a href="/library" class="uk-button uk-button-default">View library</a>
+  <a href="<%= base_url %>library" class="uk-button uk-button-default">View library</a>
 </div>
 
 <%- elsif new_user == false && empty_library == false -%>
 
 <%- if continue_reading.empty? && recently_added.empty? -%>
 <div class="uk-container uk-text-center">
-  <img src="/img/banner.png" style="max-width: 400px; padding: 0 20px;">
+  <img src="<%= base_url %>img/banner.png" style="max-width: 400px; padding: 0 20px;">
   <p>A self-hosted manga server and reader</p>
-  <a href="/library" class="uk-button uk-button-default">View library</a>
+  <a href="<%= base_url %>library" class="uk-button uk-button-default">View library</a>
 </div>
 <%- end -%>
 
@@ -78,7 +78,7 @@
   </div>
   <%- else -%>
   <div class="item">
-    <a class="acard" href="/book/<%= ra[:entry].book.id %>">
+    <a class="acard" href="<%= base_url %>book/<%= ra[:entry].book.id %>">
       <div class="uk-card uk-card-default">
         <div class="uk-card-media-top">
           <img data-src="<%= ra[:entry].cover_url %>" data-width data-height alt="" uk-img>
@@ -126,7 +126,7 @@
 
 <% content_for "script" do %>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery.dotdotdot/4.0.11/dotdotdot.js"></script>
-<script src="/js/dots.js"></script>
-<script src="/js/alert.js"></script>
-<script src="/js/title.js"></script>
+<script src="<%= base_url %>js/dots.js"></script>
+<script src="<%= base_url %>js/alert.js"></script>
+<script src="<%= base_url %>js/title.js"></script>
 <% end %>
