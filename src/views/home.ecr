@@ -8,9 +8,10 @@
       <dt style="font-weight: 500;">Current library path</dt>
       <dd><code><%= @context.config.library_path %></code></dd>
       <dt style="font-weight: 500;">Want to change your library path?</dt>
-      <dd>Update <code>config.yml</code> located at: <code>/can/I/access/config_path/from/view?</code></dd>
+      <dd>Update <code>config.yml</code> located at: <code><%= @context.config.path %></code></dd>
       <dt style="font-weight: 500;">Can't see your files yet?</dt>
-      <dd>You must wait <%= @context.config.scan_interval %> minutes for the library scan to complete, or restart Mango.</dd>
+      <dd>You must wait <%= @context.config.scan_interval %> minutes for the library scan to complete
+      <% if is_admin %>, or manually re-scan from <a href="/admin">Admin</a><% end %>.</dd>
     </dl>
   </div>
 
