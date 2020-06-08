@@ -520,48 +520,36 @@ class Library
     }[0..11]
   end
 
+  alias RA = NamedTuple(entry: Entry, percentage: Float64, grouped_count: Int32)
+
   def get_recently_added_entries(username)
     entries = [] of Entry
     titles.each do |t|
       t.entries.each { |e| entries << e }
     end
     entries.sort! { |a, b| b.date_added <=> a.date_added }
-    # Only grab entries form the last 3 months
-    # otherwise we will be grouping neighbours by Title for the entire
-    # library every time. Is this premature optimisation or reasonable optimisation?
     entries.select! { |e| e.date_added > 3.months.ago }
 
-    i = 0
-    recently_added = [] of NamedTuple(entry: Entry, percentage: Float64, grouped_count: Int32)
-    while i <= entries.size - 1
-      grouped_count = neighbouring_title_count(entries, i)
-      if grouped_count > 1
-        # delete grouped entries (except for first)
-        entries.delete_at(i+1..i+grouped_count-1)
+    # Group Entries if neighbour is same Title
+    recently_added = [] of RA
+    entries.each do |e|
+      last = recently_added.last?
+      if last && e.title_id == last[:entry].title_id
+        # A NamedTuple is immutable, so we have to cast it to a Hash first
+        last_hash = last.to_h
+        count = last_hash[:grouped_count].as(Int32)
+        last_hash[:grouped_count] = count + 1
+        recently_added[recently_added.size - 1] = RA.from last_hash
+      else
+        recently_added << {
+          entry:         e,
+          percentage:    e.book.load_percentage(username, e.title),
+          grouped_count: 1,
+        }
       end
-      recently_added << { 
-        entry: entries[i], 
-        percentage: entries[i].book.load_percentage(username, entries[i].title),
-        grouped_count: grouped_count
-      }
-      i += 1
     end
 
     recently_added[0..11]
-  end
-
-  private def neighbouring_title_count(entries, index : Int32)
-    count = 1
-    book_title = entries[index].book.title
-    while index < entries.size - 1
-      if book_title == entries[index+1].book.title # is it ok to compare via book.title?
-        count += 1
-      else
-        break
-      end
-      index += 1
-    end
-    count
   end
   
   private def get_continue_reading_entry(username, title)
