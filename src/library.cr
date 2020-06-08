@@ -384,7 +384,8 @@ class Title
   # TODO: More concise title?
   def get_last_read_for_continue_reading(username, entry_obj)
     last_read = load_last_read username, entry_obj.title
-    if last_read.nil? # grab from previous entry if current entry hasn't been started yet
+    # grab from previous entry if current entry hasn't been started yet
+    if last_read.nil?
       previous_entry = previous_entry(entry_obj)
       return load_last_read username, previous_entry.title if previous_entry
     end
@@ -517,9 +518,9 @@ class Library
 
     continue_reading = continue_reading_entries.map { |e|
       {
-        entry: e,
+        entry:      e,
         percentage: e.book.load_percentage(username, e.title),
-        last_read: get_relevant_last_read(username, e)
+        last_read:  get_relevant_last_read(username, e),
       }
     }
 
@@ -532,7 +533,10 @@ class Library
     }[0..11]
   end
 
-  alias RA = NamedTuple(entry: Entry, percentage: Float64, grouped_count: Int32)
+  alias RA = NamedTuple(
+    entry: Entry,
+    percentage: Float64,
+    grouped_count: Int32)
 
   def get_recently_added_entries(username)
     entries = [] of Entry
@@ -563,7 +567,7 @@ class Library
 
     recently_added[0..11]
   end
-  
+
   private def get_continue_reading_entry(username, title)
     in_progress_entries = title.entries.select do |e|
       title.load_progress(username, e.title) > 0
@@ -572,7 +576,7 @@ class Library
 
     latest_read_entry = in_progress_entries[-1]
     if title.load_progress(username, latest_read_entry.title) ==
-        latest_read_entry.pages
+         latest_read_entry.pages
       title.next_entry latest_read_entry
     else
       latest_read_entry
@@ -581,9 +585,11 @@ class Library
 
   private def get_relevant_last_read(username, entry_obj)
     last_read = entry_obj.book.load_last_read username, entry_obj.title
-    if last_read.nil? # grab from previous entry if current entry hasn't been started yet
+    # grab from previous entry if current entry hasn't been started yet
+    if last_read.nil?
       previous_entry = entry_obj.book.previous_entry(entry_obj)
-      return entry_obj.book.load_last_read username, previous_entry.title if previous_entry
+      return entry_obj.book.load_last_read username, previous_entry.title \
+         if previous_entry
     end
     last_read
   end

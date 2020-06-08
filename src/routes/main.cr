@@ -71,10 +71,11 @@ class MainRouter < Router
     get "/" do |env|
       begin
         username = get_username env
-        continue_reading = @context.library.get_continue_reading_entries username
+        continue_reading = @context
+          .library.get_continue_reading_entries username
         recently_added = @context.library.get_recently_added_entries username
         titles = @context.library.titles
-        new_user = ! titles.any? { |t| t.load_percentage(username) > 0 }
+        new_user = !titles.any? { |t| t.load_percentage(username) > 0 }
         empty_library = titles.size == 0
         layout "home"
       rescue e
