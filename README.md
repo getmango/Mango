@@ -16,6 +16,8 @@ Mango is a self-hosted manga server and reader. Its features include
 - The web reader is responsive and works well on mobile, so there is no need for a mobile app
 - All the static files are embedded in the binary, so the deployment process is easy and painless
 
+Please check the [Wiki](https://github.com/hkalexling/Mango/wiki) for more information.
+
 ## Installation
 
 ### Pre-built Binary
