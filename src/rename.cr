@@ -135,7 +135,9 @@ module Rename
         else
           e.render hash
         end
-      end.join.strip
+      end.join
+        .strip
+        .gsub("/", "_")
     end
   end
 end
