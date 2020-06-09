@@ -533,36 +533,37 @@ class Library
     }[0..11]
   end
 
-  alias RA = NamedTuple(
-    entry: Entry,
-    percentage: Float64,
-    grouped_count: Int32)
-
   def get_recently_added_entries(username)
-    entries = [] of Entry
-    titles.each do |t|
-      t.entries.each { |e| entries << e }
-    end
-    entries.sort! { |a, b| b.date_added <=> a.date_added }
-    entries.select! { |e| e.date_added > 3.months.ago }
+    # Get all entries added within the last three months
+    entries = titles.map { |t| t.entries }
+      .flatten
+      .select { |e| e.date_added > 3.months.ago }
 
-    # Group Entries if neighbour is same Title
-    recently_added = [] of RA
+    # Group entries in a Hash by title ID
+    grouped_entries = {} of String => Array(Entry)
     entries.each do |e|
-      last = recently_added.last?
-      if last && e.title_id == last[:entry].title_id
-        # A NamedTuple is immutable, so we have to cast it to a Hash first
-        last_hash = last.to_h
-        count = last_hash[:grouped_count].as(Int32)
-        last_hash[:grouped_count] = count + 1
-        recently_added[recently_added.size - 1] = RA.from last_hash
+      if grouped_entries.has_key? e.title_id
+        grouped_entries[e.title_id].push e
       else
-        recently_added << {
-          entry:         e,
-          percentage:    e.book.load_percentage(username, e.title),
-          grouped_count: 1,
-        }
+        grouped_entries[e.title_id] = [e]
       end
+    end
+
+    # Cast the Hash to an Array of Tuples and sort it by date_added
+    grouped_ary = grouped_entries.to_a.sort do |a, b|
+      date_added_a = a[1].map { |e| e.date_added }.max
+      date_added_b = b[1].map { |e| e.date_added }.max
+      date_added_b <=> date_added_a
+    end
+
+    recently_added = grouped_ary.map do |_, ary|
+      # Get the most recently added entry in the group
+      entry = ary.sort { |a, b| a.date_added <=> b.date_added }.last
+      {
+        entry:         entry,
+        percentage:    entry.book.load_percentage(username, entry.title),
+        grouped_count: ary.size,
+      }
     end
 
     recently_added[0..11]
