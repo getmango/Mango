@@ -63,8 +63,8 @@ class AuthHandler < Kemal::Handler
   end
 
   def handle_auth(env)
-    if request_path_startswith env, ["/login", "/logout"] ||
-                                    requesting_static_file env
+    if request_path_startswith(env, ["/login", "/logout"]) ||
+       requesting_static_file env
       return call_next(env)
     end
 
