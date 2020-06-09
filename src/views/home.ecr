@@ -57,32 +57,7 @@
 </div>
 <%- end -%>
 
-<!-- TODO: DRY this code with calls in other ecr files? eg. title.ecr -->
-<div id="modal" class="uk-flex-top" uk-modal>
-  <div class="uk-modal-dialog uk-margin-auto-vertical">
-    <button class="uk-modal-close-default" type="button" uk-close></button>
-    <div class="uk-modal-header">
-      <div>
-        <h4 class="uk-margin-remove-bottom"><a id="modal-title-link"></a></h4>
-        <h3 class="uk-modal-title break-word uk-margin-remove-top" id="modal-entry-title"><span></span></h3>
-      </div>
-      <p class="uk-text-meta uk-margin-remove-bottom break-word" id="path-text"></p>
-      <p class="uk-text-meta uk-margin-remove-top" id="pages-text"></p>
-    </div>
-    <div class="uk-modal-body">
-      <p>Read</p>
-      <p uk-margin>
-        <a id="beginning-btn" class="uk-button uk-button-default">From beginning</a>
-        <a id="continue-btn" class="uk-button uk-button-primary"></a>
-      </p>
-      <p>Progress</p>
-      <p uk-margin>
-        <button id="read-btn" class="uk-button uk-button-default">Mark as read (100%)</button>
-        <button id="unread-btn" class="uk-button uk-button-default">Mark as unread (0%)</button>
-      </p>
-    </div>
-  </div>
-</div>
+<%= render_component "entry-modal" %>
 
 <%- end -%>
 

@@ -10,6 +10,7 @@ macro layout(name)
     if token = env.session.string? "token"
       is_admin = @context.storage.verify_admin token
     end
+    page = {{name}}
     render "src/views/#{{{name}}}.ecr", "src/views/layout.ecr"
   rescue e
     message = e.to_s

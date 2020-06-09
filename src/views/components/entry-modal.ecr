@@ -1,0 +1,34 @@
+<div id="modal" class="uk-flex-top" uk-modal>
+  <div class="uk-modal-dialog uk-margin-auto-vertical">
+    <button class="uk-modal-close-default" type="button" uk-close></button>
+    <div class="uk-modal-header">
+      <div>
+        <% if page == "home" %>
+        <h4 class="uk-margin-remove-bottom"><a id="modal-title-link"></a></h4>
+        <% end %>
+        <h3 class="uk-modal-title break-word uk-margin-remove-top" id="modal-entry-title"><span></span>
+          <% unless page == "home" %>
+          &nbsp;
+          <% if is_admin %>
+          <a class="uk-icon-button" uk-icon="icon:pencil"></a>
+          <% end %>
+          <% end %>
+        </h3>
+      </div>
+      <p class="uk-text-meta uk-margin-remove-bottom break-word" id="path-text"></p>
+      <p class="uk-text-meta uk-margin-remove-top" id="pages-text"></p>
+    </div>
+    <div class="uk-modal-body">
+      <p>Read</p>
+      <p uk-margin>
+        <a id="beginning-btn" class="uk-button uk-button-default">From beginning</a>
+        <a id="continue-btn" class="uk-button uk-button-primary"></a>
+      </p>
+      <p>Progress</p>
+      <p uk-margin>
+        <button id="read-btn" class="uk-button uk-button-default">Mark as read (100%)</button>
+        <button id="unread-btn" class="uk-button uk-button-default">Mark as unread (0%)</button>
+      </p>
+    </div>
+  </div>
+</div>
