@@ -68,4 +68,9 @@ describe Rule do
       .should eq "Ch. CH ID testing"
     rule.render({} of String => String).should eq "testing"
   end
+
+  it "escapes slash" do
+    rule = Rule.new "{id}"
+    rule.render({"id" => "/hello/world"}).should eq "_hello_world"
+  end
 end
