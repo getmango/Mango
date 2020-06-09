@@ -129,15 +129,19 @@ module Rename
     end
 
     def render(hash : VHash)
-      @ary.map do |e|
+      str = @ary.map do |e|
         if e.is_a? String
           e
         else
           e.render hash
         end
-      end.join
-        .strip
-        .gsub("/", "_")
+      end.join.strip
+      post_process str
+    end
+
+    private def post_process(str)
+      return "_" if str == ".."
+      str.gsub "/", "_"
     end
   end
 end
