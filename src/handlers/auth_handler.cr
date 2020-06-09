@@ -63,7 +63,10 @@ class AuthHandler < Kemal::Handler
   end
 
   def handle_auth(env)
-    return call_next(env) if request_path_startswith env, ["/login", "/logout"]
+    if request_path_startswith env, ["/login", "/logout"] ||
+                                    requesting_static_file env
+      return call_next(env)
+    end
 
     unless validate_token env
       env.session.string "callback", env.request.path

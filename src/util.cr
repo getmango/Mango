@@ -2,6 +2,11 @@ require "big"
 
 IMGS_PER_PAGE     = 5
 UPLOAD_URL_PREFIX = "/uploads"
+STATIC_DIRS       = ["/css", "/js", "/img", "/favicon.ico"]
+
+def requesting_static_file(env)
+  request_path_startswith env, STATIC_DIRS
+end
 
 macro layout(name)
   base_url = Config.current.base_url
