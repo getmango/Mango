@@ -191,6 +191,12 @@ class Title
     @title_ids.map { |tid| @library.get_title! tid }
   end
 
+  # Get all entries, including entries in nested titles
+  def deep_entries
+    return @entries if title_ids.empty?
+    @entries + titles.map { |t| t.deep_entries }.flatten
+  end
+
   def parents
     ary = [] of Title
     tid = @parent_id
@@ -535,7 +541,7 @@ class Library
 
   def get_recently_added_entries(username)
     # Get all entries added within the last three months
-    entries = titles.map { |t| t.entries }
+    entries = titles.map { |t| t.deep_entries }
       .flatten
       .select { |e| e.date_added > 3.months.ago }
 
