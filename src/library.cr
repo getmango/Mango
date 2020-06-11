@@ -205,7 +205,7 @@ class Title
       ary << title
       tid = title.parent_id
     end
-    ary
+    ary.reverse
   end
 
   def size
