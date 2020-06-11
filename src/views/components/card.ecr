@@ -8,7 +8,7 @@
 <% else %>
 <% grouped_count = 1 %>
 <% end %>
-<div class="item" data-mtime="<%= item.mtime.to_unix %>" data-progress="<%= progress || 0.0 %>"
+<div class="item" data-mtime="<%= item.mtime.to_unix %>" data-progress="<%= progress %>"
   <% if item.is_a? Entry %>
   id="<%= item.id %>"
   <% end %>>
@@ -20,7 +20,7 @@
 
     <div class="uk-card uk-card-default"
       <% if item.is_a? Entry %>
-      onclick="showModal(&quot;<%= item.encoded_path %>&quot;, '<%= item.pages %>', <%= (progress.not_nil! * 100).round(1) %>, &quot;<%= item.book.encoded_display_name %>&quot;, &quot;<%= item.encoded_display_name %>&quot;, '<%= item.title_id %>', '<%= item.id %>')"
+      onclick="showModal(&quot;<%= item.encoded_path %>&quot;, '<%= item.pages %>', <%= (progress * 100).round(1) %>, &quot;<%= item.book.encoded_display_name %>&quot;, &quot;<%= item.encoded_display_name %>&quot;, '<%= item.title_id %>', '<%= item.id %>')"
       <% end %>>
 
       <div class="uk-card-media-top">
@@ -28,9 +28,7 @@
       </div>
 
       <div class="uk-card-body">
-        <% unless (item.is_a? Title && item.entries.size == 0) || progress.nil? %>
         <div class="uk-card-badge uk-label"><%= (progress * 100).round(1) %>%</div>
-        <% end %>
 
         <h3 class="uk-card-title break-word" data-title="<%= item.display_name.gsub("\"", "&quot;") %>"><%= item.display_name %></h3>
         <% if item.is_a? Entry %>

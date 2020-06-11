@@ -33,7 +33,7 @@
 </div>
 <div id="item-container" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
   <% title.titles.each_with_index do |item, i| %>
-  <% progress = nil %>
+  <% progress = title_percentage[i] %>
   <%= render_component "card" %>
   <% end %>
   <% title.entries.each_with_index do |item, i| %>

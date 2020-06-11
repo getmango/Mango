@@ -339,14 +339,18 @@ class Title
     page / entry_obj.pages
   end
 
+  def deep_read_page_count(username) : Int32
+    entries.map { |e| load_progress username, e.title }.sum +
+      titles.map { |t| t.deep_read_page_count username }.flatten.sum
+  end
+
+  def deep_total_page_count : Int32
+    entries.map { |e| e.pages }.sum +
+      titles.map { |t| t.deep_total_page_count }.flatten.sum
+  end
+
   def load_percentage(username)
-    return 0.0 if @entries.empty?
-    read_pages = total_pages = 0
-    @entries.each do |e|
-      read_pages += load_progress username, e.title
-      total_pages += e.pages
-    end
-    read_pages / total_pages
+    deep_read_page_count(username) / deep_total_page_count
   end
 
   def load_last_read(username, entry)

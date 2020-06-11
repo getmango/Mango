@@ -56,6 +56,7 @@ class MainRouter < Router
         percentage = title.entries.map { |e|
           title.load_percentage username, e.title
         }
+        title_percentage = title.titles.map &.load_percentage username
         layout "title"
       rescue e
         @context.error e
