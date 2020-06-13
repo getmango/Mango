@@ -9,7 +9,7 @@ class ReaderRouter < Router
 
         # load progress
         username = get_username env
-        page = title.load_progress username, entry.title
+        page = entry.load_progress username
         # we go back 2 * `IMGS_PER_PAGE` pages. the infinite scroll
         #   library perloads a few pages in advance, and the user
         #   might not have actually read them
@@ -33,7 +33,7 @@ class ReaderRouter < Router
 
         # save progress
         username = get_username env
-        title.save_progress username, entry.title, page
+        entry.save_progress username, page
 
         pages = (page...[entry.pages + 1, page + IMGS_PER_PAGE].min)
         urls = pages.map { |idx|
@@ -45,7 +45,7 @@ class ReaderRouter < Router
         next_page = page + IMGS_PER_PAGE
         next_url = next_entry_url = nil
         exit_url = "#{base_url}book/#{title.id}"
-        next_entry = title.next_entry entry
+        next_entry = entry.next_entry
         unless next_page > entry.pages
           next_url = "#{base_url}reader/#{title.id}/#{entry.id}/#{next_page}"
         end

@@ -17,8 +17,7 @@ end
 class Entry
   property zip_path : String, book : Title, title : String,
     size : String, pages : Int32, id : String, title_id : String,
-    encoded_path : String, encoded_title : String, mtime : Time,
-    date_added : Time
+    encoded_path : String, encoded_title : String, mtime : Time
 
   def initialize(path, @book, @title_id, storage)
     @zip_path = path
@@ -34,7 +33,6 @@ class Entry
     file.close
     @id = storage.get_id @zip_path, false
     @mtime = File.info(@zip_path).modification_time
-    @date_added = load_date_added
   end
 
   def to_json(json : JSON::Builder)
@@ -90,7 +88,19 @@ class Entry
     img
   end
 
-  private def load_date_added
+  def next_entry
+    idx = @book.entries.index self
+    return nil if idx.nil? || idx == @book.entries.size - 1
+    @book.entries[idx + 1]
+  end
+
+  def previous_entry
+    idx = @book.entries.index self
+    return nil if idx.nil? || idx == 0
+    @book.entries[idx - 1]
+  end
+
+  def date_added
     date_added = nil
     TitleInfo.new @book.dir do |info|
       info_da = info.date_added[@title]?
@@ -102,6 +112,52 @@ class Entry
       end
     end
     date_added.not_nil! # is it ok to set not_nil! here?
+  end
+
+  # For backward backward compatibility with v0.1.0, we save entry titles
+  #   instead of IDs in info.json
+  def save_progress(username, page)
+    TitleInfo.new @book.dir do |info|
+      if info.progress[username]?.nil?
+        info.progress[username] = {@title => page}
+      else
+        info.progress[username][@title] = page
+      end
+      # save last_read timestamp
+      if info.last_read[username]?.nil?
+        info.last_read[username] = {@title => Time.utc}
+      else
+        info.last_read[username][@title] = Time.utc
+      end
+      info.save
+    end
+  end
+
+  def load_progress(username)
+    progress = 0
+    TitleInfo.new @book.dir do |info|
+      unless info.progress[username]?.nil? ||
+             info.progress[username][@title]?.nil?
+        progress = info.progress[username][@title]
+      end
+    end
+    progress
+  end
+
+  def load_percentage(username)
+    page = load_progress username
+    page / @pages
+  end
+
+  def load_last_read(username)
+    last_read = nil
+    TitleInfo.new @book.dir do |info|
+      unless info.last_read[username]?.nil? ||
+             info.last_read[username][@title]?.nil?
+        last_read = info.last_read[username][@title]
+      end
+    end
+    last_read
   end
 end
 
@@ -285,7 +341,7 @@ class Title
   # Set the reading progress of all entries and nested libraries to 100%
   def read_all(username)
     @entries.each do |e|
-      save_progress username, e.title, e.pages
+      e.save_progress username, e.pages
     end
     titles.each do |t|
       t.read_all username
@@ -295,52 +351,15 @@ class Title
   # Set the reading progress of all entries and nested libraries to 0%
   def unread_all(username)
     @entries.each do |e|
-      save_progress username, e.title, 0
+      e.save_progress username, 0
     end
     titles.each do |t|
       t.unread_all username
     end
   end
 
-  # For backward backward compatibility with v0.1.0, we save entry titles
-  #   instead of IDs in info.json
-  def save_progress(username, entry, page)
-    TitleInfo.new @dir do |info|
-      if info.progress[username]?.nil?
-        info.progress[username] = {entry => page}
-      else
-        info.progress[username][entry] = page
-      end
-      # save last_read timestamp
-      if info.last_read[username]?.nil?
-        info.last_read[username] = {entry => Time.utc}
-      else
-        info.last_read[username][entry] = Time.utc
-      end
-      info.save
-    end
-  end
-
-  def load_progress(username, entry)
-    progress = 0
-    TitleInfo.new @dir do |info|
-      unless info.progress[username]?.nil? ||
-             info.progress[username][entry]?.nil?
-        progress = info.progress[username][entry]
-      end
-    end
-    progress
-  end
-
-  def load_percentage(username, entry)
-    page = load_progress username, entry
-    entry_obj = @entries.find { |e| e.title == entry }
-    return 0.0 if entry_obj.nil?
-    page / entry_obj.pages
-  end
-
   def deep_read_page_count(username) : Int32
-    entries.map { |e| load_progress username, e.title }.sum +
+    entries.map { |e| e.load_progress username }.sum +
       titles.map { |t| t.deep_read_page_count username }.flatten.sum
   end
 
@@ -351,29 +370,6 @@ class Title
 
   def load_percentage(username)
     deep_read_page_count(username) / deep_total_page_count
-  end
-
-  def load_last_read(username, entry)
-    last_read = nil
-    TitleInfo.new @dir do |info|
-      unless info.last_read[username]?.nil? ||
-             info.last_read[username][entry]?.nil?
-        last_read = info.last_read[username][entry]
-      end
-    end
-    last_read
-  end
-
-  def next_entry(current_entry_obj)
-    idx = @entries.index current_entry_obj
-    return nil if idx.nil? || idx == @entries.size - 1
-    @entries[idx + 1]
-  end
-
-  def previous_entry(current_entry_obj)
-    idx = @entries.index current_entry_obj
-    return nil if idx.nil? || idx == 0
-    @entries[idx - 1]
   end
 
   def get_continue_reading_entry(username)
@@ -389,17 +385,6 @@ class Title
     else
       latest_read_entry
     end
-  end
-
-  # TODO: More concise title?
-  def get_last_read_for_continue_reading(username, entry_obj)
-    last_read = load_last_read username, entry_obj.title
-    # grab from previous entry if current entry hasn't been started yet
-    if last_read.nil?
-      previous_entry = previous_entry(entry_obj)
-      return load_last_read username, previous_entry.title if previous_entry
-    end
-    last_read
   end
 end
 
@@ -529,7 +514,7 @@ class Library
     continue_reading = continue_reading_entries.map { |e|
       {
         entry:      e,
-        percentage: e.book.load_percentage(username, e.title),
+        percentage: e.load_percentage(username),
         last_read:  get_relevant_last_read(username, e),
       }
     }
@@ -571,7 +556,7 @@ class Library
       entry = ary.sort { |a, b| a.date_added <=> b.date_added }.last
       {
         entry:         entry,
-        percentage:    entry.book.load_percentage(username, entry.title),
+        percentage:    entry.load_percentage(username),
         grouped_count: ary.size,
       }
     end
@@ -581,26 +566,25 @@ class Library
 
   private def get_continue_reading_entry(username, title)
     in_progress_entries = title.entries.select do |e|
-      title.load_progress(username, e.title) > 0
+      e.load_progress(username) > 0
     end
     return nil if in_progress_entries.empty?
 
     latest_read_entry = in_progress_entries[-1]
-    if title.load_progress(username, latest_read_entry.title) ==
+    if latest_read_entry.load_progress(username) ==
          latest_read_entry.pages
-      title.next_entry latest_read_entry
+      latest_read_entry.next_entry
     else
       latest_read_entry
     end
   end
 
   private def get_relevant_last_read(username, entry_obj)
-    last_read = entry_obj.book.load_last_read username, entry_obj.title
+    last_read = entry_obj.load_last_read username
     # grab from previous entry if current entry hasn't been started yet
     if last_read.nil?
-      previous_entry = entry_obj.book.previous_entry(entry_obj)
-      return entry_obj.book.load_last_read username, previous_entry.title \
-         if previous_entry
+      previous_entry = entry_obj.previous_entry
+      return previous_entry.load_last_read username if previous_entry
     end
     last_read
   end
