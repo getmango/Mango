@@ -141,7 +141,7 @@ class Entry
         progress = info.progress[username][@title]
       end
     end
-    progress
+    [progress, @pages].min
   end
 
   def load_percentage(username)
