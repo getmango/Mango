@@ -224,7 +224,7 @@ class APIRouter < Router
             entry_id = env.params.query["entry"]?
             title = @context.library.get_title(title_id).not_nil!
 
-            unless ["image/jpeg", "image/png"].includes? \
+            unless SUPPORTED_IMG_TYPES.includes? \
                      MIME.from_filename? filename
               raise "The uploaded image must be either JPEG or PNG"
             end

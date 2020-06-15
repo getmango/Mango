@@ -4,6 +4,8 @@ require "uri"
 require "./util"
 require "./archive"
 
+SUPPORTED_IMG_TYPES = ["image/jpeg", "image/png", "image/webp"]
+
 struct Image
   property data : Bytes
   property mime : String
@@ -27,7 +29,7 @@ class Entry
     @size = (File.size path).humanize_bytes
     file = ArchiveFile.new path
     @pages = file.entries.count do |e|
-      ["image/jpeg", "image/png"].includes? \
+      SUPPORTED_IMG_TYPES.includes? \
         MIME.from_filename? e.filename
     end
     file.close
@@ -72,7 +74,7 @@ class Entry
     ArchiveFile.open @zip_path do |file|
       page = file.entries
         .select { |e|
-          ["image/jpeg", "image/png"].includes? \
+          SUPPORTED_IMG_TYPES.includes? \
             MIME.from_filename? e.filename
         }
         .sort { |a, b|

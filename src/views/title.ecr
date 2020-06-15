@@ -72,7 +72,7 @@
                 <span uk-icon="icon: cloud-upload"></span>
                 <span class="uk-text-middle">Upload a cover image by dropping it here or</span>
                 <div uk-form-custom>
-                  <input type="file" accept="image/jpeg, image/png">
+                  <input type="file" accept="<%= SUPPORTED_IMG_TYPES.join ", " %>">
                   <span class="uk-link">selecting one</span>
                 </div>
               </div>
