@@ -579,9 +579,14 @@ class Library
     grouped_entries.map do |ary|
       # Get the most recently added entry in the group
       entry = ary.max_by { |e| e.date_added }
+      if ary.size > 1
+        percentage = entry.book.load_percentage username
+      else
+        percentage = entry.load_percentage username
+      end
       {
         entry:         entry,
-        percentage:    entry.load_percentage(username),
+        percentage:    percentage,
         grouped_count: ary.size,
       }
     end
