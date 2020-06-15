@@ -546,39 +546,29 @@ class Library
   end
 
   def get_recently_added_entries(username)
-    # Get all entries added within the last three months
-    entries = titles.map { |t| t.deep_entries }
-      .flatten
-      .select { |e| e.date_added > 3.months.ago }
+    # Group all recently added entries into a Array(Array(Title)). Entries
+    #   from the same title are grouped together
+    grouped_entries = deep_titles
+      .map { |t|
+        t.entries.select { |e| e.date_added > 3.months.ago }
+      }
+      .select { |ary| !ary.empty? }
+      # Sort the array by the added date of the last added entry
+      .sort { |a, b|
+        date_added_a = a.map { |e| e.date_added }.max
+        date_added_b = b.map { |e| e.date_added }.max
+        date_added_b <=> date_added_a
+      }[0..11]
 
-    # Group entries in a Hash by title ID
-    grouped_entries = {} of String => Array(Entry)
-    entries.each do |e|
-      if grouped_entries.has_key? e.title_id
-        grouped_entries[e.title_id].push e
-      else
-        grouped_entries[e.title_id] = [e]
-      end
-    end
-
-    # Cast the Hash to an Array of Tuples and sort it by date_added
-    grouped_ary = grouped_entries.to_a.sort do |a, b|
-      date_added_a = a[1].map { |e| e.date_added }.max
-      date_added_b = b[1].map { |e| e.date_added }.max
-      date_added_b <=> date_added_a
-    end
-
-    recently_added = grouped_ary.map do |_, ary|
+    grouped_entries.map do |ary|
       # Get the most recently added entry in the group
-      entry = ary.sort { |a, b| a.date_added <=> b.date_added }.last
+      entry = ary.max_by { |e| e.date_added }
       {
         entry:         entry,
         percentage:    entry.load_percentage(username),
         grouped_count: ary.size,
       }
     end
-
-    recently_added[0..11]
   end
 
   private def get_continue_reading_entry(username, title)
