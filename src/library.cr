@@ -163,6 +163,10 @@ class Entry
   def finished?(username)
     load_progress(username) == @pages
   end
+
+  def started?(username)
+    load_progress(username) > 0
+  end
 end
 
 class Title
@@ -255,6 +259,11 @@ class Title
   def deep_entries
     return @entries if title_ids.empty?
     @entries + titles.map { |t| t.deep_entries }.flatten
+  end
+
+  def deep_titles
+    return [] of Title if titles.empty?
+    titles + titles.map { |t| t.deep_titles }.flatten
   end
 
   def parents
@@ -467,6 +476,10 @@ class Library
 
   def titles
     @title_ids.map { |tid| self.get_title!(tid) }
+  end
+
+  def deep_titles
+    titles + titles.map { |t| t.deep_titles }.flatten
   end
 
   def to_json(json : JSON::Builder)
