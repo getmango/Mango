@@ -159,6 +159,10 @@ class Entry
     end
     last_read
   end
+
+  def finished?(username)
+    load_progress(username) == @pages
+  end
 end
 
 class Title
@@ -571,8 +575,7 @@ class Library
     return nil if in_progress_entries.empty?
 
     latest_read_entry = in_progress_entries[-1]
-    if latest_read_entry.load_progress(username) ==
-         latest_read_entry.pages
+    if latest_read_entry.finished? username
       latest_read_entry.next_entry
     else
       latest_read_entry
