@@ -521,23 +521,37 @@ class Library
   end
 
   def get_continue_reading_entries(username)
-    # map: get the continue-reading entry or nil for each Title
-    # select: select only entries (and ignore Nil's) from the array
-    #   produced by map
-    continue_reading_entries = titles.map { |t|
-      get_continue_reading_entry username, t
-    }.select Entry
-
-    continue_reading = continue_reading_entries.map { |e|
-      {
-        entry:      e,
-        percentage: e.load_percentage(username),
-        last_read:  get_relevant_last_read(username, e),
+    cr_entries = deep_titles
+      # For each Title, get the last read entry. If the user has finished
+      #   reading this entry, get the next entry
+      .map { |t|
+        last_read_entry = t.entries.reverse_each.find do |e|
+          e.started? username
+        end
+        if last_read_entry && last_read_entry.finished? username
+          last_read_entry = last_read_entry.next_entry
+        end
+        last_read_entry
       }
-    }
+      # Select elements with type `Entry` from the array and ignore all `Nil`s
+      .select(Entry)
+      .map { |e|
+        # Get the last read time of the entry. If it hasn't been started, get
+        #   the last read time of the previous entry
+        last_read = e.load_last_read username
+        pe = e.previous_entry
+        if last_read.nil? && pe
+          last_read = pe.load_last_read username
+        end
+        {
+          entry:      e,
+          percentage: e.load_percentage(username),
+          last_read:  last_read,
+        }
+      }
 
     # Sort by by last_read, most recent first (nils at the end)
-    continue_reading.sort! { |a, b|
+    cr_entries.sort { |a, b|
       next 0 if a[:last_read].nil? && b[:last_read].nil?
       next 1 if a[:last_read].nil?
       next -1 if b[:last_read].nil?
@@ -569,29 +583,5 @@ class Library
         grouped_count: ary.size,
       }
     end
-  end
-
-  private def get_continue_reading_entry(username, title)
-    in_progress_entries = title.entries.select do |e|
-      e.load_progress(username) > 0
-    end
-    return nil if in_progress_entries.empty?
-
-    latest_read_entry = in_progress_entries[-1]
-    if latest_read_entry.finished? username
-      latest_read_entry.next_entry
-    else
-      latest_read_entry
-    end
-  end
-
-  private def get_relevant_last_read(username, entry_obj)
-    last_read = entry_obj.load_last_read username
-    # grab from previous entry if current entry hasn't been started yet
-    if last_read.nil?
-      previous_entry = entry_obj.previous_entry
-      return previous_entry.load_last_read username if previous_entry
-    end
-    last_read
   end
 end
