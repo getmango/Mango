@@ -566,7 +566,7 @@ class Library
     #   from the same title are grouped together
     grouped_entries = deep_titles
       .map { |t|
-        t.entries.select { |e| e.date_added > 3.months.ago }
+        t.entries.select { |e| e.date_added > 1.months.ago }
       }
       .select { |ary| !ary.empty? }
       # Sort the array by the added date of the last added entry
