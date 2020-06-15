@@ -10,9 +10,10 @@
           <% unless page == "home" %>
           &nbsp;
           <% if is_admin %>
-          <a class="uk-icon-button" uk-icon="icon:pencil"></a>
+          <a id="modal-edit-btn" class="uk-icon-button" uk-icon="icon:pencil"></a>
           <% end %>
           <% end %>
+          <a id="modal-download-btn" class="uk-icon-button" uk-icon="icon:download"></a>
         </h3>
       </div>
       <p class="uk-text-meta uk-margin-remove-bottom break-word" id="path-text"></p>

@@ -35,7 +35,9 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 		updateProgress(titleID, entryID, 0);
 	});
 
-	$('.uk-modal-title.break-word > a').attr('onclick', `edit("${entryID}")`);
+	$('#modal-edit-btn').attr('onclick', `edit("${entryID}")`);
+
+	$('#modal-download-btn').attr('href', `/opds/download/${titleID}/${entryID}`);
 
 	UIkit.modal($('#modal')).show();
 	styleModal();
