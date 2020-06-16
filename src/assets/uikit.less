@@ -1,0 +1,33 @@
+@import "node_modules/uikit/src/less/uikit.theme.less";
+
+.label {
+    display: inline-block;
+    padding: @label-padding-vertical @label-padding-horizontal;
+    background: @label-background;
+    line-height: @label-line-height;
+    font-size: @label-font-size;
+    color: @label-color;
+    vertical-align: middle;
+    white-space: nowrap;
+    .hook-label;
+}
+
+.label-success {
+    background-color: @label-success-background;
+    color: @label-success-color;
+}
+
+.label-warning {
+    background-color: @label-warning-background;
+    color: @label-warning-color;
+}
+
+.label-danger {
+    background-color: @label-danger-background;
+    color: @label-danger-color;
+}
+
+.label-pending {
+    background-color: @global-secondary-background;
+    color: @global-inverse-color;
+}
