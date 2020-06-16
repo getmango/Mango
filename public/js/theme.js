@@ -22,8 +22,7 @@ const setTheme = themeStr => {
 		$('.uk-card').addClass('uk-card-secondary');
 		$('.uk-card').removeClass('uk-card-default');
 		$('.ui-widget-content').addClass('dark');
-	}
-	else {
+	} else {
 		$('html').css('background', '');
 		$('body').removeClass('uk-light');
 		$('.uk-card').removeClass('uk-card-secondary');
@@ -39,5 +38,11 @@ const styleModal = () => {
 	$('.uk-modal-footer').css('background', color);
 };
 
-// do it before document is ready to prevent the initial flash of white
+// do it before document is ready to prevent the initial flash of white on
+// 	most pages
 setTheme(getTheme());
+
+$(() => {
+	// hack for the reader page
+	setTheme(getTheme());
+});
