@@ -8,9 +8,14 @@
   "devDependencies": {
     "gulp": "^4.0.2",
     "gulp-babel-minify": "^0.5.1",
-    "gulp-minify-css": "^1.2.4"
+    "gulp-less": "^4.0.1",
+    "gulp-minify-css": "^1.2.4",
+    "less": "^3.11.3"
   },
   "scripts": {
     "uglify": "gulp"
+  },
+  "dependencies": {
+    "uikit": "^3.5.4"
   }
 }
