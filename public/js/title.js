@@ -8,11 +8,11 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 	if (percentage === 0) {
 		$('#continue-btn').attr('hidden', '');
 		$('#unread-btn').attr('hidden', '');
+	} else if (percentage === 100) {
+		$('#read-btn').attr('hidden', '');
+		$('#continue-btn').attr('hidden', '');
 	} else {
 		$('#continue-btn').text('Continue from ' + percentage + '%');
-	}
-	if (percentage === 100) {
-		$('#read-btn').attr('hidden', '');
 	}
 
 	$('#modal-title-link').text(title);

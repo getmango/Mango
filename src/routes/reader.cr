@@ -15,6 +15,9 @@ class ReaderRouter < Router
         #   might not have actually read them
         page = [page - 2 * IMGS_PER_PAGE, 1].max
 
+        # start from page 1 if the user has finished reading the entry
+        page = 1 if entry.finished? username
+
         redirect env, "/reader/#{title.id}/#{entry.id}/#{page}"
       rescue e
         @context.error e
