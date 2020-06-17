@@ -561,34 +561,38 @@ class Library
     }[0..11]
   end
 
-  def get_recently_added_entries(username)
-    # Group all recently added entries into a Array(Array(Title)). Entries
-    #   from the same title are grouped together
-    grouped_entries = deep_titles
-      .map { |t|
-        t.entries.select { |e| e.date_added > 1.months.ago }
-      }
-      .select { |ary| !ary.empty? }
-      # Sort the array by the added date of the last added entry
-      .sort { |a, b|
-        date_added_a = a.map { |e| e.date_added }.max
-        date_added_b = b.map { |e| e.date_added }.max
-        date_added_b <=> date_added_a
-      }[0..11]
+  alias RA = NamedTuple(
+    entry: Entry,
+    percentage: Float64,
+    grouped_count: Int32)
 
-    grouped_entries.map do |ary|
-      # Get the most recently added entry in the group
-      entry = ary.max_by { |e| e.date_added }
-      if ary.size > 1
-        percentage = entry.book.load_percentage username
-      else
-        percentage = entry.load_percentage username
+  def get_recently_added_entries(username)
+    recently_added = [] of RA
+
+    titles.map { |t| t.deep_entries }
+      .flatten
+      .select { |e| e.date_added > 1.month.ago }
+      .sort { |a, b| b.date_added <=> a.date_added }
+      .each do |e|
+        last = recently_added.last?
+        if last && e.title_id == last[:entry].title_id
+          # A NamedTuple is immutable, so we have to cast it to a Hash first
+          last_hash = last.to_h
+          count = last_hash[:grouped_count].as(Int32)
+          last_hash[:grouped_count] = count + 1
+          # Setting the percentage to a negative value will hide the
+          #   percentage badge on the card
+          last_hash[:percentage] = -1.0
+          recently_added[recently_added.size - 1] = RA.from last_hash
+        else
+          recently_added << {
+            entry:         e,
+            percentage:    e.load_percentage(username),
+            grouped_count: 1,
+          }
+        end
       end
-      {
-        entry:         entry,
-        percentage:    percentage,
-        grouped_count: ary.size,
-      }
-    end
+
+    recently_added[0..11]
   end
 end
