@@ -28,9 +28,9 @@ gulp.task('img', () => {
 		.pipe(gulp.dest('dist/img'));
 });
 
-gulp.task('favicon', () => {
-	return gulp.src('public/favicon.ico')
+gulp.task('copy-files', () => {
+	return gulp.src('public/*.*')
 		.pipe(gulp.dest('dist'));
 });
 
-gulp.task('default', gulp.parallel('minify-js', gulp.series('less', 'minify-css'), 'img', 'favicon'));
+gulp.task('default', gulp.parallel('minify-js', gulp.series('less', 'minify-css'), 'img', 'copy-files'));
