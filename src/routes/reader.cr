@@ -56,7 +56,7 @@ class ReaderRouter < Router
           next_entry_url = "#{base_url}reader/#{title.id}/#{next_entry.id}"
         end
 
-        render "src/views/reader.ecr"
+        render "src/views/reader.html.ecr"
       rescue e
         @context.error e
         env.response.status_code = 404

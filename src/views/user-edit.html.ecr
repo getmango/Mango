@@ -1,0 +1,46 @@
+<form action="<%= base_url %>admin/user/edit" method="post" accept-charset="utf-8">
+
+  <div class="uk-margin">
+    <label class="uk-form-label" for="form-stacked-text">Username</label>
+    <input class="uk-input" type="text" name="username" <%- if username -%> value=<%= username %> <%- end -%>>
+  </div>
+  <%- if new_user -%>
+    <div class="uk-margin">
+      <label class="uk-form-label" for="form-stacked-text">Password</label>
+      <input class="uk-input" type="password" name="password">
+    </div>
+  <%- end -%>
+  <div class="uk-margin">
+    <label class="uk-form-label" for="form-stacked-text">Admin Access</label>
+    <input class="uk-checkbox" type="checkbox" name="admin" <%- if admin == true -%> checked <%- end -%>>
+  </div>
+
+  <%- unless new_user -%>
+    <div>
+      <button class="uk-button uk-button-default" type="button" uk-toggle="target: #change-password">Change Password</button>
+      <div id="change-password" class="uk-margin" hidden>
+        <label class="uk-form-label" for="form-stacked-text">New Password</label>
+        <input class="uk-input" type="password" name="password">
+      </div>
+    </div>
+  <%- end -%>
+
+  <hr class="uk-divider-icon">
+
+  <input type="submit" value="Save" class="uk-button uk-button-primary">
+</form>
+
+<% content_for "script" do %>
+  <script>
+    var username;
+    var error;
+    <%- if !new_user -%>
+      username = '/<%= username %>';
+    <%- end -%>
+      <%- if error -%>
+        error = '<%= error %>';
+      <%- end -%>
+  </script>
+  <script src="<%= base_url %>js/alert.js"></script>
+  <script src="<%= base_url %>js/user-edit.js"></script>
+<% end %>

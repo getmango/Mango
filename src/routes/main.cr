@@ -4,7 +4,7 @@ class MainRouter < Router
   def initialize
     get "/login" do |env|
       base_url = Config.current.base_url
-      render "src/views/login.ecr"
+      render "src/views/login.html.ecr"
     end
 
     get "/logout" do |env|

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+  <%= render_component "head" %>
+
+  <body>
+    <div class="uk-offcanvas-content">
+      <div class="uk-navbar-container uk-navbar-transparent" uk-navbar="uk-navbar">
+        <div id="mobile-nav" uk-offcanvas="overlay: true">
+          <div class="uk-offcanvas-bar uk-flex uk-flex-column">
+            <ul class="uk-nav uk-nav-primary uk-nav-center uk-margin-auto-vertical">
+              <li><a href="<%= base_url %>">Home</a></li>
+              <li><a href="<%= base_url %>library">Library</a></li>
+              <% if is_admin %>
+                <li><a href="<%= base_url %>admin">Admin</a></li>
+                <li><a href="<%= base_url %>download">Download</a></li>
+              <% end %>
+              <hr uk-divider>
+              <li><a onclick="toggleTheme()"><i class="fas fa-adjust"></i></a></li>
+              <li><a href="<%= base_url %>logout">Logout</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="uk-position-top">
+      <div class="uk-navbar-container uk-navbar-transparent" uk-navbar="uk-navbar">
+        <div class="uk-navbar-left uk-hidden@s">
+          <div class="uk-navbar-toggle" uk-navbar-toggle-icon="uk-navbar-toggle-icon" uk-toggle="target: #mobile-nav"></div>
+        </div>
+        <div class="uk-navbar-left uk-visible@s">
+          <a class="uk-navbar-item uk-logo" href="<%= base_url %>"><img src="<%= base_url %>img/icon.png"></a>
+          <ul class="uk-navbar-nav">
+            <li><a href="<%= base_url %>">Home</a></li>
+            <li><a href="<%= base_url %>library">Library</a></li>
+            <% if is_admin %>
+              <li><a href="<%= base_url %>admin">Admin</a></li>
+              <li><a href="<%= base_url %>download">Download</a></li>
+            <% end %>
+          </ul>
+        </div>
+        <div class="uk-navbar-right uk-visible@s">
+          <ul class="uk-navbar-nav">
+            <li><a onclick="toggleTheme()"><i class="fas fa-adjust"></i></a></li>
+            <li><a href="<%= base_url %>logout">Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="uk-section uk-section-small">
+    </div>
+    <div class="uk-section uk-section-small">
+      <div class="uk-container uk-container-small">
+        <div id="alert"></div>
+        <%= content %>
+      </div>
+    </div>
+    <script>
+      setTheme(getTheme());
+      const base_url = "<%= base_url %>";
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.3.1/dist/js/uikit.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.3.1/dist/js/uikit-icons.min.js"></script>
+
+    <%= yield_content "script" %>
+  </body>
+
+</html>
