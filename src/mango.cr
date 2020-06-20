@@ -4,7 +4,7 @@ require "./mangadex/*"
 require "option_parser"
 require "clim"
 
-MANGO_VERSION = "0.7.0"
+MANGO_VERSION = "0.7.1"
 
 macro common_option
   option "-c PATH", "--config=PATH", type: String,
