@@ -8,14 +8,13 @@ targets:
   mango:
     main: src/mango.cr
 
-crystal: 0.35.0
+crystal: 0.34.0
 
 license: MIT
 
 dependencies:
   kemal:
     github: kemalcr/kemal
-    commit: a8c0f09b858162bd13c96663febef5527b322a32
   kemal-session:
     github: kemalcr/kemal-session
   sqlite3:

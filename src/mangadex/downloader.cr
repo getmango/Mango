@@ -1,13 +1,13 @@
 require "./api"
 require "sqlite3"
-require "compress/zip"
+require "zip"
 
 module MangaDex
   class PageJob
     property success = false
     property url : String
     property filename : String
-    property writer : Compress::Zip::Writer
+    property writer : Zip::Writer
     property tries_remaning : Int32
 
     def initialize(@url, @filename, @writer, @tries_remaning)
@@ -324,7 +324,7 @@ module MangaDex
       # Find the number of digits needed to store the number of pages
       len = Math.log10(chapter.pages.size).to_i + 1
 
-      writer = Compress::Zip::Writer.new zip_path
+      writer = Zip::Writer.new zip_path
       # Create a buffered channel. It works as an FIFO queue
       channel = Channel(PageJob).new chapter.pages.size
       spawn do
