@@ -575,7 +575,8 @@ class Library
       .sort { |a, b| b.date_added <=> a.date_added }
       .each do |e|
         last = recently_added.last?
-        if last && e.title_id == last[:entry].title_id
+        if last && e.title_id == last[:entry].title_id &&
+           (e.date_added - last[:entry].date_added).duration < 1.day
           # A NamedTuple is immutable, so we have to cast it to a Hash first
           last_hash = last.to_h
           count = last_hash[:grouped_count].as(Int32)
