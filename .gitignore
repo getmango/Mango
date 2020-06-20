@@ -9,3 +9,4 @@ dist
 mango
 .env
 *.md
+public/css/uikit.css

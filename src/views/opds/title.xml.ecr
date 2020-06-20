@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>urn:mango:<%= title.id %></id>
+
+  <link rel="self" href="<%= base_url %>opds/book/<%= title.id %>" type="application/atom+xml;profile=opds-catalog;kind=navigation" />
+  <link rel="start" href="<%= base_url %>opds/" type="application/atom+xml;profile=opds-catalog;kind=navigation" />
+
+  <title><%= title.display_name %></title>
+
+  <author>
+    <name>Mango</name>
+    <uri>https://github.com/hkalexling/Mango</uri>
+  </author>
+
+  <% title.titles.each do |t| %>
+    <entry>
+      <title><%= t.display_name %></title>
+      <id>urn:mango:<%= t.id %></id>
+      <link type="application/atom+xml;profile=opds-catalog;kind=navigation" rel="subsection" href="<%= base_url %>opds/book/<%= t.id %>" />
+    </entry>
+  <% end %>
+
+  <% title.entries.each do |e| %>
+    <entry>
+      <title><%= e.display_name %></title>
+      <id>urn:mango:<%= e.id %></id>
+
+      <link rel="http://opds-spec.org/image" href="<%= e.cover_url %>" />
+      <link rel="http://opds-spec.org/image/thumbnail" href="<%= e.cover_url %>" />
+
+      <link rel="http://opds-spec.org/acquisition" href="<%= base_url %>opds/download/<%= e.title_id %>/<%= e.id %>" title="Read" type="<%= MIME.from_filename e.zip_path %>" />
+
+      <link type="text/html" rel="alternate" title="Read in Mango" href="<%= base_url %>reader/<%= e.title_id %>/<%= e.id %>" />
+      <link type="text/html" rel="alternate" title="Open in Mango" href="<%= base_url %>book/<%= e.title_id %>" />
+    </entry>
+  <% end %>
+
+</feed>

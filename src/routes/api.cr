@@ -80,7 +80,7 @@ class APIRouter < Router
         if !entry_id.nil?
           entry = title.get_entry(entry_id).not_nil!
           raise "incorrect page value" if page < 0 || page > entry.pages
-          title.save_progress username, entry.title, page
+          entry.save_progress username, page
         elsif page == 0
           title.unread_all username
         else
@@ -224,7 +224,7 @@ class APIRouter < Router
             entry_id = env.params.query["entry"]?
             title = @context.library.get_title(title_id).not_nil!
 
-            unless ["image/jpeg", "image/png"].includes? \
+            unless SUPPORTED_IMG_TYPES.includes? \
                      MIME.from_filename? filename
               raise "The uploaded image must be either JPEG or PNG"
             end

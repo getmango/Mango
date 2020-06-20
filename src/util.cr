@@ -16,11 +16,11 @@ macro layout(name)
       is_admin = @context.storage.verify_admin token
     end
     page = {{name}}
-    render "src/views/#{{{name}}}.ecr", "src/views/layout.ecr"
+    render "src/views/#{{{name}}}.html.ecr", "src/views/layout.html.ecr"
   rescue e
     message = e.to_s
     @context.error message
-    render "src/views/message.ecr", "src/views/layout.ecr"
+    render "src/views/message.html.ecr", "src/views/layout.html.ecr"
   end
 end
 
@@ -139,7 +139,7 @@ macro render_xml(path)
 end
 
 macro render_component(filename)
-  render "src/views/components/#{{{filename}}}.ecr"
+  render "src/views/components/#{{{filename}}}.html.ecr"
 end
 
 # Works in all Unix systems. Follows https://github.com/crystal-lang/crystal/

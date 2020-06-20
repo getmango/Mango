@@ -31,9 +31,9 @@ class Logger
     {% end %}
 
     @log = Log.for("")
-
     @backend = Log::IOBackend.new
-    @backend.formatter = ->(entry : Log::Entry, io : IO) do
+
+    format_proc = ->(entry : Log::Entry, io : IO) do
       color = :default
       {% begin %}
         case entry.severity.label.to_s().downcase
@@ -50,12 +50,14 @@ class Logger
       io << entry.message
     end
 
-    Log.builder.bind "*", @@severity, @backend
+    @backend.formatter = Log::Formatter.new &format_proc
+    Log.setup @@severity, @backend
   end
 
   # Ignores @@severity and always log msg
   def log(msg)
-    @backend.write Log::Entry.new "", Log::Severity::None, msg, nil
+    @backend.write Log::Entry.new "", Log::Severity::None, msg,
+      Log::Metadata.empty, nil
   end
 
   def self.log(msg)

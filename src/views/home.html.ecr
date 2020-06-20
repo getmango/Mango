@@ -1,0 +1,73 @@
+<%- if new_user && empty_library -%>
+
+  <div class="uk-container uk-text-center">
+    <i class="fas fa-plus" style="font-size: 80px;"></i>
+    <h2>Add your first manga</h2>
+    <p style="margin-bottom: 40px;">We can't find any files yet. Add some to your library and they'll appear here.</p>
+    <dl class="uk-description-list">
+      <dt style="font-weight: 500;">Current library path</dt>
+      <dd><code><%= Config.current.library_path %></code></dd>
+      <dt style="font-weight: 500;">Want to change your library path?</dt>
+      <dd>Update <code>config.yml</code> located at: <code><%= Config.current.path %></code></dd>
+      <dt style="font-weight: 500;">Can't see your files yet?</dt>
+      <dd>
+      You must wait <%= Config.current.scan_interval %> minutes for the library scan to complete
+      <% if is_admin %>
+        , or manually re-scan from <a href="<%= base_url %>admin">Admin</a>
+      <% end %>.
+      </dd>
+    </dl>
+  </div>
+
+<%- elsif new_user && empty_library == false -%>
+
+  <div class="uk-container uk-text-center">
+    <i class="fas fa-book-open" style="font-size: 80px;"></i>
+    <h2>Read your first manga</h2>
+    <p>Once you start reading, Mango will remember where you left off
+    and show your entries here.</p>
+    <a href="<%= base_url %>library" class="uk-button uk-button-default">View library</a>
+  </div>
+
+<%- elsif new_user == false && empty_library == false -%>
+
+  <%- if continue_reading.empty? && recently_added.empty? -%>
+    <div class="uk-container uk-text-center">
+      <img src="<%= base_url %>img/banner.png" style="max-width: 400px; padding: 0 20px;">
+      <p>A self-hosted manga server and reader</p>
+      <a href="<%= base_url %>library" class="uk-button uk-button-default">View library</a>
+    </div>
+  <%- end -%>
+
+  <%- unless continue_reading.empty? -%>
+    <h2 class="uk-title home-headings">Continue Reading</h2>
+    <div id="item-container-continue" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
+      <%- continue_reading.each do |cr| -%>
+        <% item = cr[:entry] %>
+        <% progress = cr[:percentage] %>
+        <%= render_component "card" %>
+      <%- end -%>
+    </div>
+  <%- end -%>
+
+  <%- unless recently_added.empty? -%>
+    <h2 class="uk-title home-headings">Recently Added</h2>
+    <div id="item-container-continue" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
+      <%- recently_added.each do |ra| -%>
+        <% item = ra %>
+        <% progress = ra[:percentage] %>
+        <%= render_component "card" %>
+      <%- end -%>
+    </div>
+  <%- end -%>
+
+  <%= render_component "entry-modal" %>
+
+<%- end -%>
+
+<% content_for "script" do %>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery.dotdotdot/4.0.11/dotdotdot.js"></script>
+  <script src="<%= base_url %>js/dots.js"></script>
+  <script src="<%= base_url %>js/alert.js"></script>
+  <script src="<%= base_url %>js/title.js"></script>
+<% end %>

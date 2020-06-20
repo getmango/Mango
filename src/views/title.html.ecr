@@ -2,14 +2,14 @@
   <h2 class=uk-title><span><%= title.display_name %></span>
     &nbsp;
     <% if is_admin %>
-    <a onclick="edit()" class="uk-icon-button" uk-icon="icon:pencil"></a>
+      <a onclick="edit()" class="uk-icon-button" uk-icon="icon:pencil"></a>
     <% end %>
   </h2>
 </div>
 <ul class="uk-breadcrumb">
   <li><a href="<%= base_url %>library">Library</a></li>
   <%- title.parents.each do |t| -%>
-  <li><a href="<%= base_url %>book/<%= t.id %>"><%= t.display_name %></a></li>
+    <li><a href="<%= base_url %>book/<%= t.id %>"><%= t.display_name %></a></li>
   <%- end -%>
   <li class="uk-disabled"><a><%= title.display_name %></a></li>
 </ul>
@@ -33,12 +33,12 @@
 </div>
 <div id="item-container" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
   <% title.titles.each_with_index do |item, i| %>
-  <% progress = nil %>
-  <%= render_component "card" %>
+    <% progress = title_percentage[i] %>
+    <%= render_component "card" %>
   <% end %>
   <% title.entries.each_with_index do |item, i| %>
-  <% progress = percentage[i] %>
-  <%= render_component "card" %>
+    <% progress = percentage[i] %>
+    <%= render_component "card" %>
   <% end %>
 </div>
 
@@ -72,7 +72,7 @@
                 <span uk-icon="icon: cloud-upload"></span>
                 <span class="uk-text-middle">Upload a cover image by dropping it here or</span>
                 <div uk-form-custom>
-                  <input type="file" accept="image/jpeg, image/png">
+                  <input type="file" accept="<%= SUPPORTED_IMG_TYPES.join ", " %>">
                   <span class="uk-link">selecting one</span>
                 </div>
               </div>
@@ -85,8 +85,8 @@
       <div id="title-progress-control" hidden>
         <label class="uk-form-label">Progress</label>
         <p class="uk-margin-remove-vertical">
-          <button id="read-btn" class="uk-button uk-button-default" onclick="updateProgress('<%= title.id %>', null, 1)">Mark all as read (100%)</button>
-          <button id="unread-btn" class="uk-button uk-button-default" onclick="updateProgress('<%= title.id %>', null, 0)">Mark all as unread (0%)</button>
+        <button id="read-btn" class="uk-button uk-button-default" onclick="updateProgress('<%= title.id %>', null, 1)">Mark all as read (100%)</button>
+        <button id="unread-btn" class="uk-button uk-button-default" onclick="updateProgress('<%= title.id %>', null, 0)">Mark all as unread (0%)</button>
         </p>
       </div>
     </div>
@@ -94,10 +94,10 @@
 </div>
 
 <% content_for "script" do %>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery.dotdotdot/4.0.11/dotdotdot.js"></script>
-<script src="<%= base_url %>js/dots.js"></script>
-<script src="<%= base_url %>js/alert.js"></script>
-<script src="<%= base_url %>js/title.js"></script>
-<script src="<%= base_url %>js/search.js"></script>
-<script src="<%= base_url %>js/sort-items.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery.dotdotdot/4.0.11/dotdotdot.js"></script>
+  <script src="<%= base_url %>js/dots.js"></script>
+  <script src="<%= base_url %>js/alert.js"></script>
+  <script src="<%= base_url %>js/title.js"></script>
+  <script src="<%= base_url %>js/search.js"></script>
+  <script src="<%= base_url %>js/sort-items.js"></script>
 <% end %>

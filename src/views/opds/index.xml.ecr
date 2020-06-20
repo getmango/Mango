@@ -13,10 +13,10 @@
   </author>
 
   <% titles.each do |t| %>
-  <entry>
-    <title><%= t.display_name %></title>
-    <id>urn:mango:<%= t.id %></id>
-    <link type="application/atom+xml;profile=opds-catalog;kind=navigation" rel="subsection" href="<%= base_url %>opds/book/<%= t.id %>" />
-  </entry>
+    <entry>
+      <title><%= t.display_name %></title>
+      <id>urn:mango:<%= t.id %></id>
+      <link type="application/atom+xml;profile=opds-catalog;kind=navigation" rel="subsection" href="<%= base_url %>opds/book/<%= t.id %>" />
+    </entry>
   <% end %>
 </feed>
