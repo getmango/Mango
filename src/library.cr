@@ -374,7 +374,7 @@ class Title
   end
 
   def deep_read_page_count(username) : Int32
-    entries.map { |e| e.load_progress username }.sum +
+    load_progress_for_all_entries(username).sum +
       titles.map { |t| t.deep_read_page_count username }.flatten.sum
   end
 
@@ -399,6 +399,28 @@ class Title
       next_entry latest_read_entry
     else
       latest_read_entry
+    end
+  end
+
+  def load_progress_for_all_entries(username)
+    progress = {} of String => Int32
+    TitleInfo.new @dir do |info|
+      progress = info.progress[username]?
+    end
+
+    @entries.map do |e|
+      info_progress = 0
+      if progress && progress.has_key? e.title
+        info_progress = [progress[e.title], e.pages].min
+      end
+      info_progress
+    end
+  end
+
+  def load_percentage_for_all_entries(username)
+    progress = load_progress_for_all_entries username
+    @entries.map_with_index do |e, i|
+      progress[i] / e.pages
     end
   end
 

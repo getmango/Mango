@@ -53,7 +53,7 @@ class MainRouter < Router
       begin
         title = (@context.library.get_title env.params.url["title"]).not_nil!
         username = get_username env
-        percentage = title.entries.map &.load_percentage username
+        percentage = title.load_percentage_for_all_entries username
         title_percentage = title.titles.map &.load_percentage username
         layout "title"
       rescue e
