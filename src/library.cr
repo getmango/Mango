@@ -401,6 +401,63 @@ class Title
       latest_read_entry
     end
   end
+
+  # === helper methods ===
+
+  # Gets the last read entry in the title. If the entry has been completed,
+  #   returns the next entry. Returns nil when no entry has been read yet,
+  #   or when all entries are completed
+  def get_last_read_entry(username) : Entry?
+    progress = {} of String => Int32
+    TitleInfo.new @dir do |info|
+      progress = info.progress[username]?
+    end
+    return if progress.nil?
+
+    last_read_entry = nil
+
+    @entries.reverse_each do |e|
+      if progress.has_key? e.title
+        last_read_entry = e
+        break
+      end
+    end
+
+    if last_read_entry && last_read_entry.finished? username
+      last_read_entry = last_read_entry.next_entry
+    end
+
+    last_read_entry
+  end
+
+  # Equivalent to `@entries.map &. date_added`, but much more efficient
+  def get_date_added_for_all_entries
+    da = {} of String => Time
+    TitleInfo.new @dir do |info|
+      da = info.date_added
+    end
+
+    @entries.each do |e|
+      next if da.has_key? e.title
+      da[e.title] = ctime e.zip_path
+    end
+
+    TitleInfo.new @dir do |info|
+      info.date_added = da
+      info.save
+    end
+
+    @entries.map { |e| da[e.title] }
+  end
+
+  def deep_entries_with_date_added
+    da_ary = get_date_added_for_all_entries
+    zip = @entries.map_with_index do |e, i|
+      {entry: e, date_added: da_ary[i]}
+    end
+    return zip if title_ids.empty?
+    zip + titles.map { |t| t.deep_entries_with_date_added }.flatten
+  end
 end
 
 class TitleInfo
@@ -524,19 +581,9 @@ class Library
 
   def get_continue_reading_entries(username)
     cr_entries = deep_titles
-      # For each Title, get the last read entry. If the user has finished
-      #   reading this entry, get the next entry
-      .map { |t|
-        last_read_entry = t.entries.reverse_each.find do |e|
-          e.started? username
-        end
-        if last_read_entry && last_read_entry.finished? username
-          last_read_entry = last_read_entry.next_entry
-        end
-        last_read_entry
-      }
+      .map { |t| t.get_last_read_entry username }
       # Select elements with type `Entry` from the array and ignore all `Nil`s
-      .select(Entry)
+      .select(Entry)[0..11]
       .map { |e|
         # Get the last read time of the entry. If it hasn't been started, get
         #   the last read time of the previous entry
@@ -558,7 +605,7 @@ class Library
       next 1 if a[:last_read].nil?
       next -1 if b[:last_read].nil?
       b[:last_read].not_nil! <=> a[:last_read].not_nil!
-    }[0..11]
+    }
   end
 
   alias RA = NamedTuple(
@@ -568,15 +615,16 @@ class Library
 
   def get_recently_added_entries(username)
     recently_added = [] of RA
+    last_date_added = nil
 
-    titles.map { |t| t.deep_entries }
-      .flatten
-      .select { |e| e.date_added > 1.month.ago }
-      .sort { |a, b| b.date_added <=> a.date_added }
+    titles.map { |t| t.deep_entries_with_date_added }.flatten
+      .select { |e| e[:date_added] > 1.month.ago }
+      .sort { |a, b| b[:date_added] <=> a[:date_added] }
       .each do |e|
+        break if recently_added.size > 12
         last = recently_added.last?
-        if last && e.title_id == last[:entry].title_id &&
-           (e.date_added - last[:entry].date_added).duration < 1.day
+        if last && e[:entry].title_id == last[:entry].title_id &&
+           (e[:date_added] - last_date_added.not_nil!).duration < 1.day
           # A NamedTuple is immutable, so we have to cast it to a Hash first
           last_hash = last.to_h
           count = last_hash[:grouped_count].as(Int32)
@@ -586,9 +634,10 @@ class Library
           last_hash[:percentage] = -1.0
           recently_added[recently_added.size - 1] = RA.from last_hash
         else
+          last_date_added = e[:date_added]
           recently_added << {
-            entry:         e,
-            percentage:    e.load_percentage(username),
+            entry:         e[:entry],
+            percentage:    e[:entry].load_percentage(username),
             grouped_count: 1,
           }
         end
