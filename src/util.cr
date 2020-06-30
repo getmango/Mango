@@ -154,3 +154,13 @@ def ctime(file_path : String) : Time
     Time.new stat.st_ctim, Time::Location::UTC
   {% end %}
 end
+
+def escape_xml(str)
+  str.gsub({
+    '>'  => "&gt;",
+    '<'  => "&lt;",
+    '"'  => "&quot;",
+    '\'' => "&apos;",
+    '&'  => "&amp;",
+  })
+end
