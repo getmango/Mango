@@ -33,7 +33,16 @@ class Entry
         MIME.from_filename? e.filename
     end
     file.close
-    @id = storage.get_id @zip_path, false
+    id = storage.get_id @zip_path, false
+    if id.nil?
+      id = random_str
+      storage.insert_id({
+        path:     @zip_path,
+        id:       id,
+        is_title: false,
+      })
+    end
+    @id = id
     @mtime = File.info(@zip_path).modification_time
   end
 
@@ -178,7 +187,16 @@ class Title
 
   def initialize(@dir : String, @parent_id, storage,
                  @library : Library)
-    @id = storage.get_id @dir, true
+    id = storage.get_id @dir, true
+    if id.nil?
+      id = random_str
+      storage.insert_id({
+        path:     @dir,
+        id:       id,
+        is_title: true,
+      })
+    end
+    @id = id
     @title = File.basename dir
     @encoded_title = URI.encode @title
     @title_ids = [] of String
@@ -525,7 +543,7 @@ end
 
 class Library
   property dir : String, title_ids : Array(String), scan_interval : Int32,
-    storage : Storage, title_hash : Hash(String, Title)
+    title_hash : Hash(String, Title)
 
   def self.default : self
     unless @@default
@@ -535,7 +553,6 @@ class Library
   end
 
   def initialize
-    @storage = Storage.default
     register_mime_types
 
     @dir = Config.current.library_path
@@ -589,17 +606,24 @@ class Library
       Dir.mkdir_p @dir
     end
     @title_ids.clear
+
+    storage = Storage.new auto_close: false
+
     (Dir.entries @dir)
       .select { |fn| !fn.starts_with? "." }
       .map { |fn| File.join @dir, fn }
       .select { |path| File.directory? path }
-      .map { |path| Title.new path, "", @storage, self }
+      .map { |path| Title.new path, "", storage, self }
       .select { |title| !(title.entries.empty? && title.titles.empty?) }
       .sort { |a, b| a.title <=> b.title }
       .each do |title|
         @title_hash[title.id] = title
         @title_ids << title.id
       end
+
+    storage.bulk_insert_ids
+    storage.close
+
     Logger.debug "Scan completed"
   end
 

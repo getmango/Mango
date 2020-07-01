@@ -14,6 +14,12 @@ end
 
 class Storage
   @path : String
+  @db : DB::Database?
+  @insert_ids = [] of IDTuple
+
+  alias IDTuple = NamedTuple(path: String,
+    id: String,
+    is_title: Bool)
 
   def self.default : self
     unless @@default
@@ -22,7 +28,8 @@ class Storage
     @@default.not_nil!
   end
 
-  def initialize(db_path : String? = nil, init_user = true)
+  def initialize(db_path : String? = nil, init_user = true, *,
+                 @auto_close = true)
     @path = db_path || Config.current.db_path
     dir = File.dirname @path
     unless Dir.exists? dir
@@ -60,6 +67,9 @@ class Storage
         init_admin if init_user
       end
     end
+    unless @auto_close
+      @db = DB.open "sqlite3://#{@path}"
+    end
   end
 
   macro init_admin
@@ -71,8 +81,18 @@ class Storage
                "#{{"username" => "admin", "password" => random_pw}}"
   end
 
+  private def get_db(&block : DB::Database ->)
+    if @db.nil?
+      DB.open "sqlite3://#{@path}" do |db|
+        yield db
+      end
+    else
+      yield @db.not_nil!
+    end
+  end
+
   def verify_user(username, password)
-    DB.open "sqlite3://#{@path}" do |db|
+    get_db do |db|
       begin
         hash, token = db.query_one "select password, token from " \
                                    "users where username = (?)",
@@ -97,7 +117,7 @@ class Storage
 
   def verify_token(token)
     username = nil
-    DB.open "sqlite3://#{@path}" do |db|
+    get_db do |db|
       begin
         username = db.query_one "select username from users where " \
                                 "token = (?)", token, as: String
@@ -110,7 +130,7 @@ class Storage
 
   def verify_admin(token)
     is_admin = false
-    DB.open "sqlite3://#{@path}" do |db|
+    get_db do |db|
       begin
         is_admin = db.query_one "select admin from users where " \
                                 "token = (?)", token, as: Bool
@@ -123,7 +143,7 @@ class Storage
 
   def list_users
     results = Array(Tuple(String, Bool)).new
-    DB.open "sqlite3://#{@path}" do |db|
+    get_db do |db|
       db.query "select username, admin from users" do |rs|
         rs.each do
           results << {rs.read(String), rs.read(Bool)}
@@ -137,7 +157,7 @@ class Storage
     validate_username username
     validate_password password
     admin = (admin ? 1 : 0)
-    DB.open "sqlite3://#{@path}" do |db|
+    get_db do |db|
       hash = hash_password password
       db.exec "insert into users values (?, ?, ?, ?)",
         username, hash, nil, admin
@@ -148,7 +168,7 @@ class Storage
     admin = (admin ? 1 : 0)
     validate_username username
     validate_password password unless password.empty?
-    DB.open "sqlite3://#{@path}" do |db|
+    get_db do |db|
       if password.empty?
         db.exec "update users set username = (?), admin = (?) " \
                 "where username = (?)",
@@ -163,13 +183,13 @@ class Storage
   end
 
   def delete_user(username)
-    DB.open "sqlite3://#{@path}" do |db|
+    get_db do |db|
       db.exec "delete from users where username = (?)", username
     end
   end
 
   def logout(token)
-    DB.open "sqlite3://#{@path}" do |db|
+    get_db do |db|
       begin
         db.exec "update users set token = (?) where token = (?)", nil, token
       rescue
@@ -178,16 +198,34 @@ class Storage
   end
 
   def get_id(path, is_title)
-    id = random_str
-    DB.open "sqlite3://#{@path}" do |db|
-      begin
-        id = db.query_one "select id from ids where path = (?)", path,
-          as: {String}
-      rescue
-        db.exec "insert into ids values (?, ?, ?)", path, id, is_title ? 1 : 0
-      end
+    id = nil
+    get_db do |db|
+      id = db.query_one? "select id from ids where path = (?)", path,
+        as: {String}
     end
     id
+  end
+
+  def insert_id(tp : IDTuple)
+    @insert_ids << tp
+  end
+
+  def bulk_insert_ids
+    get_db do |db|
+      db.transaction do |tx|
+        @insert_ids.each do |tp|
+          tx.connection.exec "insert into ids values (?, ?, ?)", tp[:path],
+            tp[:id], tp[:is_title] ? 1 : 0
+        end
+      end
+    end
+    @insert_ids.clear
+  end
+
+  def close
+    unless @db.nil?
+      @db.not_nil!.close
+    end
   end
 
   def to_json(json : JSON::Builder)
