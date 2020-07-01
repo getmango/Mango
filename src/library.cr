@@ -536,6 +536,8 @@ class Library
 
   def initialize
     @storage = Storage.default
+    register_mime_types
+
     @dir = Config.current.library_path
     @scan_interval = Config.current.scan_interval
     # explicitly initialize @titles to bypass the compiler check. it will

@@ -41,8 +41,6 @@ def send_json(env, json)
 end
 
 def send_attachment(env, path)
-  MIME.register ".cbz", "application/vnd.comicbook+zip"
-  MIME.register ".cbr", "application/vnd.comicbook-rar"
   send_file env, path, filename: File.basename(path), disposition: "attachment"
 end
 
@@ -163,4 +161,15 @@ def escape_xml(str)
     '\'' => "&apos;",
     '&'  => "&amp;",
   })
+end
+
+def register_mime_types
+  {
+    ".zip" => "application/zip",
+    ".rar" => "application/x-rar-compressed",
+    ".cbz" => "application/vnd.comicbook+zip",
+    ".cbr" => "application/vnd.comicbook-rar",
+  }.each do |k, v|
+    MIME.register k, v
+  end
 end
