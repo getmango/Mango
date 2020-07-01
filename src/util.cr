@@ -153,16 +153,6 @@ def ctime(file_path : String) : Time
   {% end %}
 end
 
-def escape_xml(str)
-  str.gsub({
-    '>'  => "&gt;",
-    '<'  => "&lt;",
-    '"'  => "&quot;",
-    '\'' => "&apos;",
-    '&'  => "&amp;",
-  })
-end
-
 def register_mime_types
   {
     ".zip" => "application/zip",

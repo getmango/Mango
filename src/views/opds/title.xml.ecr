@@ -5,7 +5,7 @@
   <link rel="self" href="<%= base_url %>opds/book/<%= title.id %>" type="application/atom+xml;profile=opds-catalog;kind=navigation" />
   <link rel="start" href="<%= base_url %>opds/" type="application/atom+xml;profile=opds-catalog;kind=navigation" />
 
-  <title><%= escape_xml(title.display_name) %></title>
+  <title><%= HTML.escape(title.display_name) %></title>
 
   <author>
     <name>Mango</name>
@@ -14,7 +14,7 @@
 
   <% title.titles.each do |t| %>
     <entry>
-      <title><%= escape_xml(t.display_name) %></title>
+      <title><%= HTML.escape(t.display_name) %></title>
       <id>urn:mango:<%= t.id %></id>
       <link type="application/atom+xml;profile=opds-catalog;kind=navigation" rel="subsection" href="<%= base_url %>opds/book/<%= t.id %>" />
     </entry>
@@ -22,7 +22,7 @@
 
   <% title.entries.each do |e| %>
     <entry>
-      <title><%= escape_xml(e.display_name) %></title>
+      <title><%= HTML.escape(e.display_name) %></title>
       <id>urn:mango:<%= e.id %></id>
 
       <link rel="http://opds-spec.org/image" href="<%= e.cover_url %>" />

@@ -14,7 +14,7 @@
 
   <% titles.each do |t| %>
     <entry>
-      <title><%= escape_xml(t.display_name) %></title>
+      <title><%= HTML.escape(t.display_name) %></title>
       <id>urn:mango:<%= t.id %></id>
       <link type="application/atom+xml;profile=opds-catalog;kind=navigation" rel="subsection" href="<%= base_url %>opds/book/<%= t.id %>" />
     </entry>
