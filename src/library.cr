@@ -457,7 +457,7 @@ class Title
     last_read_entry = nil
 
     @entries.reverse_each do |e|
-      if progress.has_key? e.title
+      if progress.has_key?(e.title) && progress[e.title] > 0
         last_read_entry = e
         break
       end
