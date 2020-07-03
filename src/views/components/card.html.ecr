@@ -30,7 +30,7 @@
 
       <div class="uk-card-body">
         <% unless progress < 0 || progress > 100 %>
-          <div class="uk-card-badge uk-label"><%= (progress * 100).round(1) %>%</div>
+          <div class="uk-card-badge label"><%= (progress * 100).round(1) %>%</div>
         <% end %>
 
         <h3 class="uk-card-title break-word" data-title="<%= item.display_name.gsub("\"", "&quot;") %>"><%= item.display_name %></h3>
