@@ -27,7 +27,7 @@
 }
 
 .acard:hover {
-    text-decoration: none;
+    cursor: pointer;
 }
 
 .uk-list li {
