@@ -12,7 +12,7 @@ gulp.task('minify-js', () => {
 });
 
 gulp.task('less', () => {
-	return gulp.src('src/assets/*.less')
+	return gulp.src('public/css/*.less')
 		.pipe(less())
 		.pipe(gulp.dest('public/css'));
 });
