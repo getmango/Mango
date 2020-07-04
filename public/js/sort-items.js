@@ -1,6 +1,10 @@
 $(() => {
+	const titleID = $('.data').attr('data-title-id') || 'library';
+
 	const sortItems = () => {
 		const sort = $('#sort-select').find(':selected').attr('id');
+		localStorage.setItem(`sort-${titleID}`, sort);
+
 		const ary = sort.split('-');
 		const by = ary[0];
 		const dir = ary[1];
@@ -115,7 +119,10 @@ $(() => {
 		sortItems();
 	});
 
-	if ($('option#auto-up').length > 0)
+	const sortID = localStorage.getItem(`sort-${titleID}`);
+	if (sortID)
+		$(`option#${sortID}`).attr('selected', '');
+	else if ($('option#auto-up').length > 0)
 		$('option#auto-up').attr('selected', '');
 	else
 		$('option#name-up').attr('selected', '');
