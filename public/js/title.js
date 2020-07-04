@@ -36,9 +36,6 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 		$('#continue-btn').text('Continue from ' + percentage + '%');
 	}
 
-	$('#modal-title-link').text(title);
-	$('#modal-title-link').attr('href', `${base_url}book/${titleID}`);
-
 	$('#modal-entry-title').find('span').text(entry);
 	$('#modal-entry-title').next().attr('data-id', titleID);
 	$('#modal-entry-title').next().attr('data-entry-id', entryID);
