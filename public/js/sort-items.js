@@ -25,20 +25,21 @@ $(() => {
 
 					if (!keyRange[key]) {
 						keyRange[key] = [num, num, 1];
-					}
-					else {
+					} else {
 						keyRange[key][2] += 1;
 						if (num < keyRange[key][0]) {
 							keyRange[key][0] = num;
-						}
-						else if (num > keyRange[key][1]) {
+						} else if (num > keyRange[key][1]) {
 							keyRange[key][1] = num;
 						}
 					}
 
 					match = regex.exec(name);
 				}
-				ctxAry.push({index: i, numbers: numbers});
+				ctxAry.push({
+					index: i,
+					numbers: numbers
+				});
 			});
 
 			console.log(keyRange);
@@ -84,8 +85,7 @@ $(() => {
 			if (dir === 'down') {
 				items.reverse();
 			}
-		}
-		else {
+		} else {
 			items.sort((a, b) => {
 				var res;
 				if (by === 'name')
@@ -108,6 +108,7 @@ $(() => {
 			});
 		}
 		$('#item-container').append(items);
+		setupAcard();
 	};
 
 	$('#sort-select').change(() => {

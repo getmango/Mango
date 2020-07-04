@@ -1,13 +1,12 @@
 const truncate = () => {
-	$('.acard .uk-card-title').each((i, e) => {
+	$('.uk-card-title').each((i, e) => {
 		$(e).dotdotdot({
 			truncate: 'letter',
 			watch: true,
 			callback: (truncated) => {
 				if (truncated) {
 					$(e).attr('uk-tooltip', $(e).attr('data-title'));
-				}
-				else {
+				} else {
 					$(e).removeAttr('uk-tooltip');
 				}
 			}

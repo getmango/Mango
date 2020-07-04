@@ -1,74 +1,99 @@
 .uk-alert-close {
-	color: black !important;
+    color: black !important;
 }
+
 .uk-card-body {
-	padding: 20px;
+    padding: 20px;
 }
+
 .uk-card-media-top {
-	height: 250px;
+    height: 250px;
 }
+
 @media (min-width: 600px) {
-.uk-card-media-top {
-	height: 300px;
+    .uk-card-media-top {
+        height: 300px;
+    }
 }
+
+.uk-card-media-top>img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
 }
-.uk-card-media-top > img {
-	height: 100%;
-	width: 100%;
-	object-fit: cover;
-}
+
 .uk-card-title {
-	height: 3em;
+    max-height: 3em;
 }
+
 .acard:hover {
-	text-decoration: none;
+    text-decoration: none;
 }
+
 .uk-list li {
-	cursor: pointer;
+    cursor: pointer;
 }
+
 .reader-bg {
-	background-color: black;
+    background-color: black;
 }
+
 #scan-status {
-	cursor: auto;
+    cursor: auto;
 }
+
 .break-word {
-	word-wrap: break-word;
+    word-wrap: break-word;
 }
-.uk-logo > img {
-	height: 90px;
-	width: 90px;
+
+.uk-logo>img {
+    height: 90px;
+    width: 90px;
 }
+
 .uk-search {
-	width: 100%;
+    width: 100%;
 }
+
 #selectable .ui-selecting {
-	background: #EEE6B9;
+    background: #EEE6B9;
 }
+
 #selectable .ui-selected {
-	background: #F4E487;
+    background: #F4E487;
 }
+
 #selectable .ui-selecting.dark {
-	background: #5E5731;
+    background: #5E5731;
 }
+
 #selectable .ui-selected.dark {
-	background: #9D9252;
+    background: #9D9252;
 }
-td > .uk-dropdown {
-	white-space: pre-line;
+
+td>.uk-dropdown {
+    white-space: pre-line;
 }
-#edit-modal .uk-grid > div {
-	height: 300px;
+
+#edit-modal .uk-grid>div {
+    height: 300px;
 }
+
 #edit-modal #cover {
-	height: 100%;
-	width: 100%;
-	object-fit: cover;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
 }
+
 #edit-modal #cover-upload {
-	height: 100%;
-	box-sizing: border-box;
+    height: 100%;
+    box-sizing: border-box;
 }
+
 #edit-modal .uk-modal-body .uk-inline {
-	width: 100%;
+    width: 100%;
+}
+
+.item .uk-card-title {
+    font-size: 1rem;
 }

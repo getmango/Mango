@@ -14,16 +14,24 @@
     id="<%= item.id %>"
   <% end %>>
 
-  <a class="acard" 
-    <% unless item.is_a? Entry %> 
+  <a class="acard
+    <% if item.is_a? Entry %>
+      <%= "is_entry" %>
+    <% end %>
+    " 
+    <% if item.is_a? Entry %>
+      data-encoded-path="<%= item.encoded_path %>"
+      data-pages="<%= item.pages %>"
+      data-progress="<%= (progress * 100).round(1) %>"
+      data-encoded-book-title="<%= item.book.encoded_display_name %>"
+      data-encoded-title="<%= item.encoded_display_name %>"
+      data-book-id="<%= item.book.id %>"
+      data-id="<%= item.id %>"
+    <% else %>
       href="<%= base_url %>book/<%= item.id %>" 
     <% end %>>
 
-    <div class="uk-card uk-card-default" 
-      <% if item.is_a? Entry %> 
-        onclick="showModal(&quot;<%= item.encoded_path %>&quot;, '<%= item.pages %>', <%= (progress * 100).round(1) %>, &quot;<%= item.book.encoded_display_name %>&quot;, &quot;<%= item.encoded_display_name %>&quot;, '<%= item.title_id %>', '<%= item.id %>')" 
-      <% end %>>
-
+    <div class="uk-card uk-card-default">
       <div class="uk-card-media-top">
         <img data-src="<%= item.cover_url %>" data-width data-height alt="" uk-img>
       </div>
@@ -33,9 +41,17 @@
           <div class="uk-card-badge label"><%= (progress * 100).round(1) %>%</div>
         <% end %>
 
-        <h3 class="uk-card-title break-word" data-title="<%= item.display_name.gsub("\"", "&quot;") %>"><%= item.display_name %></h3>
+        <h3 class="uk-card-title break-word
+          <% if page == "home" && item.is_a? Entry %>
+            <%= "uk-margin-remove-bottom" %>
+          <% end %>
+          " data-title="<%= item.display_name.gsub("\"", "&quot;") %>"><%= item.display_name %>
+        </h3>
+        <% if page == "home" && item.is_a? Entry %>
+          <a class="uk-card-title break-word uk-margin-remove-top uk-text-meta uk-display-inline-block no-modal" data-title="<%= item.book.display_name.gsub("\"", "&quot;") %>" href="<%= base_url %>book/<%= item.book.id %>"><%= item.book.display_name %></a>
+        <% end %>
         <% if item.is_a? Entry %>
-          <p><%= item.pages %> pages</p>
+          <p class="uk-text-meta"><%= item.pages %> pages</p>
         <% end %>
         <% if item.is_a? Title %>
           <% if grouped_count == 1 %>

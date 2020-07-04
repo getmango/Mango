@@ -1,3 +1,24 @@
+$(() => {
+	setupAcard();
+});
+
+const setupAcard = () => {
+	$('.acard.is_entry').click((e) => {
+		if ($(e.target).hasClass('no-modal')) return;
+		const card = $(e.target).closest('.acard');
+
+		showModal(
+			$(card).attr('data-encoded-path'),
+			parseInt($(card).attr('data-pages')),
+			parseFloat($(card).attr('data-progress')),
+			$(card).attr('data-encoded-book-title'),
+			$(card).attr('data-encoded-title'),
+			$(card).attr('data-book-id'),
+			$(card).attr('data-id')
+		);
+	});
+};
+
 function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTitle, titleID, entryID) {
 	const zipPath = decodeURIComponent(encodedPath);
 	const title = decodeURIComponent(encodedeTitle);
