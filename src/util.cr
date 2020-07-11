@@ -95,12 +95,16 @@ def compare_alphanumerically(a : String, b : String)
 end
 
 def validate_archive(path : String) : Exception?
-  file = ArchiveFile.new path
-  file.check
-  file.close
-  return
-rescue e
-  e
+  file = nil
+  begin
+    file = ArchiveFile.new path
+    file.check
+    file.close
+    return
+  rescue e
+    file.close unless file.nil?
+    e
+  end
 end
 
 def random_str
