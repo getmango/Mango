@@ -1,6 +1,6 @@
 require "kemal"
 require "../storage"
-require "../util"
+require "../util/*"
 
 class AuthHandler < Kemal::Handler
   # Some of the code is copied form kemalcr/kemal-basic-auth on GitHub

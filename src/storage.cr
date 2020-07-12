@@ -2,7 +2,7 @@ require "sqlite3"
 require "crypto/bcrypt"
 require "uuid"
 require "base64"
-require "./util"
+require "./util/*"
 
 def hash_password(pw)
   Crypto::Bcrypt::Password.create(pw).to_s

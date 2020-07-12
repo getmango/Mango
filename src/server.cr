@@ -2,7 +2,7 @@ require "kemal"
 require "kemal-session"
 require "./library"
 require "./handlers/*"
-require "./util"
+require "./util/*"
 require "./routes/*"
 
 class Context

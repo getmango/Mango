@@ -1,5 +1,5 @@
 require "kemal"
-require "../util"
+require "../util/*"
 
 class UploadHandler < Kemal::Handler
   def initialize(@upload_dir : String)

@@ -1,4 +1,4 @@
-require "./util"
+require "./util/*"
 
 class Upload
   def initialize(@dir : String)

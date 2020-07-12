@@ -1,6 +1,6 @@
 require "baked_file_system"
 require "kemal"
-require "../util"
+require "../util/*"
 
 class FS
   extend BakedFileSystem

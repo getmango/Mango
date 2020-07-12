@@ -1,7 +1,7 @@
 require "mime"
 require "json"
 require "uri"
-require "./util"
+require "./util/*"
 require "./archive"
 
 SUPPORTED_IMG_TYPES = ["image/jpeg", "image/png", "image/webp"]
@@ -87,7 +87,7 @@ class Entry
             MIME.from_filename? e.filename
         }
         .sort { |a, b|
-          compare_alphanumerically a.filename, b.filename
+          compare_numerically a.filename, b.filename
         }
         .[page_num - 1]
       data = file.read_entry page
@@ -236,11 +236,11 @@ class Title
     @mtime = mtimes.max
 
     @title_ids.sort! do |a, b|
-      compare_alphanumerically @library.title_hash[a].title,
+      compare_numerically @library.title_hash[a].title,
         @library.title_hash[b].title
     end
     @entries.sort! do |a, b|
-      compare_alphanumerically a.title, b.title
+      compare_numerically a.title, b.title
     end
   end
 
