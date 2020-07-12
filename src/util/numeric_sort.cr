@@ -2,6 +2,8 @@
 # Used to sort the images files inside the archives
 # https://github.com/hkalexling/Mango/issues/12
 
+require "big"
+
 def is_numeric(str)
   /^\d+/.match(str) != nil
 end

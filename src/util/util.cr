@@ -1,5 +1,3 @@
-require "big"
-
 IMGS_PER_PAGE     = 5
 UPLOAD_URL_PREFIX = "/uploads"
 STATIC_DIRS       = ["/css", "/js", "/img", "/favicon.ico"]
