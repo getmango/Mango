@@ -66,3 +66,18 @@ end
 macro render_component(filename)
   render "src/views/components/#{{{filename}}}.html.ecr"
 end
+
+macro get_sort_opt
+  sort_method = env.params.query["sort"]?
+
+  if sort_method
+    is_ascending = true
+
+    ascend = env.params.query["ascend"]?
+    if ascend && ascend.to_i? == 0
+      is_ascending = false
+    end
+
+    sort_opt = SortOptions.new sort_method, is_ascending
+  end
+end

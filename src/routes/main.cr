@@ -39,9 +39,14 @@ class MainRouter < Router
 
     get "/library" do |env|
       begin
-        titles = @context.library.titles
         username = get_username env
+
+        sort_opt = @context.library.load_sort_options username
+        get_sort_opt
+
+        titles = @context.library.sorted_titles username, sort_opt
         percentage = titles.map &.load_percentage username
+
         layout "library"
       rescue e
         @context.error e
@@ -53,12 +58,18 @@ class MainRouter < Router
       begin
         title = (@context.library.get_title env.params.url["title"]).not_nil!
         username = get_username env
-        percentage = title.load_percentage_for_all_entries username
+
+        sort_opt = title.load_sort_options username
+        get_sort_opt
+
+        entries = title.sorted_entries username, sort_opt
+
+        percentage = title.load_percentage_for_all_entries username, sort_opt
         title_percentage = title.titles.map &.load_percentage username
         layout "title"
       rescue e
         @context.error e
-        env.response.status_code = 404
+        env.response.status_code = 500
       end
     end
 

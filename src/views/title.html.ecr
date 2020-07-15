@@ -25,8 +25,9 @@
   <div class="uk-margin-bottom uk-width-1-4@s">
     <% hash = {
       "auto" => "Auto",
-      "name" => "Name",
-      "date" => "Date Modified",
+      "title" => "Name",
+      "time_modified" => "Date Modified",
+      "time_added" => "Date Added",
       "progress" => "Progress"
     } %>
     <%= render_component "sort-form" %>
@@ -37,7 +38,7 @@
     <% progress = title_percentage[i] %>
     <%= render_component "card" %>
   <% end %>
-  <% title.entries.each_with_index do |item, i| %>
+  <% entries.each_with_index do |item, i| %>
     <% progress = percentage[i] %>
     <%= render_component "card" %>
   <% end %>

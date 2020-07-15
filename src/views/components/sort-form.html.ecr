@@ -1,8 +1,14 @@
 <div class="uk-form-horizontal">
   <select class="uk-select" id="sort-select">
     <% hash.each do |k, v| %>
-      <option id="<%= k %>-up">▲ <%= v %></option>
-      <option id="<%= k %>-down">▼ <%= v %></option>
+      <option id="<%= k %>-up"
+      <% if sort_opt && k == sort_opt.method.to_s.underscore && sort_opt.ascend %>
+        <%= "selected" %>
+      <% end %>>▲ <%= v %></option>
+      <option id="<%= k %>-down"
+      <% if sort_opt && k == sort_opt.method.to_s.underscore && !sort_opt.ascend %>
+        <%= "selected" %>
+      <% end %>>▼ <%= v %></option>
     <% end %>
   </select>
 </div>

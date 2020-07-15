@@ -7,9 +7,9 @@
 require "big"
 
 private class Item
-  getter index : Int32, numbers : Hash(String, BigDecimal)
+  getter numbers : Hash(String, BigDecimal)
 
-  def initialize(@index, @numbers)
+  def initialize(@numbers)
   end
 
   # Compare with another Item using keys
@@ -51,57 +51,62 @@ private class KeyRange
   end
 end
 
-def chapter_sort(in_ary : Array(String)) : Array(String)
-  ary = in_ary.sort do |a, b|
-    compare_numerically a, b
+class ChapterSorter
+  @sorted_keys = [] of String
+
+  def initialize(str_ary : Array(String))
+    keys = {} of String => KeyRange
+
+    str_ary.each do |str|
+      scan str do |k, v|
+        if keys.has_key? k
+          keys[k].update v
+        else
+          keys[k] = KeyRange.new v
+        end
+      end
+    end
+
+    # Get the array of keys string and sort them
+    @sorted_keys = keys.keys
+      # Only use keys that are present in over half of the strings
+      .select do |key|
+        keys[key].count >= str_ary.size / 2
+      end
+      .sort do |a_key, b_key|
+        a = keys[a_key]
+        b = keys[b_key]
+        # Sort keys by the number of times they appear
+        count_compare = b.count <=> a.count
+        if count_compare == 0
+          # Then sort by value range
+          b.range <=> a.range
+        else
+          count_compare
+        end
+      end
   end
 
-  items = [] of Item
-  keys = {} of String => KeyRange
+  def compare(a : String, b : String)
+    item_a = str_to_item a
+    item_b = str_to_item b
+    item_a.<=>(item_b, @sorted_keys)
+  end
 
-  ary.each_with_index do |str, i|
-    numbers = {} of String => BigDecimal
-
+  private def scan(str, &)
     str.scan /([^0-9\n\r\ ]*)[ ]*([0-9]*\.*[0-9]+)/ do |match|
       key = match[1]
       num = match[2].to_big_d
 
-      numbers[key] = num
-
-      if keys.has_key? key
-        keys[key].update num
-      else
-        keys[key] = KeyRange.new num
-      end
+      yield key, num
     end
-
-    items << Item.new(i, numbers)
   end
 
-  # Get the array of keys string and sort them
-  sorted_keys = keys.keys
-    # Only use keys that are present in over half of the strings
-    .select do |key|
-      keys[key].count >= ary.size / 2
+  private def str_to_item(str)
+    numbers = {} of String => BigDecimal
+    scan str do |k, v|
+      numbers[k] = v
     end
-    .sort do |a_key, b_key|
-      a = keys[a_key]
-      b = keys[b_key]
-      # Sort keys by the number of times they appear
-      count_compare = b.count <=> a.count
-      if count_compare == 0
-        # Then sort by value range
-        b.range <=> a.range
-      else
-        count_compare
-      end
-    end
-
-  items
-    .sort do |a, b|
-      a.<=>(b, sorted_keys)
-    end
-    .map do |item|
-      ary[item.index]
-    end
+    Item.new numbers
+  end
 end

@@ -48,7 +48,7 @@ class ReaderRouter < Router
         next_page = page + IMGS_PER_PAGE
         next_url = next_entry_url = nil
         exit_url = "#{base_url}book/#{title.id}"
-        next_entry = entry.next_entry
+        next_entry = entry.next_entry username
         unless next_page > entry.pages
           next_url = "#{base_url}reader/#{title.id}/#{entry.id}/#{next_page}"
         end

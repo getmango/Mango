@@ -6,6 +6,45 @@ require "./archive"
 
 SUPPORTED_IMG_TYPES = ["image/jpeg", "image/png", "image/webp"]
 
+enum SortMethod
+  Auto
+  Title
+  Progress
+  TimeModified
+  TimeAdded
+end
+
+class SortOptions
+  property method : SortMethod, ascend : Bool
+
+  def initialize(in_method : String? = nil, @ascend = true)
+    @method = SortMethod::Auto
+    SortMethod.each do |m, _|
+      if in_method && m.to_s.underscore == in_method
+        @method = m
+        return
+      end
+    end
+  end
+
+  def initialize(in_method : SortMethod? = nil, @ascend = true)
+    if in_method
+      @method = in_method
+    else
+      @method = SortMethod::Auto
+    end
+  end
+
+  def self.from_tuple(tp : Tuple(String, Bool))
+    method, ascend = tp
+    self.new method, ascend
+  end
+
+  def to_tuple
+    {@method.to_s.underscore, ascend}
+  end
+end
+
 struct Image
   property data : Bytes
   property mime : String
@@ -99,10 +138,11 @@ class Entry
     img
   end
 
-  def next_entry
-    idx = @book.entries.index self
-    return nil if idx.nil? || idx == @book.entries.size - 1
-    @book.entries[idx + 1]
+  def next_entry(username)
+    entries = @book.sorted_entries username
+    idx = entries.index self
+    return nil if idx.nil? || idx == entries.size - 1
+    entries[idx + 1]
   end
 
   def previous_entry
@@ -239,8 +279,9 @@ class Title
       compare_numerically @library.title_hash[a].title,
         @library.title_hash[b].title
     end
+    sorter = ChapterSorter.new @entries.map { |e| e.title }
     @entries.sort! do |a, b|
-      compare_numerically a.title, b.title
+      sorter.compare a.title, b.title
     end
   end
 
@@ -405,28 +446,20 @@ class Title
     deep_read_page_count(username) / deep_total_page_count
   end
 
-  def get_continue_reading_entry(username)
-    in_progress_entries = @entries.select do |e|
-      load_progress(username, e.title) > 0
-    end
-    return nil if in_progress_entries.empty?
-
-    latest_read_entry = in_progress_entries[-1]
-    if load_progress(username, latest_read_entry.title) ==
-         latest_read_entry.pages
-      next_entry latest_read_entry
-    else
-      latest_read_entry
-    end
-  end
-
-  def load_progress_for_all_entries(username)
+  def load_progress_for_all_entries(username, opt : SortOptions? = nil,
+                                    unsorted = false)
     progress = {} of String => Int32
     TitleInfo.new @dir do |info|
       progress = info.progress[username]?
     end
 
-    @entries.map do |e|
+    if unsorted
+      ary = @entries
+    else
+      ary = sorted_entries username, opt
+    end
+
+    ary.map do |e|
       info_progress = 0
       if progress && progress.has_key? e.title
         info_progress = [progress[e.title], e.pages].min
@@ -435,11 +468,69 @@ class Title
     end
   end
 
-  def load_percentage_for_all_entries(username)
-    progress = load_progress_for_all_entries username
-    @entries.map_with_index do |e, i|
+  def load_percentage_for_all_entries(username, opt : SortOptions? = nil,
+                                      unsorted = false)
+    if unsorted
+      ary = @entries
+    else
+      ary = sorted_entries username, opt
+    end
+
+    progress = load_progress_for_all_entries username, opt, unsorted
+    ary.map_with_index do |e, i|
       progress[i] / e.pages
     end
+  end
+
+  # Returns the sorted entries array
+  #
+  # When `opt` is nil, it uses the preferred sorting options in info.json, or
+  #   use the default (auto, ascending)
+  # When `opt` is not nil, it saves the options to info.json
+  def sorted_entries(username, opt : SortOptions? = nil)
+    if opt.nil?
+      opt = load_sort_options username
+    else
+      TitleInfo.new @dir do |info|
+        info.sort_by[username] = opt.to_tuple
+        info.save
+      end
+    end
+
+    case opt.not_nil!.method
+    when .title?
+      ary = @entries.sort { |a, b| compare_numerically a.title, b.title }
+    when .time_modified?
+      ary = @entries.sort { |a, b| a.mtime <=> b.mtime }
+    when .time_added?
+      ary = @entries.sort { |a, b| a.date_added <=> b.date_added }
+    when .progress?
+      percentage_ary = load_percentage_for_all_entries username, opt, true
+      ary = @entries.zip(percentage_ary)
+        .sort { |a_tp, b_tp| a_tp[1] <=> b_tp[1] }
+        .map { |tp| tp[0] }
+    when .auto?
+      sorter = ChapterSorter.new @entries.map { |e| e.title }
+      ary = @entries.sort do |a, b|
+        sorter.compare a.title, b.title
+      end
+    else
+      raise "Unknown sorting method #{opt.not_nil!.method}"
+    end
+
+    ary.reverse! unless opt.not_nil!.ascend
+
+    ary
+  end
+
+  def load_sort_options(username)
+    opt = SortOptions.new
+    TitleInfo.new @dir do |info|
+      if info.sort_by.has_key? username
+        opt = SortOptions.from_tuple info.sort_by[username]
+      end
+    end
+    opt
   end
 
   # === helper methods ===
@@ -464,7 +555,7 @@ class Title
     end
 
     if last_read_entry && last_read_entry.finished? username
-      last_read_entry = last_read_entry.next_entry
+      last_read_entry = last_read_entry.next_entry username
     end
 
     last_read_entry
@@ -511,6 +602,7 @@ class TitleInfo
   property entry_cover_url = {} of String => String
   property last_read = {} of String => Hash(String, Time)
   property date_added = {} of String => Time
+  property sort_by = {} of String => Tuple(String, Bool)
 
   @[JSON::Field(ignore: true)]
   property dir : String = ""
@@ -692,5 +784,46 @@ class Library
       end
 
     recently_added[0..11]
+  end
+
+  def sorted_titles(username, opt : SortOptions? = nil)
+    if opt.nil?
+      opt = load_sort_options username
+    else
+      TitleInfo.new @dir do |info|
+        info.sort_by[username] = opt.to_tuple
+        info.save
+      end
+    end
+
+    # This is a hack to bypass a compiler bug
+    ary = titles
+
+    case opt.not_nil!.method
+    when .auto?
+      ary.sort! { |a, b| compare_numerically a.title, b.title }
+    when .time_modified?
+      ary.sort! { |a, b| a.mtime <=> b.mtime }
+    when .progress?
+      ary.sort! do |a, b|
+        a.load_percentage(username) <=> b.load_percentage(username)
+      end
+    else
+      raise "Unknown sorting method #{opt.not_nil!.method}"
+    end
+
+    ary.reverse! unless opt.not_nil!.ascend
+
+    ary
+  end
+
+  def load_sort_options(username)
+    opt = SortOptions.new
+    TitleInfo.new @dir do |info|
+      if info.sort_by.has_key? username
+        opt = SortOptions.from_tuple info.sort_by[username]
+      end
+    end
+    opt
   end
 end
