@@ -1,6 +1,6 @@
 require "kemal"
 require "kemal-session"
-require "./library"
+require "./library/*"
 require "./handlers/*"
 require "./util/*"
 require "./routes/*"
