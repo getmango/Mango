@@ -41,7 +41,7 @@ class MainRouter < Router
       begin
         username = get_username env
 
-        sort_opt = @context.library.load_sort_options username
+        sort_opt = SortOptions.from_info_json @context.library.dir, username
         get_sort_opt
 
         titles = @context.library.sorted_titles username, sort_opt
@@ -59,7 +59,7 @@ class MainRouter < Router
         title = (@context.library.get_title env.params.url["title"]).not_nil!
         username = get_username env
 
-        sort_opt = title.load_sort_options username
+        sort_opt = SortOptions.from_info_json title.dir, username
         get_sort_opt
 
         entries = title.sorted_entries username, sort_opt

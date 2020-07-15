@@ -40,6 +40,16 @@ class SortOptions
     self.new method, ascend
   end
 
+  def self.from_info_json(dir, username)
+    opt = SortOptions.new
+    TitleInfo.new dir do |info|
+      if info.sort_by.has_key? username
+        opt = SortOptions.from_tuple info.sort_by[username]
+      end
+    end
+    opt
+  end
+
   def to_tuple
     {@method.to_s.underscore, ascend}
   end
@@ -489,7 +499,7 @@ class Title
   # When `opt` is not nil, it saves the options to info.json
   def sorted_entries(username, opt : SortOptions? = nil)
     if opt.nil?
-      opt = load_sort_options username
+      opt = SortOptions.from_info_json @dir, username
     else
       TitleInfo.new @dir do |info|
         info.sort_by[username] = opt.to_tuple
@@ -526,16 +536,6 @@ class Title
     ary.reverse! unless opt.not_nil!.ascend
 
     ary
-  end
-
-  def load_sort_options(username)
-    opt = SortOptions.new
-    TitleInfo.new @dir do |info|
-      if info.sort_by.has_key? username
-        opt = SortOptions.from_tuple info.sort_by[username]
-      end
-    end
-    opt
   end
 
   # === helper methods ===
@@ -793,7 +793,7 @@ class Library
 
   def sorted_titles(username, opt : SortOptions? = nil)
     if opt.nil?
-      opt = load_sort_options username
+      opt = SortOptions.from_info_json @dir, username
     else
       TitleInfo.new @dir do |info|
         info.sort_by[username] = opt.to_tuple
@@ -824,15 +824,5 @@ class Library
     ary.reverse! unless opt.not_nil!.ascend
 
     ary
-  end
-
-  def load_sort_options(username)
-    opt = SortOptions.new
-    TitleInfo.new @dir do |info|
-      if info.sort_by.has_key? username
-        opt = SortOptions.from_tuple info.sort_by[username]
-      end
-    end
-    opt
   end
 end
