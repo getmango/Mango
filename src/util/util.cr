@@ -29,3 +29,19 @@ def register_mime_types
     MIME.register k, v
   end
 end
+
+struct Int
+  def or(other : Int)
+    if self == 0
+      other
+    else
+      self
+    end
+  end
+end
+
+struct Nil
+  def or(other : Int)
+    other
+  end
+end

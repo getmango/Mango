@@ -501,13 +501,16 @@ class Title
     when .title?
       ary = @entries.sort { |a, b| compare_numerically a.title, b.title }
     when .time_modified?
-      ary = @entries.sort { |a, b| a.mtime <=> b.mtime }
+      ary = @entries.sort { |a, b| (a.mtime <=> b.mtime).or \
+        compare_numerically a.title, b.title }
     when .time_added?
-      ary = @entries.sort { |a, b| a.date_added <=> b.date_added }
+      ary = @entries.sort { |a, b| (a.date_added <=> b.date_added).or \
+        compare_numerically a.title, b.title }
     when .progress?
       percentage_ary = load_percentage_for_all_entries username, opt, true
       ary = @entries.zip(percentage_ary)
-        .sort { |a_tp, b_tp| a_tp[1] <=> b_tp[1] }
+        .sort { |a_tp, b_tp| (a_tp[1] <=> b_tp[1]).or \
+          compare_numerically a_tp[0].title, b_tp[0].title }
         .map { |tp| tp[0] }
     else
       unless opt.method.auto?
@@ -803,10 +806,12 @@ class Library
 
     case opt.not_nil!.method
     when .time_modified?
-      ary.sort! { |a, b| a.mtime <=> b.mtime }
+      ary.sort! { |a, b| (a.mtime <=> b.mtime).or \
+        compare_numerically a.title, b.title }
     when .progress?
       ary.sort! do |a, b|
-        a.load_percentage(username) <=> b.load_percentage(username)
+        (a.load_percentage(username) <=> b.load_percentage(username)).or \
+          compare_numerically a.title, b.title
       end
     else
       unless opt.method.auto?
