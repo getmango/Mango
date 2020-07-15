@@ -9,7 +9,7 @@
   <% grouped_count = 1 %>
 <% end %>
 
-<div class="item" data-mtime="<%= item.mtime.to_unix %>" data-progress="<%= progress %>" 
+<div class="item"
   <% if item.is_a? Entry %> 
     id="<%= item.id %>"
   <% end %>>
@@ -45,7 +45,7 @@
           <% if page == "home" && item.is_a? Entry %>
             <%= "uk-margin-remove-bottom" %>
           <% end %>
-          " data-title="<%= HTML.escape(item.display_name) %>"><%= item.display_name %>
+          " data-title="<%= HTML.escape(item.display_name) %>"><%= HTML.escape(item.display_name) %>
         </h3>
         <% if page == "home" && item.is_a? Entry %>
           <a class="uk-card-title break-word uk-margin-remove-top uk-text-meta uk-display-inline-block no-modal" data-title="<%= HTML.escape(item.book.display_name) %>" href="<%= base_url %>book/<%= item.book.id %>"><%= HTML.escape(item.book.display_name) %></a>
