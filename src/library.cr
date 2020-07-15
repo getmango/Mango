@@ -509,13 +509,15 @@ class Title
       ary = @entries.zip(percentage_ary)
         .sort { |a_tp, b_tp| a_tp[1] <=> b_tp[1] }
         .map { |tp| tp[0] }
-    when .auto?
+    else
+      unless opt.method.auto?
+        Logger.warn "Unknown sorting method #{opt.not_nil!.method}. Using " \
+                    "Auto instead"
+      end
       sorter = ChapterSorter.new @entries.map { |e| e.title }
       ary = @entries.sort do |a, b|
         sorter.compare a.title, b.title
       end
-    else
-      raise "Unknown sorting method #{opt.not_nil!.method}"
     end
 
     ary.reverse! unless opt.not_nil!.ascend
@@ -800,8 +802,6 @@ class Library
     ary = titles
 
     case opt.not_nil!.method
-    when .auto?
-      ary.sort! { |a, b| compare_numerically a.title, b.title }
     when .time_modified?
       ary.sort! { |a, b| a.mtime <=> b.mtime }
     when .progress?
@@ -809,7 +809,11 @@ class Library
         a.load_percentage(username) <=> b.load_percentage(username)
       end
     else
-      raise "Unknown sorting method #{opt.not_nil!.method}"
+      unless opt.method.auto?
+        Logger.warn "Unknown sorting method #{opt.not_nil!.method}. Using " \
+                    "Auto instead"
+      end
+      ary.sort! { |a, b| compare_numerically a.title, b.title }
     end
 
     ary.reverse! unless opt.not_nil!.ascend
