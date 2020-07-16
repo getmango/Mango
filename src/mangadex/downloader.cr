@@ -319,7 +319,7 @@ module MangaDex
       unless File.exists? manga_dir
         Dir.mkdir_p manga_dir
       end
-      zip_path = File.join manga_dir, "#{job.title}.cbz"
+      zip_path = File.join manga_dir, "#{job.title}.cbz.part"
 
       # Find the number of digits needed to store the number of pages
       len = Math.log10(chapter.pages.size).to_i + 1
@@ -369,9 +369,12 @@ module MangaDex
         Logger.debug "Download completed. " \
                      "#{fail_count}/#{page_jobs.size} failed"
         writer.close
-        Logger.debug "cbz File created at #{zip_path}"
+        filename = File.join File.dirname(zip_path), File.basename(zip_path,
+          ".part")
+        File.rename zip_path, filename
+        Logger.debug "cbz File created at #{filename}"
 
-        zip_exception = validate_archive zip_path
+        zip_exception = validate_archive filename
         if !zip_exception.nil?
           @queue.add_message "The downloaded archive is corrupted. " \
                              "Error: #{zip_exception}", job
