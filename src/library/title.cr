@@ -299,7 +299,8 @@ class Title
       end
       sorter = ChapterSorter.new @entries.map { |e| e.title }
       ary = @entries.sort do |a, b|
-        sorter.compare a.title, b.title
+        sorter.compare(a.title, b.title).or \
+          compare_numerically a.title, b.title
       end
     end
 
