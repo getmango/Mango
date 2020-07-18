@@ -34,7 +34,7 @@ class Title
         next
       end
       if [".zip", ".cbz", ".rar", ".cbr"].includes? File.extname path
-        entry = Entry.new path, self, @id, storage
+        entry = Entry.new path, self, storage
         @entries << entry if entry.pages > 0 || entry.err_msg
       end
     end

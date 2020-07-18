@@ -28,10 +28,10 @@
       <link rel="http://opds-spec.org/image" href="<%= e.cover_url %>" />
       <link rel="http://opds-spec.org/image/thumbnail" href="<%= e.cover_url %>" />
 
-      <link rel="http://opds-spec.org/acquisition" href="<%= base_url %>opds/download/<%= e.title_id %>/<%= e.id %>" title="Read" type="<%= MIME.from_filename e.zip_path %>" />
+      <link rel="http://opds-spec.org/acquisition" href="<%= base_url %>opds/download/<%= e.book.id %>/<%= e.id %>" title="Read" type="<%= MIME.from_filename e.zip_path %>" />
 
-      <link type="text/html" rel="alternate" title="Read in Mango" href="<%= base_url %>reader/<%= e.title_id %>/<%= e.id %>" />
-      <link type="text/html" rel="alternate" title="Open in Mango" href="<%= base_url %>book/<%= e.title_id %>" />
+      <link type="text/html" rel="alternate" title="Read in Mango" href="<%= base_url %>reader/<%= e.book.id %>/<%= e.id %>" />
+      <link type="text/html" rel="alternate" title="Open in Mango" href="<%= base_url %>book/<%= e.book.id %>" />
     </entry>
   <% end %>
 

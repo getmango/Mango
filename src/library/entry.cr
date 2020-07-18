@@ -1,10 +1,9 @@
 class Entry
   property zip_path : String, book : Title, title : String,
-    size : String, pages : Int32, id : String, title_id : String,
-    encoded_path : String, encoded_title : String, mtime : Time,
-    err_msg : String?
+    size : String, pages : Int32, id : String, encoded_path : String,
+    encoded_title : String, mtime : Time, err_msg : String?
 
-  def initialize(@zip_path, @book, @title_id, storage)
+  def initialize(@zip_path, @book, storage)
     @encoded_path = URI.encode @zip_path
     @title = File.basename @zip_path, File.extname @zip_path
     @encoded_title = URI.encode @title
@@ -46,10 +45,11 @@ class Entry
 
   def to_json(json : JSON::Builder)
     json.object do
-      {% for str in ["zip_path", "title", "size", "id", "title_id",
+      {% for str in ["zip_path", "title", "size", "id",
                      "encoded_path", "encoded_title"] %}
         json.field {{str}}, @{{str.id}}
       {% end %}
+      json.field "title_id", @book.id
       json.field "display_name", @book.display_name @title
       json.field "cover_url", cover_url
       json.field "pages" { json.number @pages }
@@ -67,7 +67,7 @@ class Entry
 
   def cover_url
     return "#{Config.current.base_url}img/icon.png" if @err_msg
-    url = "#{Config.current.base_url}api/page/#{@title_id}/#{@id}/1"
+    url = "#{Config.current.base_url}api/page/#{@book.id}/#{@id}/1"
     TitleInfo.new @book.dir do |info|
       info_url = info.entry_cover_url[@title]?
       unless info_url.nil? || info_url.empty?
