@@ -15,29 +15,36 @@
   <% end %>>
 
   <div class="acard
-    <% if item.is_a? Entry %>
+    <% if item.is_a? Entry && item.err_msg.nil? %>
       <%= "is_entry" %>
     <% end %>
     " 
     <% if item.is_a? Entry %>
-      data-encoded-path="<%= item.encoded_path %>"
-      data-pages="<%= item.pages %>"
-      data-progress="<%= (progress * 100).round(1) %>"
-      data-encoded-book-title="<%= item.book.encoded_display_name %>"
-      data-encoded-title="<%= item.encoded_display_name %>"
-      data-book-id="<%= item.book.id %>"
-      data-id="<%= item.id %>"
+      <% if item.err_msg %>
+        onclick="location='<%= base_url %>reader/<%= item.book.id %>/<%= item.id %>'"
+      <% else %>
+        data-encoded-path="<%= item.encoded_path %>"
+        data-pages="<%= item.pages %>"
+        data-progress="<%= (progress * 100).round(1) %>"
+        data-encoded-book-title="<%= item.book.encoded_display_name %>"
+        data-encoded-title="<%= item.encoded_display_name %>"
+        data-book-id="<%= item.book.id %>"
+        data-id="<%= item.id %>"
+      <% end %>
     <% else %>
       onclick="location='<%= base_url %>book/<%= item.id %>'" 
     <% end %>>
 
     <div class="uk-card uk-card-default">
       <div class="uk-card-media-top">
-        <img data-src="<%= item.cover_url %>" data-width data-height alt="" uk-img>
+        <img data-src="<%= item.cover_url %>" data-width data-height alt="" uk-img
+        <% if item.is_a? Entry && item.err_msg %>
+          class="grayscale"
+        <% end %>>
       </div>
 
       <div class="uk-card-body">
-        <% unless progress < 0 || progress > 100 %>
+        <% unless progress < 0 || progress > 100 || progress.nan? %>
           <div class="uk-card-badge label"><%= (progress * 100).round(1) %>%</div>
         <% end %>
 
@@ -51,7 +58,12 @@
           <a class="uk-card-title break-word uk-margin-remove-top uk-text-meta uk-display-inline-block no-modal" data-title="<%= HTML.escape(item.book.display_name) %>" href="<%= base_url %>book/<%= item.book.id %>"><%= HTML.escape(item.book.display_name) %></a>
         <% end %>
         <% if item.is_a? Entry %>
-          <p class="uk-text-meta"><%= item.pages %> pages</p>
+          <% if item.err_msg %>
+            <p class="uk-text-meta uk-margin-remove-bottom">Error <span uk-icon="info"></span></p>
+            <div uk-dropdown><%= item.err_msg %></div>
+          <% else %>
+            <p class="uk-text-meta"><%= item.pages %> pages</p>
+          <% end %>
         <% end %>
         <% if item.is_a? Title %>
           <% if grouped_count == 1 %>

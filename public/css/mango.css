@@ -97,3 +97,7 @@ td>.uk-dropdown {
 .item .uk-card-title {
     font-size: 1rem;
 }
+
+.grayscale {
+    filter: grayscale(100%);
+}

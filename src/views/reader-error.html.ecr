@@ -1,0 +1,31 @@
+<div id="modal" class="uk-flex-top" uk-modal>
+  <div class="uk-modal-dialog uk-margin-auto-vertical">
+    <button class="uk-modal-close-default" type="button" uk-close></button>
+    <div class="uk-modal-header">
+      <div>
+        <h3 class="uk-modal-title uk-margin-remove-top">Error</h3>
+      </div>
+      <p class="uk-text-meta uk-margin-remove-bottom"><%= entry.zip_path %></p>
+      <p class="uk-text-meta uk-margin-remove-top"><%= entry.err_msg %></p>
+    </div>
+    <div class="uk-modal-body">
+      <p uk-margin>
+      <% if next_entry = entry.next_entry username %>
+        <a class="uk-button uk-button-default" href="<%= base_url %>reader/<%= entry.book.id %>/<%= next_entry.id %>">Next Entry</a>
+      <% end %>
+      <a class="uk-button uk-button-primary" href="<%= base_url %>book/<%= entry.book.id %>">Return to Title</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<% content_for "script" do %>
+  <script>
+    UIkit.modal('#modal').show().then(function() {
+      styleModal();
+    });
+    UIkit.util.on('#modal', 'hide', function() {
+      location.href = "<%= base_url %>book/<%= entry.book.id %>";
+    });
+  </script>
+<% end %>

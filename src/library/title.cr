@@ -34,19 +34,8 @@ class Title
         next
       end
       if [".zip", ".cbz", ".rar", ".cbr"].includes? File.extname path
-        unless File.readable? path
-          Logger.warn "File #{path} is not readable. Please make sure the " \
-                      "file permission is configured correctly."
-          next
-        end
-        archive_exception = validate_archive path
-        unless archive_exception.nil?
-          Logger.warn "Unable to extract archive #{path}. Ignoring it. " \
-                      "Archive error: #{archive_exception}"
-          next
-        end
         entry = Entry.new path, self, @id, storage
-        @entries << entry if entry.pages > 0
+        @entries << entry if entry.pages > 0 || entry.err_msg
       end
     end
 
@@ -166,8 +155,9 @@ class Title
 
   def cover_url
     url = "#{Config.current.base_url}img/icon.png"
-    if @entries.size > 0
-      url = @entries[0].cover_url
+    readable_entries = @entries.select &.err_msg.nil?
+    if readable_entries.size > 0
+      url = readable_entries[0].cover_url
     end
     TitleInfo.new @dir do |info|
       info_url = info.cover_url

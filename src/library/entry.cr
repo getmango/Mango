@@ -1,20 +1,14 @@
 class Entry
   property zip_path : String, book : Title, title : String,
     size : String, pages : Int32, id : String, title_id : String,
-    encoded_path : String, encoded_title : String, mtime : Time
+    encoded_path : String, encoded_title : String, mtime : Time,
+    err_msg : String?
 
-  def initialize(path, @book, @title_id, storage)
-    @zip_path = path
-    @encoded_path = URI.encode path
-    @title = File.basename path, File.extname path
+  def initialize(@zip_path, @book, @title_id, storage)
+    @encoded_path = URI.encode @zip_path
+    @title = File.basename @zip_path, File.extname @zip_path
     @encoded_title = URI.encode @title
-    @size = (File.size path).humanize_bytes
-    file = ArchiveFile.new path
-    @pages = file.entries.count do |e|
-      SUPPORTED_IMG_TYPES.includes? \
-        MIME.from_filename? e.filename
-    end
-    file.close
+    @size = (File.size @zip_path).humanize_bytes
     id = storage.get_id @zip_path, false
     if id.nil?
       id = random_str
@@ -26,6 +20,28 @@ class Entry
     end
     @id = id
     @mtime = File.info(@zip_path).modification_time
+
+    unless File.readable? @zip_path
+      @err_msg = "File #{@zip_path} is not readable."
+      Logger.warn "#{@err_msg} Please make sure the " \
+                  "file permission is configured correctly."
+      return
+    end
+
+    archive_exception = validate_archive @zip_path
+    unless archive_exception.nil?
+      @err_msg = "Archive error: #{archive_exception}"
+      Logger.warn "Unable to extract archive #{@zip_path}. " \
+                  "Ignoring it. #{@err_msg}"
+      return
+    end
+
+    file = ArchiveFile.new @zip_path
+    @pages = file.entries.count do |e|
+      SUPPORTED_IMG_TYPES.includes? \
+        MIME.from_filename? e.filename
+    end
+    file.close
   end
 
   def to_json(json : JSON::Builder)
@@ -50,6 +66,7 @@ class Entry
   end
 
   def cover_url
+    return "#{Config.current.base_url}img/icon.png" if @err_msg
     url = "#{Config.current.base_url}api/page/#{@title_id}/#{@id}/1"
     TitleInfo.new @book.dir do |info|
       info_url = info.entry_cover_url[@title]?
@@ -61,6 +78,7 @@ class Entry
   end
 
   def read_page(page_num)
+    raise "Unreadble archive. #{@err_msg}" if @err_msg
     img = nil
     ArchiveFile.open @zip_path do |file|
       page = file.entries

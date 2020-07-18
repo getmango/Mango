@@ -4,11 +4,14 @@ class ReaderRouter < Router
   def initialize
     get "/reader/:title/:entry" do |env|
       begin
+        username = get_username env
+
         title = (@context.library.get_title env.params.url["title"]).not_nil!
         entry = (title.get_entry env.params.url["entry"]).not_nil!
 
+        next layout "reader-error" if entry.err_msg
+
         # load progress
-        username = get_username env
         page = entry.load_progress username
         # we go back 2 * `IMGS_PER_PAGE` pages. the infinite scroll
         #   library perloads a few pages in advance, and the user
