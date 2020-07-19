@@ -3,10 +3,16 @@ const minify = require("gulp-babel-minify");
 const minifyCss = require('gulp-minify-css');
 const less = require('gulp-less');
 
+gulp.task('copy-uikit-js', () => {
+	return gulp.src('node_modules/uikit/dist/js/*.min.js')
+		.pipe(gulp.dest('public/js'));
+});
+
 gulp.task('minify-js', () => {
 	return gulp.src('public/js/*.js')
 		.pipe(minify({
-			removeConsole: true
+			removeConsole: true,
+			builtIns: false
 		}))
 		.pipe(gulp.dest('dist/js'));
 });
@@ -23,7 +29,7 @@ gulp.task('minify-css', () => {
 		.pipe(gulp.dest('dist/css'));
 });
 
-gulp.task('copy-icons', () => {
+gulp.task('copy-uikit-icons', () => {
 	return gulp.src('node_modules/uikit/src/images/backgrounds/*.svg')
 		.pipe(gulp.dest('public/img'));
 });
@@ -39,8 +45,8 @@ gulp.task('copy-files', () => {
 });
 
 gulp.task('default', gulp.parallel(
-	'minify-js',
+	gulp.series('copy-uikit-js', 'minify-js'),
 	gulp.series('less', 'minify-css'),
-	gulp.series('copy-icons', 'img'),
+	gulp.series('copy-uikit-icons', 'img'),
 	'copy-files'
 ));

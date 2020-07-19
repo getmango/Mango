@@ -11,3 +11,4 @@ mango
 *.md
 public/css/uikit.css
 public/img/*.svg
+public/js/*.min.js
