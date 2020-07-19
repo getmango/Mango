@@ -10,3 +10,4 @@ mango
 .env
 *.md
 public/css/uikit.css
+public/img/*.svg

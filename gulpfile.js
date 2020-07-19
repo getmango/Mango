@@ -23,6 +23,11 @@ gulp.task('minify-css', () => {
 		.pipe(gulp.dest('dist/css'));
 });
 
+gulp.task('copy-icons', () => {
+	return gulp.src('node_modules/uikit/src/images/backgrounds/*.svg')
+		.pipe(gulp.dest('public/img'));
+});
+
 gulp.task('img', () => {
 	return gulp.src('public/img/*')
 		.pipe(gulp.dest('dist/img'));
@@ -33,4 +38,9 @@ gulp.task('copy-files', () => {
 		.pipe(gulp.dest('dist'));
 });
 
-gulp.task('default', gulp.parallel('minify-js', gulp.series('less', 'minify-css'), 'img', 'copy-files'));
+gulp.task('default', gulp.parallel(
+	'minify-js',
+	gulp.series('less', 'minify-css'),
+	gulp.series('copy-icons', 'img'),
+	'copy-files'
+));
