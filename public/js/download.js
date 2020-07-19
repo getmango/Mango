@@ -32,32 +32,34 @@ const download = () => {
 		const chapters = globalChapters.filter(c => ids.indexOf(c.id) >= 0);
 		console.log(ids);
 		$.ajax({
-			type: 'POST',
-			url: base_url + 'api/admin/mangadex/download',
-			data: JSON.stringify({chapters: chapters}),
-			contentType: "application/json",
-			dataType: 'json'
-		})
-		.done(data => {
-			console.log(data);
-			if (data.error) {
-				alert('danger', `Failed to add chapters to the download queue. Error: ${data.error}`);
-				return;
-			}
-			const successCount = parseInt(data.success);
-			const failCount = parseInt(data.fail);
-			UIkit.modal.confirm(`${successCount} of ${successCount + failCount} chapters added to the download queue. Proceed to the download manager?`).then(() => {
-				window.location.href = base_url + 'admin/downloads';
+				type: 'POST',
+				url: base_url + 'api/admin/mangadex/download',
+				data: JSON.stringify({
+					chapters: chapters
+				}),
+				contentType: "application/json",
+				dataType: 'json'
+			})
+			.done(data => {
+				console.log(data);
+				if (data.error) {
+					alert('danger', `Failed to add chapters to the download queue. Error: ${data.error}`);
+					return;
+				}
+				const successCount = parseInt(data.success);
+				const failCount = parseInt(data.fail);
+				UIkit.modal.confirm(`${successCount} of ${successCount + failCount} chapters added to the download queue. Proceed to the download manager?`).then(() => {
+					window.location.href = base_url + 'admin/downloads';
+				});
+				styleModal();
+			})
+			.fail((jqXHR, status) => {
+				alert('danger', `Failed to add chapters to the download queue. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+			})
+			.always(() => {
+				$('#download-spinner').attr('hidden', '');
+				$('#download-btn').removeAttr('hidden');
 			});
-			styleModal();
-		})
-		.fail((jqXHR, status) => {
-			alert('danger', `Failed to add chapters to the download queue. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
-		})
-		.always(() => {
-			$('#download-spinner').attr('hidden', '');
-			$('#download-btn').removeAttr('hidden');
-		});
 	});
 	styleModal();
 };
@@ -66,8 +68,7 @@ const toggleSpinner = () => {
 	if (attr) {
 		$('#spinner').removeAttr('hidden');
 		$('#search-btn').attr('hidden', '');
-	}
-	else {
+	} else {
 		$('#search-btn').removeAttr('hidden');
 		$('#spinner').attr('hidden', '');
 	}
@@ -98,8 +99,7 @@ const search = () => {
 		const path = new URL(input).pathname;
 		const match = /\/title\/([0-9]+)/.exec(path);
 		int_id = parseInt(match[1]);
-	}
-	catch(e) {
+	} catch (e) {
 		int_id = parseInt(input);
 	}
 
@@ -139,8 +139,12 @@ const search = () => {
 			const comp = (a, b) => {
 				var ai;
 				var bi;
-				try {ai = parseFloat(a);} catch(e) {}
-				try {bi = parseFloat(b);} catch(e) {}
+				try {
+					ai = parseFloat(a);
+				} catch (e) {}
+				try {
+					bi = parseFloat(b);
+				} catch (e) {}
 				if (typeof ai === 'undefined') return -1;
 				if (typeof bi === 'undefined') return 1;
 				if (ai < bi) return 1;
@@ -176,8 +180,7 @@ const parseRange = str => {
 	if (!matches) {
 		alert('danger', `Failed to parse filter input ${str}`);
 		return [null, null];
-	}
-	else if (typeof matches[1] !== 'undefined' && typeof matches[2] !== 'undefined') {
+	} else if (typeof matches[1] !== 'undefined' && typeof matches[2] !== 'undefined') {
 		// e.g., <= 30
 		num = parseInt(matches[2]);
 		if (isNaN(num)) {
@@ -194,8 +197,7 @@ const parseRange = str => {
 			case '>=':
 				return [num, null];
 		}
-	}
-	else if (typeof matches[3] !== 'undefined') {
+	} else if (typeof matches[3] !== 'undefined') {
 		// a single number
 		num = parseInt(matches[3]);
 		if (isNaN(num)) {
@@ -203,8 +205,7 @@ const parseRange = str => {
 			return [null, null];
 		}
 		return [num, num];
-	}
-	else if (typeof matches[4] !== 'undefined' && typeof matches[5] !== 'undefined') {
+	} else if (typeof matches[4] !== 'undefined' && typeof matches[5] !== 'undefined') {
 		// e.g., 10 - 23
 		num = parseInt(matches[4]);
 		const n2 = parseInt(matches[5]);
@@ -213,8 +214,7 @@ const parseRange = str => {
 			return [null, null];
 		}
 		return [num, n2];
-	}
-	else {
+	} else {
 		// empty or space only
 		return [null, null];
 	}
@@ -280,7 +280,7 @@ const buildTable = () => {
 		const group_str = Object.entries(chp.groups).map(([k, v]) => {
 			return `<a href="${baseURL }/group/${v}">${k}</a>`;
 		}).join(' | ');
-		const dark = getTheme() === 'dark' ? 'dark' : '';
+		const dark = loadTheme() === 'dark' ? 'dark' : '';
 		return `<tr class="ui-widget-content ${dark}">
 						<td><a href="${baseURL}/chapter/${chp.id}">${chp.id}</a></td>
 						<td>${chp.title}</td>
@@ -302,7 +302,7 @@ const buildTable = () => {
 };
 
 const unescapeHTML = (str) => {
-   var elt = document.createElement("span");
-   elt.innerHTML = str;
-   return elt.innerText;
+	var elt = document.createElement("span");
+	elt.innerHTML = str;
+	return elt.innerText;
 };

@@ -30,16 +30,16 @@
     cursor: pointer;
 }
 
-.uk-list li {
+.uk-list li:not(.nopointer) {
     cursor: pointer;
-}
-
-.reader-bg {
-    background-color: black;
 }
 
 #scan-status {
     cursor: auto;
+}
+
+.reader-bg {
+    background-color: black;
 }
 
 .break-word {

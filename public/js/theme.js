@@ -1,22 +1,44 @@
-const getTheme = () => {
-	var theme = localStorage.getItem('theme');
-	if (!theme) theme = 'light';
-	return theme;
+// https://flaviocopes.com/javascript-detect-dark-mode/
+const preferDarkMode = () => {
+	return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 };
 
-const saveTheme = theme => {
-	localStorage.setItem('theme', theme);
+const validThemeSetting = (theme) => {
+	return ['dark', 'light', 'system'].indexOf(theme) >= 0;
 };
 
+// dark / light / system
+const loadThemeSetting = () => {
+	let str = localStorage.getItem('theme');
+	if (!str || !validThemeSetting(str)) str = 'light';
+	return str;
+};
+
+// dark / light
+const loadTheme = () => {
+	let setting = loadThemeSetting();
+	if (setting === 'system') {
+		setting = preferDarkMode() ? 'dark' : 'light';
+	}
+	return setting;
+};
+
+const saveThemeSetting = setting => {
+	if (!validThemeSetting(setting)) setting = 'light';
+	localStorage.setItem('theme', setting);
+};
+
+// when toggled, Auto will be changed to light or dark
 const toggleTheme = () => {
-	const theme = getTheme();
+	const theme = loadTheme();
 	const newTheme = theme === 'dark' ? 'light' : 'dark';
+	saveThemeSetting(newTheme);
 	setTheme(newTheme);
-	saveTheme(newTheme);
 };
 
-const setTheme = themeStr => {
-	if (themeStr === 'dark') {
+const setTheme = (theme) => {
+	if (!theme) theme = loadTheme();
+	if (theme === 'dark') {
 		$('html').css('background', 'rgb(20, 20, 20)');
 		$('body').addClass('uk-light');
 		$('.uk-card').addClass('uk-card-secondary');
@@ -32,7 +54,7 @@ const setTheme = themeStr => {
 };
 
 const styleModal = () => {
-	const color = getTheme() === 'dark' ? '#222' : '';
+	const color = loadTheme() === 'dark' ? '#222' : '';
 	$('.uk-modal-header').css('background', color);
 	$('.uk-modal-body').css('background', color);
 	$('.uk-modal-footer').css('background', color);
@@ -40,9 +62,18 @@ const styleModal = () => {
 
 // do it before document is ready to prevent the initial flash of white on
 // 	most pages
-setTheme(getTheme());
+setTheme();
 
 $(() => {
 	// hack for the reader page
-	setTheme(getTheme());
+	setTheme();
+
+	// on system dark mode setting change
+	if (window.matchMedia) {
+		window.matchMedia('(prefers-color-scheme: dark)')
+			.addEventListener('change', event => {
+				if (loadThemeSetting() === 'system')
+					setTheme(event.matches ? 'dark' : 'light');
+			});
+	}
 });
