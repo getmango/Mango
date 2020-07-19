@@ -50,3 +50,7 @@ gulp.task('default', gulp.parallel(
 	gulp.series('copy-uikit-icons', 'img'),
 	'copy-files'
 ));
+
+gulp.task('dev', gulp.parallel(
+	'copy-uikit-js', 'less', 'copy-uikit-icons'
+));

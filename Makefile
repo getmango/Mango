@@ -7,6 +7,10 @@ uglify:
 	yarn
 	yarn uglify
 
+setup: libs
+	yarn
+	yarn gulp dev
+
 build: libs
 	crystal build src/mango.cr --release --progress
 
