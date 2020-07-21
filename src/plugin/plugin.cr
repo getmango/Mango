@@ -22,6 +22,9 @@ class Plugin
 
   def self.list
     dir = Config.current.plugin_path
+    unless Dir.exists? dir
+      Dir.mkdir_p dir
+    end
     Dir.children(dir)
       .select do |f|
         fp = File.join dir, f
