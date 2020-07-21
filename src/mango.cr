@@ -1,8 +1,10 @@
 require "./config"
+require "./queue"
 require "./server"
 require "./mangadex/*"
 require "option_parser"
 require "clim"
+require "./plugin/*"
 
 MANGO_VERSION = "0.8.0"
 

@@ -8,7 +8,7 @@ require "./routes/*"
 class Context
   property library : Library
   property storage : Storage
-  property queue : MangaDex::Queue
+  property queue : Queue
 
   def self.default : self
     unless @@default
@@ -20,7 +20,7 @@ class Context
   def initialize
     @storage = Storage.default
     @library = Library.default
-    @queue = MangaDex::Queue.default
+    @queue = Queue.default
   end
 
   {% for lvl in Logger::LEVELS %}

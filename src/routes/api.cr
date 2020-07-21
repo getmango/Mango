@@ -136,12 +136,12 @@ class APIRouter < Router
       begin
         chapters = env.params.json["chapters"].as(Array).map { |c| c.as_h }
         jobs = chapters.map { |chapter|
-          MangaDex::Job.new(
+          Queue::Job.new(
             chapter["id"].as_s,
             chapter["manga_id"].as_s,
             chapter["full_title"].as_s,
             chapter["manga_title"].as_s,
-            MangaDex::JobStatus::Pending,
+            Queue::JobStatus::Pending,
             Time.unix chapter["time"].as_s.to_i
           )
         }
@@ -179,7 +179,7 @@ class APIRouter < Router
         case action
         when "delete"
           if id.nil?
-            @context.queue.delete_status MangaDex::JobStatus::Completed
+            @context.queue.delete_status Queue::JobStatus::Completed
           else
             @context.queue.delete id
           end
