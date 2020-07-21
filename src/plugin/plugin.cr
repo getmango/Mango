@@ -22,9 +22,8 @@ class Plugin
 
   def self.list
     dir = Config.current.plugin_path
-    unless Dir.exists? dir
-      Dir.mkdir_p dir
-    end
+    Dir.mkdir_p dir unless Dir.exists? dir
+
     Dir.children(dir)
       .select do |f|
         fp = File.join dir, f
@@ -35,7 +34,16 @@ class Plugin
       end
   end
 
-  def initialize(@path : String)
+  def initialize(filename : String)
+    dir = Config.current.plugin_path
+    pp dir
+    Dir.mkdir_p dir unless Dir.exists? dir
+
+    @path = File.join dir, "#{filename}.js"
+    unless File.exists? @path
+      raise Error.new "Plugin script not found at #{@path}"
+    end
+
     @rt = Duktape::Runtime.new do |sbx|
       sbx.push_global_object
 

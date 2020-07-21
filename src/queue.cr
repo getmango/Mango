@@ -45,6 +45,7 @@ class Queue
     property success_count : Int32 = 0
     property fail_count : Int32 = 0
     property time : Time
+    property plugin_name : String?
 
     def parse_query_result(res : DB::ResultSet)
       @id = res.read String
@@ -59,6 +60,11 @@ class Queue
       time = res.read Int64
       @status = JobStatus.new status
       @time = Time.unix_ms time
+
+      ary = @id.split("-")
+      if ary.size > 1
+        plugin_name = ary[0]
+      end
     end
 
     # Raises if the result set does not contain the correct set of columns
