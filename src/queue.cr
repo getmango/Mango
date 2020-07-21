@@ -2,7 +2,7 @@ require "sqlite3"
 require "./util/*"
 
 class Queue
-  class Downloader
+  abstract class Downloader
     property stopped = false
     @library_path : String = Config.current.library_path
     @downloading = false
@@ -11,6 +11,8 @@ class Queue
       @queue = Queue.default
       @queue << self
     end
+
+    abstract def pop : Job?
   end
 
   class PageJob
@@ -88,7 +90,7 @@ class Queue
     end
   end
 
-  @path : String
+  getter path : String
   @downloaders = [] of Downloader
   @paused = false
 
@@ -120,22 +122,6 @@ class Queue
         raise e
       end
     end
-  end
-
-  # Returns the earliest job in queue or nil if the job cannot be parsed.
-  #   Returns nil if queue is empty
-  def pop
-    job = nil
-    DB.open "sqlite3://#{@path}" do |db|
-      begin
-        db.query_one "select * from queue where status = 0 " \
-                     "or status = 1 order by time limit 1" do |res|
-          job = Job.from_query_result res
-        end
-      rescue
-      end
-    end
-    job
   end
 
   # Push an array of jobs into the queue, and return the number of jobs

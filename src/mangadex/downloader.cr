@@ -18,7 +18,7 @@ module MangaDex
           sleep 1.second
           next if @stopped || @downloading
           begin
-            job = @queue.pop
+            job = pop
             next if job.nil?
             download job
           rescue e
@@ -26,6 +26,21 @@ module MangaDex
           end
         end
       end
+    end
+
+    def pop : Queue::Job?
+      job = nil
+      DB.open "sqlite3://#{@queue.path}" do |db|
+        begin
+          db.query_one "select * from queue where id not like '%-%' and " \
+                       "(status = 0 or status = 1) order by time limit 1" \
+                       do |res|
+            job = Queue::Job.from_query_result res
+          end
+        rescue
+        end
+      end
+      job
     end
 
     private def download(job : Queue::Job)
