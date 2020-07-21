@@ -46,8 +46,7 @@ class Plugin
       def_helper_functions sbx
     end
 
-    js = File.open @path, &.gets_to_end
-    eval js
+    eval File.read @path
 
     begin
       data = eval_json "metadata"
