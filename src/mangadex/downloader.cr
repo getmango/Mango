@@ -3,12 +3,9 @@ require "zip"
 
 module MangaDex
   class Downloader < Queue::Downloader
-    property stopped = false
     @wait_seconds : Int32 = Config.current.mangadex["download_wait_seconds"]
       .to_i32
     @retries : Int32 = Config.current.mangadex["download_retries"].to_i32
-    @library_path : String = Config.current.library_path
-    @downloading = false
 
     def self.default : self
       unless @@default
@@ -18,9 +15,8 @@ module MangaDex
     end
 
     def initialize
-      @queue = Queue.default
+      super
       @api = API.default
-      @queue << self
 
       spawn do
         loop do

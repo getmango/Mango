@@ -1,8 +1,16 @@
 require "sqlite3"
+require "./util/*"
 
 class Queue
   class Downloader
     property stopped = false
+    @library_path : String = Config.current.library_path
+    @downloading = false
+
+    def initialize
+      @queue = Queue.default
+      @queue << self
+    end
   end
 
   class PageJob

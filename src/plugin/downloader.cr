@@ -1,7 +1,5 @@
 class Plugin
   class Downloader < Queue::Downloader
-    @library_path : String = Config.current.library_path
-    @downloading = false
 
     def self.default : self
       unless @@default
@@ -11,8 +9,7 @@ class Plugin
     end
 
     def initialize
-      @queue = Queue.default
-      @queue << self
+      super
     end
   end
 end
