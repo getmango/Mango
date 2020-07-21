@@ -61,15 +61,52 @@ class Plugin
   end
 
   def search(query : String)
-    eval_json "search('#{query}')"
+    json = eval_json "search('#{query}')"
+    begin
+      ary = json.as_a
+      ary.each do |obj|
+        id = obj["id"]?
+        raise "Field `id` missing from `search` outputs" if id.nil?
+
+        unless id.to_s.chars.all? &.number?
+          raise "The `id` values must be numeric" unless id
+        end
+      end
+    rescue e
+      raise Error.new e.message
+    end
+    json
   end
 
   def select_chapter(id : String)
-    eval_json "selectChapter('#{id}')"
+    json = eval_json "selectChapter('#{id}')"
+    begin
+      {% for field in ["title", "pages"] %}
+        unless json[{{field}}]?
+          raise "Field `{{field.id}}` is missing from the " \
+                "`selectChapter` outputs"
+        end
+      {% end %}
+    rescue e
+      raise Error.new e.message
+    end
+    json
   end
 
   def next_page
-    eval_json "nextPage()"
+    json = eval_json "nextPage()"
+    return if json.size == 0
+    begin
+      {% for field in ["filename", "url"] %}
+        unless json[{{field}}]?
+          raise "Field `{{field.id}}` is missing from the " \
+                "`nextPage` outputs"
+        end
+      {% end %}
+    rescue e
+      raise Error.new e.message
+    end
+    json
   end
 
   private def eval(str)
