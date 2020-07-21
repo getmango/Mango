@@ -131,12 +131,7 @@ module MangaDex
   end
 
   class API
-    def self.default : self
-      unless @@default
-        @@default = new
-      end
-      @@default.not_nil!
-    end
+    use_default
 
     def initialize
       @base_url = Config.current.mangadex["api_url"].to_s ||

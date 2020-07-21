@@ -2,12 +2,7 @@ class Library
   property dir : String, title_ids : Array(String), scan_interval : Int32,
     title_hash : Hash(String, Title)
 
-  def self.default : self
-    unless @@default
-      @@default = new
-    end
-    @@default.not_nil!
-  end
+  use_default
 
   def initialize
     register_mime_types

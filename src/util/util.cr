@@ -45,3 +45,12 @@ struct Nil
     other
   end
 end
+
+macro use_default
+  def self.default : self
+    unless @@default
+      @@default = new
+    end
+    @@default.not_nil!
+  end
+end

@@ -7,12 +7,7 @@ module MangaDex
       .to_i32
     @retries : Int32 = Config.current.mangadex["download_retries"].to_i32
 
-    def self.default : self
-      unless @@default
-        @@default = new
-      end
-      @@default.not_nil!
-    end
+    use_default
 
     def initialize
       super

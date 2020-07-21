@@ -1,12 +1,6 @@
 class Plugin
   class Downloader < Queue::Downloader
-
-    def self.default : self
-      unless @@default
-        @@default = new
-      end
-      @@default.not_nil!
-    end
+    use_default
 
     def initialize
       super

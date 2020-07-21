@@ -21,12 +21,7 @@ class Storage
     id: String,
     is_title: Bool)
 
-  def self.default : self
-    unless @@default
-      @@default = new
-    end
-    @@default.not_nil!
-  end
+  use_default
 
   def initialize(db_path : String? = nil, init_user = true, *,
                  @auto_close = true)

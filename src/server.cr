@@ -10,12 +10,7 @@ class Context
   property storage : Storage
   property queue : Queue
 
-  def self.default : self
-    unless @@default
-      @@default = new
-    end
-    @@default.not_nil!
-  end
+  use_default
 
   def initialize
     @storage = Storage.default

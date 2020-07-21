@@ -8,12 +8,7 @@ class Logger
 
   @@severity : Log::Severity = :info
 
-  def self.default : self
-    unless @@default
-      @@default = new
-    end
-    @@default.not_nil!
-  end
+  use_default
 
   def initialize
     level = Config.current.log_level

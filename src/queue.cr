@@ -92,12 +92,7 @@ class Queue
   @downloaders = [] of Downloader
   @paused = false
 
-  def self.default : self
-    unless @@default
-      @@default = new
-    end
-    @@default.not_nil!
-  end
+  use_default
 
   def initialize(db_path : String? = nil)
     @path = db_path || Config.current.mangadex["download_queue_db_path"].to_s
