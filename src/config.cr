@@ -16,6 +16,7 @@ class Config
   property log_level : String = "info"
   property upload_path : String = File.expand_path "~/mango/uploads",
     home: true
+  property plugin_path : String = File.expand_path "~/mango/plugins"
   property mangadex = Hash(String, String | Int32).new
 
   @[YAML::Field(ignore: true)]

@@ -27,3 +27,8 @@ dependencies:
     github: crystal-ameba/ameba
   clim:
     github: at-grandpa/clim
+  duktape:
+    github: jessedoyle/duktape.cr
+    version: ~> 0.20.0
+  myhtml:
+    github: kostya/myhtml
