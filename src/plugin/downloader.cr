@@ -21,6 +21,11 @@ class Plugin
       job
     end
 
+    private def process_filename(str)
+      return "_" if str == ".."
+      str.gsub "/", "_"
+    end
+
     private def download(job : Queue::Job)
       @downloading = true
       @queue.set_status Queue::JobStatus::Downloading, job
@@ -33,7 +38,7 @@ class Plugin
         plugin = Plugin.new job.plugin_name.not_nil!
         info = plugin.select_chapter job.id
 
-        title = info["title"].as_s
+        title = process_filename info["title"].as_s
         pages = info["pages"].as_i
 
         @queue.set_pages pages, job
@@ -57,7 +62,7 @@ class Plugin
       fail_count = 0
 
       while page = plugin.next_page
-        fn = page["filename"].as_s
+        fn = process_filename page["filename"].as_s
         url = page["url"].as_s
         headers = HTTP::Headers.new
 
