@@ -278,8 +278,7 @@ const buildTable = () => {
 		const group_str = Object.entries(chp.groups).map(([k, v]) => {
 			return `<a href="${baseURL }/group/${v}">${k}</a>`;
 		}).join(' | ');
-		const dark = loadTheme() === 'dark' ? 'dark' : '';
-		return `<tr class="ui-widget-content ${dark}">
+		return `<tr class="ui-widget-content">
 						<td><a href="${baseURL}/chapter/${chp.id}">${chp.id}</a></td>
 						<td>${chp.title}</td>
 						<td>${chp.language}</td>

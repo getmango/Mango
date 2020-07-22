@@ -63,11 +63,11 @@
     background: #F4E487;
 }
 
-#selectable .ui-selecting.dark {
+.uk-light #selectable .ui-selecting {
     background: #5E5731;
 }
 
-#selectable .ui-selected.dark {
+.uk-light #selectable .ui-selected {
     background: #9D9252;
 }
 
