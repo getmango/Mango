@@ -58,7 +58,6 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 	$('#modal-download-btn').attr('href', `/opds/download/${titleID}/${entryID}`);
 
 	UIkit.modal($('#modal')).show();
-	styleModal();
 }
 
 const updateProgress = (tid, eid, page) => {
@@ -144,7 +143,6 @@ const edit = (eid) => {
 	setupUpload(eid);
 
 	UIkit.modal($('#edit-modal')).show();
-	styleModal();
 };
 
 const setupUpload = (eid) => {

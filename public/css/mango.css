@@ -101,3 +101,23 @@ td>.uk-dropdown {
 .grayscale {
     filter: grayscale(100%);
 }
+
+.uk-light .uk-navbar-dropdown,
+.uk-light .uk-modal-header,
+.uk-light .uk-modal-body,
+.uk-light .uk-modal-footer {
+    background: #222;
+}
+
+.uk-light .uk-dropdown {
+    background: #333;
+}
+
+.uk-light .uk-navbar-dropdown,
+.uk-light .uk-dropdown {
+    color: #ccc;
+}
+
+.uk-light .uk-nav-header {
+    color: #555;
+}

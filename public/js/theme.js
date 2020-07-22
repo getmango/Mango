@@ -53,13 +53,6 @@ const setTheme = (theme) => {
 	}
 };
 
-const styleModal = () => {
-	const color = loadTheme() === 'dark' ? '#222' : '';
-	$('.uk-modal-header').css('background', color);
-	$('.uk-modal-body').css('background', color);
-	$('.uk-modal-footer').css('background', color);
-};
-
 // do it before document is ready to prevent the initial flash of white on
 // 	most pages
 setTheme();

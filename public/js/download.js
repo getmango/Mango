@@ -51,7 +51,6 @@ const download = () => {
 				UIkit.modal.confirm(`${successCount} of ${successCount + failCount} chapters added to the download queue. Proceed to the download manager?`).then(() => {
 					window.location.href = base_url + 'admin/downloads';
 				});
-				styleModal();
 			})
 			.fail((jqXHR, status) => {
 				alert('danger', `Failed to add chapters to the download queue. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
@@ -61,7 +60,6 @@ const download = () => {
 				$('#download-btn').removeAttr('hidden');
 			});
 	});
-	styleModal();
 };
 const toggleSpinner = () => {
 	var attr = $('#spinner').attr('hidden');

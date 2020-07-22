@@ -3,18 +3,18 @@ $(function() {
 		var controller = new ScrollMagic.Controller();
 
 		// replace history on scroll
-		$('img').each(function(idx){
+		$('img').each(function(idx) {
 			var scene = new ScrollMagic.Scene({
-				triggerElement: $(this).get(),
-				triggerHook: 'onEnter',
-				reverse: true
-			})
+					triggerElement: $(this).get(),
+					triggerHook: 'onEnter',
+					reverse: true
+				})
 				.addTo(controller)
-				.on('enter', function(event){
+				.on('enter', function(event) {
 					current = $(event.target.triggerElement()).attr('id');
 					replaceHistory(current);
 				})
-				.on('leave', function(event){
+				.on('leave', function(event) {
 					var prev = $(event.target.triggerElement()).prev();
 					current = $(prev).attr('id');
 					replaceHistory(current);
@@ -23,12 +23,12 @@ $(function() {
 
 		// poor man's infinite scroll
 		var scene = new ScrollMagic.Scene({
-			triggerElement: $('.next-url').get(),
-			triggerHook: 'onEnter',
-			offset: -500
-		})
+				triggerElement: $('.next-url').get(),
+				triggerHook: 'onEnter',
+				offset: -500
+			})
 			.addTo(controller)
-			.on('enter', function(){
+			.on('enter', function() {
 				var nextURL = $('.next-url').attr('href');
 				$('.next-url').remove();
 				if (!nextURL) {
@@ -39,7 +39,7 @@ $(function() {
 					$('#next-btn').removeAttr('hidden');
 					return;
 				}
-				$('#hidden').load(encodeURI(nextURL) + ' .uk-container', function(res, status, xhr){
+				$('#hidden').load(encodeURI(nextURL) + ' .uk-container', function(res, status, xhr) {
 					if (status === 'error') console.log(xhr.statusText);
 					if (status === 'success') {
 						console.log(nextURL + ' loaded');
@@ -54,17 +54,18 @@ $(function() {
 
 	bind();
 });
-$('#page-select').change(function(){
+$('#page-select').change(function() {
 	jumpTo(parseInt($('#page-select').val()));
 });
+
 function showControl(idx) {
 	const pageCount = $('#page-select > option').length;
 	const progressText = `Progress: ${idx}/${pageCount} (${(idx/pageCount * 100).toFixed(1)}%)`;
 	$('#progress-label').text(progressText);
 	$('#page-select').val(idx);
 	UIkit.modal($('#modal-sections')).show();
-	styleModal();
 }
+
 function jumpTo(page) {
 	var ary = window.location.pathname.split('/');
 	ary[ary.length - 1] = page;
@@ -72,10 +73,12 @@ function jumpTo(page) {
 	ary.unshift(window.location.origin);
 	window.location.replace(ary.join('/'));
 }
+
 function replaceHistory(url) {
 	history.replaceState(null, "", url);
 	console.log('reading ' + url);
 }
+
 function redirect(url) {
 	window.location.replace(url);
 }
