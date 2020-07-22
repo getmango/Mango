@@ -19,6 +19,7 @@ class Plugin
     getter {{name.id}} = ""
   {% end %}
   getter wait_seconds : UInt64 = 0
+  getter filename
 
   def self.list
     dir = Config.current.plugin_path
@@ -34,7 +35,7 @@ class Plugin
       end
   end
 
-  def initialize(filename : String)
+  def initialize(@filename : String)
     dir = Config.current.plugin_path
     Dir.mkdir_p dir unless Dir.exists? dir
 
