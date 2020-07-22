@@ -78,6 +78,12 @@ class MainRouter < Router
       layout "download"
     end
 
+    get "/download/plugins" do |env|
+      plugins = Plugin.list
+      plugin = Plugin.new plugins[0]
+      layout "plugin-download"
+    end
+
     get "/" do |env|
       begin
         username = get_username env

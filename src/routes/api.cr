@@ -259,5 +259,24 @@ class APIRouter < Router
         }.to_json
       end
     end
+
+    post "/api/admin/plugin/search" do |env|
+      begin
+        query = env.params.json["query"].as String
+        plugin = Plugin.new env.params.json["plugin"].as String
+
+        chapters = plugin.search query
+
+        send_json env, {
+          "success"  => true,
+          "chapters" => chapters,
+        }.to_json
+      rescue e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
   end
 end

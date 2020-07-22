@@ -1,0 +1,42 @@
+<% if plugins.empty? %>
+  <div class="uk-container uk-text-center">
+    <h2>No Plugins found</h2>
+    <p>We could't find any plugins in the directory <code><%= Config.current.plugin_path %></code>.</p>
+    <p>You can download official plugins from the <a href="https://github.com/hkalexling/mango-plugins">Mango plugins repository</a>.</p>
+  </div>
+
+<% else %>
+  <h2 class=uk-title>Download with Plugins</h2>
+
+  <div class="uk-grid-small" uk-grid>
+    <div class="uk-width-3-4">
+      <div class="uk-margin">
+        <label class="uk-form-label" for="search-input">&nbsp;</label>
+        <div class="uk-form-controls">
+          <input id="search-input" class="uk-input" type="text" placeholder="<%= plugin.placeholder %>">
+        </div>
+      </div>
+    </div>
+    <div class="uk-width-1-4">
+      <div class="uk-margin">
+        <label class="uk-form-label" for="plugin-select">Choose a plugin</label>
+        <div class="uk-form-controls">
+          <select id="plugin-select" class="uk-select">
+            <% plugins.each do |s| %>
+              <option><%= s %></option>
+            <% end %>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+
+<% content_for "script" do %>
+  <script>
+    var plugin = "<%= plugin.filename %>";
+  </script>
+  <script src="<%= base_url %>js/alert.js"></script>
+  <script src="<%= base_url %>js/plugin-download.js"></script>
+<% end %>
