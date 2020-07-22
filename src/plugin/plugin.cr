@@ -36,7 +36,6 @@ class Plugin
 
   def initialize(filename : String)
     dir = Config.current.plugin_path
-    pp dir
     Dir.mkdir_p dir unless Dir.exists? dir
 
     @path = File.join dir, "#{filename}.js"

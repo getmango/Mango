@@ -10,20 +10,25 @@ class Queue
     def initialize
       @queue = Queue.default
       @queue << self
+
+      spawn do
+        loop do
+          sleep 1.second
+          next if @stopped || @downloading
+          begin
+            job = pop
+            next if job.nil?
+            download job
+          rescue e
+            Logger.error e
+            @downloading = false
+          end
+        end
+      end
     end
 
     abstract def pop : Job?
-  end
-
-  class PageJob
-    property success = false
-    property url : String
-    property filename : String
-    property writer : Zip::Writer
-    property tries_remaning : Int32
-
-    def initialize(@url, @filename, @writer, @tries_remaning)
-    end
+    private abstract def download(job : Job)
   end
 
   enum JobStatus
@@ -62,8 +67,9 @@ class Queue
       @time = Time.unix_ms time
 
       ary = @id.split("-")
-      if ary.size > 1
-        plugin_name = ary[0]
+      if ary.size == 2
+        @plugin_name = ary[0]
+        @id = ary[1]
       end
     end
 
@@ -74,7 +80,8 @@ class Queue
       job
     end
 
-    def initialize(@id, @manga_id, @title, @manga_title, @status, @time)
+    def initialize(@id, @manga_id, @title, @manga_title, @status, @time,
+                   @plugin_name = nil)
     end
 
     def to_json(json)

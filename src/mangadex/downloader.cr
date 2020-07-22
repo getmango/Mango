@@ -2,6 +2,17 @@ require "./api"
 require "zip"
 
 module MangaDex
+  class PageJob
+    property success = false
+    property url : String
+    property filename : String
+    property writer : Zip::Writer
+    property tries_remaning : Int32
+
+    def initialize(@url, @filename, @writer, @tries_remaning)
+    end
+  end
+
   class Downloader < Queue::Downloader
     @wait_seconds : Int32 = Config.current.mangadex["download_wait_seconds"]
       .to_i32
@@ -10,31 +21,17 @@ module MangaDex
     use_default
 
     def initialize
-      super
       @api = API.default
-
-      spawn do
-        loop do
-          sleep 1.second
-          next if @stopped || @downloading
-          begin
-            job = pop
-            next if job.nil?
-            download job
-          rescue e
-            Logger.error e
-          end
-        end
-      end
+      super
     end
 
     def pop : Queue::Job?
       job = nil
       DB.open "sqlite3://#{@queue.path}" do |db|
         begin
-          db.query_one "select * from queue where id not like '%-%' and " \
-                       "(status = 0 or status = 1) order by time limit 1" \
-                       do |res|
+          db.query_one "select * from queue where id not like '%-%' " \
+                       "and (status = 0 or status = 1) " \
+                       "order by time limit 1" do |res|
             job = Queue::Job.from_query_result res
           end
         rescue
@@ -72,13 +69,13 @@ module MangaDex
 
       writer = Zip::Writer.new zip_path
       # Create a buffered channel. It works as an FIFO queue
-      channel = Channel(Queue::PageJob).new chapter.pages.size
+      channel = Channel(PageJob).new chapter.pages.size
       spawn do
         chapter.pages.each_with_index do |tuple, i|
           fn, url = tuple
           ext = File.extname fn
           fn = "#{i.to_s.rjust len, '0'}#{ext}"
-          page_job = Queue::PageJob.new url, fn, writer, @retries
+          page_job = PageJob.new url, fn, writer, @retries
           Logger.debug "Downloading #{url}"
           loop do
             sleep @wait_seconds.seconds
@@ -96,7 +93,7 @@ module MangaDex
       end
 
       spawn do
-        page_jobs = [] of Queue::PageJob
+        page_jobs = [] of PageJob
         chapter.pages.size.times do
           page_job = channel.receive
           Logger.debug "[#{page_job.success ? "success" : "failed"}] " \
@@ -134,7 +131,7 @@ module MangaDex
       end
     end
 
-    private def download_page(job : Queue::PageJob)
+    private def download_page(job : PageJob)
       Logger.debug "downloading #{job.url}"
       headers = HTTP::Headers{
         "User-agent" => "Mangadex.cr",

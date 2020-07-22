@@ -30,6 +30,7 @@ class CLI < Clim
     run do |opts|
       Config.load(opts.config).set_current
       MangaDex::Downloader.default
+      Plugin::Downloader.default
 
       # empty ARGV so it won't be passed to Kemal
       ARGV.clear
