@@ -35,7 +35,18 @@
             <li><a href="<%= base_url %>library">Library</a></li>
             <% if is_admin %>
               <li><a href="<%= base_url %>admin">Admin</a></li>
-              <li><a href="<%= base_url %>download">Download</a></li>
+              <li>
+                <a href="#">Download</a>
+                <div class="uk-navbar-dropdown">
+                  <ul class="uk-nav uk-navbar-dropdown-nav">
+                    <li class="uk-nav-header">Source</li>
+                    <li><a href="<%= base_url %>download">MangaDex</a></li>
+                    <li><a href="<%= base_url %>download/plugins">Plugins</a></li>
+                    <li class="uk-nav-divider"></li>
+                    <li><a href="<%= base_url %>admin/downloads">Download Manager</a></li>
+                  </ul>
+                </div>
+              </li>
             <% end %>
           </ul>
         </div>
