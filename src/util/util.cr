@@ -54,3 +54,9 @@ macro use_default
     @@default.not_nil!
   end
 end
+
+class String
+  def alphanumeric_underscore?
+    self.chars.all? { |c| c.alphanumeric? || c == '_' }
+  end
+end

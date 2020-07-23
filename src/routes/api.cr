@@ -265,11 +265,43 @@ class APIRouter < Router
         query = env.params.json["query"].as String
         plugin = Plugin.new env.params.json["plugin"].as String
 
-        chapters = plugin.search query
+        json = plugin.search query
+        chapters = json["chapters"]
+        title = json["title"]
 
         send_json env, {
           "success"  => true,
           "chapters" => chapters,
+          "title"    => title,
+        }.to_json
+      rescue e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    post "/api/admin/plugin/download" do |env|
+      begin
+        plugin = Plugin.new env.params.json["plugin"].as String
+        chapters = env.params.json["chapters"].as Array(JSON::Any)
+        manga_title = env.params.json["title"].as String
+
+        jobs = chapters.map { |ch|
+          Queue::Job.new(
+            "#{plugin.info.id}-#{ch["id"]}",
+            "", # manga_id
+            ch["title"].as_s,
+            manga_title,
+            Queue::JobStatus::Pending,
+            Time.utc
+          )
+        }
+        inserted_count = @context.queue.push jobs
+        send_json env, {
+          "success": inserted_count,
+          "fail":    jobs.size - inserted_count,
         }.to_json
       rescue e
         send_json env, {

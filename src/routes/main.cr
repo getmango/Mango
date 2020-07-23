@@ -79,9 +79,21 @@ class MainRouter < Router
     end
 
     get "/download/plugins" do |env|
-      plugins = Plugin.list
-      plugin = Plugin.new plugins[0]
-      layout "plugin-download"
+      begin
+        title = env.params.query["plugin"]?
+        plugins = Plugin.list
+
+        if title
+          plugin = Plugin.new title
+        else
+          plugin = Plugin.new plugins[0]
+        end
+
+        layout "plugin-download"
+      rescue e
+        @context.error e
+        env.response.status_code = 500
+      end
     end
 
     get "/" do |env|

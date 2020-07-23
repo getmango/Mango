@@ -35,20 +35,22 @@ class Plugin
           raise "Job does not have plugin name specificed"
         end
 
-        plugin = Plugin.new job.plugin_name.not_nil!
-        info = plugin.select_chapter job.id
+        plugin = Plugin.new_from_id job.plugin_name.not_nil!
+        info = plugin.select_chapter job.plugin_chapter_id.not_nil!
 
-        title = process_filename info["title"].as_s
         pages = info["pages"].as_i
+
+        manga_title = process_filename job.manga_title
+        chapter_title = process_filename info["title"].as_s
 
         @queue.set_pages pages, job
         lib_dir = @library_path
-        manga_dir = File.join lib_dir, title
+        manga_dir = File.join lib_dir, manga_title
         unless File.exists? manga_dir
           Dir.mkdir_p manga_dir
         end
 
-        zip_path = File.join manga_dir, "#{job.title}.cbz.part"
+        zip_path = File.join manga_dir, "#{chapter_title}.cbz.part"
         writer = Zip::Writer.new zip_path
       rescue e
         @queue.set_status Queue::JobStatus::Error, job
@@ -76,7 +78,7 @@ class Plugin
         tries = 4
 
         loop do
-          sleep plugin.wait_seconds.seconds
+          sleep plugin.info.wait_seconds.seconds
           Logger.debug "downloading #{url}"
           tries -= 1
 

@@ -51,6 +51,7 @@ class Queue
     property fail_count : Int32 = 0
     property time : Time
     property plugin_name : String?
+    property plugin_chapter_id : String?
 
     def parse_query_result(res : DB::ResultSet)
       @id = res.read String
@@ -69,7 +70,7 @@ class Queue
       ary = @id.split("-")
       if ary.size == 2
         @plugin_name = ary[0]
-        @id = ary[1]
+        @plugin_chapter_id = ary[1]
       end
     end
 
@@ -99,6 +100,7 @@ class Queue
         json.field "time" do
           json.number @time.to_unix_ms
         end
+        json.field "plugin_name", @plugin_name if @plugin_name
       end
     end
   end

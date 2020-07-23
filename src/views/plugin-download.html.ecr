@@ -13,7 +13,7 @@
       <div class="uk-margin">
         <label class="uk-form-label" for="search-input">&nbsp;</label>
         <div class="uk-form-controls">
-          <input id="search-input" class="uk-input" type="text" placeholder="<%= plugin.placeholder %>">
+          <input id="search-input" class="uk-input" type="text" placeholder="<%= plugin.info.placeholder %>">
         </div>
       </div>
     </div>
@@ -30,13 +30,29 @@
       </div>
     </div>
   </div>
+
+
+  <div id="table" class="uk-margin-large-top" hidden>
+    <h3 id="title-text"></h3>
+
+    <div class="uk-margin">
+      <button class="uk-button uk-button-default" onclick="selectAll()">Select All</button>
+      <button class="uk-button uk-button-default" onclick="unselect()">Clear Selections</button>
+      <button class="uk-button uk-button-primary" id="download-btn" onclick="download()">Download Selected</button>
+      <div id="download-spinner" uk-spinner class="uk-margin-left" hidden></div>
+    </div>
+    <p class="uk-text-meta">Click on a table row to select the chapter. Drag your mouse over multiple rows to select them all. Hold Ctrl to make multiple non-adjacent selections.</p>
+    <table class="uk-table uk-table-striped uk-overflow-auto">
+    </table>
+  </div>
 <% end %>
 
 
 <% content_for "script" do %>
   <script>
-    var plugin = "<%= plugin.filename %>";
+    var plugin = "<%= plugin.info.title %>";
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
   <script src="<%= base_url %>js/alert.js"></script>
   <script src="<%= base_url %>js/plugin-download.js"></script>
 <% end %>
