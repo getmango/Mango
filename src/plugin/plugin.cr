@@ -168,8 +168,8 @@ class Plugin
         raise "Field `id` missing from `search` outputs" if id.nil?
 
         unless id.to_s.alphanumeric_underscore?
-          raise "The `id` field can only contain alphanumeric characters and " \
-                "underscores"
+          raise "The `id` field can only contain alphanumeric characters " \
+                "and underscores"
         end
 
         title = obj["title"]?
