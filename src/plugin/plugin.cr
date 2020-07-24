@@ -50,7 +50,7 @@ class Plugin
     end
   end
 
-  struct State
+  struct Storage
     @hash = {} of String => String
 
     def initialize(@path : String)
@@ -81,7 +81,7 @@ class Plugin
   @info : Info?
 
   getter js_path = ""
-  getter state_path = ""
+  getter storage_path = ""
 
   def self.build_info_ary
     return unless @@info_ary.empty?
@@ -128,7 +128,7 @@ class Plugin
     end
 
     @js_path = File.join info.dir, "main.js"
-    @state_path = File.join info.dir, "state.json"
+    @storage_path = File.join info.dir, "storage.json"
 
     unless File.exists? @js_path
       raise Error.new "Plugin script not found at #{@js_path}"
@@ -137,11 +137,11 @@ class Plugin
     @rt = Duktape::Runtime.new do |sbx|
       sbx.push_global_object
 
-      sbx.push_pointer @state_path.as(Void*)
+      sbx.push_pointer @storage_path.as(Void*)
       path = sbx.require_pointer(-1).as String
       sbx.pop
       sbx.push_string path
-      sbx.put_prop_string -2, "state_path"
+      sbx.put_prop_string -2, "storage_path"
 
       def_helper_functions sbx
     end
@@ -303,17 +303,17 @@ class Plugin
       env = Duktape::Sandbox.new ptr
       key = env.require_string 0
 
-      env.get_global_string "state_path"
-      state_path = env.require_string -1
+      env.get_global_string "storage_path"
+      storage_path = env.require_string -1
       env.pop
-      state = State.new state_path
+      storage = Storage.new storage_path
 
       if env.get_top == 2
         val = env.require_string 1
-        state[key] = val
-        state.save
+        storage[key] = val
+        storage.save
       else
-        val = state[key]?
+        val = storage[key]?
         if val
           env.push_string val
         else
@@ -323,7 +323,7 @@ class Plugin
 
       env.call_success
     end
-    sbx.put_prop_string -2, "state"
+    sbx.put_prop_string -2, "storage"
 
     sbx.put_prop_string -2, "mango"
   end
