@@ -127,7 +127,7 @@ class Plugin
       raise Error.new "Plugin with title #{title} not found"
     end
 
-    @js_path = File.join info.dir, "main.js"
+    @js_path = File.join info.dir, "index.js"
     @storage_path = File.join info.dir, "storage.json"
 
     unless File.exists? @js_path
