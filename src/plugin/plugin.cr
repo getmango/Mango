@@ -251,9 +251,14 @@ class Plugin
       selector = env.require_string 1
 
       myhtml = Myhtml::Parser.new html
-      json = myhtml.css(selector).map(&.to_html).to_a.to_json
+      ary = myhtml.css(selector).map(&.to_html).to_a
 
-      env.push_string json
+      ary_idx = env.push_array
+      ary.each_with_index do |str, i|
+        env.push_string str
+        env.put_prop_index ary_idx, i.to_u32
+      end
+
       env.call_success
     end
     sbx.put_prop_string -2, "css"
