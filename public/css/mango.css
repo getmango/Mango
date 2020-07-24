@@ -118,6 +118,7 @@ td>.uk-dropdown {
     color: #ccc;
 }
 
-.uk-light .uk-nav-header {
+.uk-light .uk-nav-header,
+.uk-light .uk-description-list>dt {
     color: #555;
 }

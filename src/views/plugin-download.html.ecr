@@ -9,7 +9,7 @@
   <h2 class=uk-title>Download with Plugins</h2>
 
   <div class="uk-grid-small" uk-grid>
-    <div class="uk-width-3-4">
+    <div class="uk-width-3-4@m uk-child-width-1-1">
       <div class="uk-margin">
         <label class="uk-form-label" for="search-input">&nbsp;</label>
         <div class="uk-form-controls">
@@ -17,7 +17,7 @@
         </div>
       </div>
     </div>
-    <div class="uk-width-1-4">
+    <div class="uk-width-expand">
       <div class="uk-margin">
         <label class="uk-form-label" for="plugin-select">Choose a plugin</label>
         <div class="uk-form-controls">
@@ -29,8 +29,22 @@
         </div>
       </div>
     </div>
+    <div class="uk-width-auto">
+      <div class="uk-margin">
+        <label class="uk-form-label" for="search-input">&nbsp;</label>
+        <div class="uk-form-controls" style="padding-top: 10px;">
+          <span uk-icon="info" uk-toggle="target: #toggle"></span>
+        </div>
+      </div>
+    </div>
   </div>
 
+  <dl class="uk-description-list" id="toggle" hidden>
+    <% plugin.info.each do |k, v| %>
+      <dt><%= k %></dt>
+      <dd><%= v.to_s %></dd>
+    <% end %>
+  </dl>
 
   <div id="table" class="uk-margin-large-top" hidden>
     <h3 id="title-text"></h3>

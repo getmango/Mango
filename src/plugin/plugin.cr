@@ -31,13 +31,13 @@ class Plugin
                                 "plugin directory #{dir}"
       end
 
-      json = JSON.parse File.read info_path
+      @json = JSON.parse File.read info_path
 
       begin
         {% for name in ["id", "title", "author", "version", "placeholder"] %}
-          @{{name.id}} = json[{{name}}].as_s
+          @{{name.id}} = @json[{{name}}].as_s
         {% end %}
-        @wait_seconds = json["wait_seconds"].as_i.to_u64
+        @wait_seconds = @json["wait_seconds"].as_i.to_u64
 
         unless @id.alphanumeric_underscore?
           raise "Plugin ID can only contain alphanumeric characters and " \
@@ -47,6 +47,10 @@ class Plugin
         raise MetadataError.new "Failed to retrieve metadata from plugin " \
                                 "at #{@dir}. Error: #{e.message}"
       end
+    end
+
+    def each(&block : String, JSON::Any -> _)
+      @json.as_h.each &block
     end
   end
 
