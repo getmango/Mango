@@ -238,9 +238,22 @@ class Plugin
       end
 
       res = HTTP::Client.get url, headers
-      body = res.body
 
-      env.push_string body
+      env.push_object
+
+      env.push_int res.status_code
+      env.put_prop_string -2, "status_code"
+
+      env.push_string res.body
+      env.put_prop_string -2, "body"
+
+      env.push_object
+      res.headers.each do |k, v|
+        env.push_string v.to_s
+        env.put_prop_string -2, k
+      end
+      env.put_prop_string -2, "headers"
+
       env.call_success
     end
     sbx.put_prop_string -2, "get"
