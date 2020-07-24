@@ -50,7 +50,7 @@ class Queue
     property success_count : Int32 = 0
     property fail_count : Int32 = 0
     property time : Time
-    property plugin_name : String?
+    property plugin_id : String?
     property plugin_chapter_id : String?
 
     def parse_query_result(res : DB::ResultSet)
@@ -69,7 +69,7 @@ class Queue
 
       ary = @id.split("-")
       if ary.size == 2
-        @plugin_name = ary[0]
+        @plugin_id = ary[0]
         @plugin_chapter_id = ary[1]
       end
     end
@@ -82,7 +82,7 @@ class Queue
     end
 
     def initialize(@id, @manga_id, @title, @manga_title, @status, @time,
-                   @plugin_name = nil)
+                   @plugin_id = nil)
     end
 
     def to_json(json)
@@ -100,7 +100,7 @@ class Queue
         json.field "time" do
           json.number @time.to_unix_ms
         end
-        json.field "plugin_name", @plugin_name if @plugin_name
+        json.field "plugin_id", @plugin_id if @plugin_id
       end
     end
   end

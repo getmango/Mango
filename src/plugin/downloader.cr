@@ -31,11 +31,11 @@ class Plugin
       @queue.set_status Queue::JobStatus::Downloading, job
 
       begin
-        unless job.plugin_name
-          raise "Job does not have plugin name specificed"
+        unless job.plugin_id
+          raise "Job does not have a plugin ID specificed"
         end
 
-        plugin = Plugin.new_from_id job.plugin_name.not_nil!
+        plugin = Plugin.new_from_id job.plugin_id.not_nil!
         info = plugin.select_chapter job.plugin_chapter_id.not_nil!
 
         pages = info["pages"].as_i

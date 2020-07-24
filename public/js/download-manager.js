@@ -119,12 +119,12 @@ const load = () => {
 				const dropdown = obj.status_message.length > 0 ? `<div uk-dropdown>${obj.status_message}</div>` : '';
 				const retryBtn = obj.status_message.length > 0 ? `<a onclick="refresh('${obj.id}')" uk-icon="refresh"></a>` : '';
 				return `<tr id="chapter-${obj.id}">
-				<td>${obj.plugin_name ? obj.title : `<a href="${baseURL}/chapter/${obj.id}">${obj.title}</a>`}</td>
-				<td>${obj.plugin_name ? obj.manga_title : `<a href="${baseURL}/manga/${obj.manga_id}">${obj.manga_title}</a>`}</td>
+				<td>${obj.plugin_id ? obj.title : `<a href="${baseURL}/chapter/${obj.id}">${obj.title}</a>`}</td>
+				<td>${obj.plugin_id ? obj.manga_title : `<a href="${baseURL}/manga/${obj.manga_id}">${obj.manga_title}</a>`}</td>
 				<td>${obj.success_count}/${obj.pages}</td>
 				<td>${moment(obj.time).fromNow()}</td>
 				<td>${statusSpan} ${dropdown}</td>
-				<td>${obj.plugin_name || ""}</td>
+				<td>${obj.plugin_id || ""}</td>
 				<td>
 					<a onclick="remove('${obj.id}')" uk-icon="trash"></a>
 					${retryBtn}
