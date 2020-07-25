@@ -17,7 +17,7 @@ class Plugin
   end
 
   struct Info
-    {% for name in ["id", "title", "author", "version", "placeholder"] %}
+    {% for name in ["id", "title", "placeholder"] %}
       getter {{name.id}} = ""
     {% end %}
     getter wait_seconds : UInt64 = 0
@@ -34,7 +34,7 @@ class Plugin
       @json = JSON.parse File.read info_path
 
       begin
-        {% for name in ["id", "title", "author", "version", "placeholder"] %}
+        {% for name in ["id", "title", "placeholder"] %}
           @{{name.id}} = @json[{{name}}].as_s
         {% end %}
         @wait_seconds = @json["wait_seconds"].as_i.to_u64
@@ -234,9 +234,9 @@ class Plugin
       if env.get_top == 2
         env.enum 1, LibDUK::Enum::OwnPropertiesOnly
         while env.next -1, true
-          k = env.require_string -2
-          v = env.require_string -1
-          headers.add k, v
+          key = env.require_string -2
+          val = env.require_string -1
+          headers.add key, val
           env.pop_2
         end
       end
