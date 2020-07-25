@@ -56,7 +56,7 @@
       <div id="download-spinner" uk-spinner class="uk-margin-left" hidden></div>
     </div>
     <p class="uk-text-meta">Click on a table row to select the chapter. Drag your mouse over multiple rows to select them all. Hold Ctrl to make multiple non-adjacent selections.</p>
-    <table class="uk-table uk-table-striped uk-overflow-auto">
+    <table class="uk-table uk-table-striped uk-overflow-auto tablesorter">
     </table>
   </div>
 <% end %>
@@ -67,6 +67,7 @@
     var plugin = "<%= plugin.info.title %>";
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.combined.min.js"></script>
   <script src="<%= base_url %>js/alert.js"></script>
   <script src="<%= base_url %>js/plugin-download.js"></script>
 <% end %>

@@ -67,6 +67,7 @@ const buildTable = (chapters) => {
 		filter: 'tr'
 	});
 
+	$('#table table').tablesorter();
 	$('#table').removeAttr('hidden');
 };
 
