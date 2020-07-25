@@ -253,7 +253,11 @@ class Plugin
 
       env.push_object
       res.headers.each do |k, v|
-        env.push_string v.to_s
+        if v.size == 1
+          env.push_string v[0]
+        else
+          env.push_string v.join ","
+        end
         env.put_prop_string -2, k
       end
       env.put_prop_string -2, "headers"
