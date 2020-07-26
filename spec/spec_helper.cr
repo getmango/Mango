@@ -1,4 +1,5 @@
 require "spec"
+require "../src/queue"
 require "../src/server"
 require "../src/config"
 
@@ -49,17 +50,6 @@ def with_storage
     clear = yield storage, temp_db.path
     if clear == true
       temp_db.delete
-    end
-  end
-end
-
-def with_queue
-  with_default_config do
-    temp_queue_db = get_tempfile "mango-test-queue-db"
-    queue = MangaDex::Queue.new temp_queue_db.path
-    clear = yield queue, temp_queue_db.path
-    if clear == true
-      temp_queue_db.delete
     end
   end
 end
