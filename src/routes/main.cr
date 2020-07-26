@@ -84,7 +84,7 @@ class MainRouter < Router
         plugins = Plugin.list
 
         if title
-          plugin = Plugin.new title
+          plugin = Plugin.new URI.decode title
         else
           plugin = Plugin.new plugins[0]
         end
