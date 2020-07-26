@@ -1,18 +1,30 @@
+const loadPlugin = title => {
+	localStorage.setItem('plugin', title);
+	const url = `${location.protocol}//${location.host}${location.pathname}`;
+	const newURL = `${url}?${$.param({
+			plugin: encodeURIComponent(title)
+		})}`;
+	window.location.href = newURL;
+};
+
 $(() => {
+	var storedTitle = localStorage.getItem('plugin');
+	if (storedTitle && storedTitle !== plugin) {
+		loadPlugin(storedTitle);
+	} else {
+		$('#controls').removeAttr('hidden');
+	}
+
 	$('#search-input').keypress(event => {
 		if (event.which === 13) {
 			search();
 		}
 	});
+	$('#plugin-select').val(plugin);
 	$('#plugin-select').change(() => {
 		const title = $('#plugin-select').val();
-		const url = `${location.protocol}//${location.host}${location.pathname}`;
-		const newURL = `${url}?${$.param({
-			plugin: encodeURIComponent(title)
-		})}`;
-		window.location.href = newURL;
+		loadPlugin(title);
 	});
-	$('#plugin-select').val(plugin);
 });
 
 let mangaTitle = "";
