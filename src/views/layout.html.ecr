@@ -8,12 +8,19 @@
       <div class="uk-navbar-container uk-navbar-transparent" uk-navbar="uk-navbar">
         <div id="mobile-nav" uk-offcanvas="overlay: true">
           <div class="uk-offcanvas-bar uk-flex uk-flex-column">
-            <ul class="uk-nav uk-nav-primary uk-nav-center uk-margin-auto-vertical">
+            <ul class="uk-nav-parent-icon uk-nav-primary uk-nav-center uk-margin-auto-vertical" uk-nav>
               <li><a href="<%= base_url %>">Home</a></li>
               <li><a href="<%= base_url %>library">Library</a></li>
               <% if is_admin %>
                 <li><a href="<%= base_url %>admin">Admin</a></li>
-                <li><a href="<%= base_url %>download">Download</a></li>
+                <li class="uk-parent">
+                  <a href="#">Download</a>
+                  <ul class="uk-nav-sub">
+                    <li><a href="<%= base_url %>download">MangaDex</a></li>
+                    <li><a href="<%= base_url %>download/plugins">Plugins</a></li>
+                    <li><a href="<%= base_url %>admin/downloads">Download Manager</a></li>
+                  </ul>
+                </li>
               <% end %>
               <hr uk-divider>
               <li><a onclick="toggleTheme()"><i class="fas fa-adjust"></i></a></li>
