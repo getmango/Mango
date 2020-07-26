@@ -22,8 +22,8 @@
         <label class="uk-form-label" for="plugin-select">Choose a plugin</label>
         <div class="uk-form-controls">
           <select id="plugin-select" class="uk-select">
-            <% plugins.each do |s| %>
-              <option><%= s %></option>
+            <% plugins.each do |p| %>
+              <option value="<%= p[:id] %>"><%= p[:title] %></option>
             <% end %>
           </select>
         </div>
@@ -64,7 +64,7 @@
 
 <% content_for "script" do %>
   <script>
-    var plugin = "<%= plugin.info.title %>";
+    var pid = "<%= plugin.info.id %>";
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.combined.min.js"></script>

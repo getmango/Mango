@@ -80,13 +80,13 @@ class MainRouter < Router
 
     get "/download/plugins" do |env|
       begin
-        title = env.params.query["plugin"]?
+        id = env.params.query["plugin"]?
         plugins = Plugin.list
 
-        if title
-          plugin = Plugin.new URI.decode title
+        if id
+          plugin = Plugin.new id
         else
-          plugin = Plugin.new plugins[0]
+          plugin = Plugin.new plugins[0][:id]
         end
 
         layout "plugin-download"

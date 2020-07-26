@@ -106,28 +106,21 @@ class Plugin
 
   def self.list
     self.build_info_ary
-
-    @@info_ary.map &.title
+    @@info_ary.map do |m|
+      {id: m.id, title: m.title}
+    end
   end
 
   def info
     @info.not_nil!
   end
 
-  def self.new_from_id(id : String)
-    self.build_info_ary
-
-    info = @@info_ary.find { |i| i.id == id }
-    raise Error.new "Plugin with id #{id} not found" unless info
-    self.new info.title
-  end
-
-  def initialize(title : String)
+  def initialize(id : String)
     Plugin.build_info_ary
 
-    @info = @@info_ary.find { |i| i.title == title }
+    @info = @@info_ary.find { |i| i.id == id }
     if @info.nil?
-      raise Error.new "Plugin with title #{title} not found"
+      raise Error.new "Plugin with ID #{id} not found"
     end
 
     @js_path = File.join info.dir, "index.js"

@@ -35,7 +35,7 @@ class Plugin
           raise "Job does not have a plugin ID specificed"
         end
 
-        plugin = Plugin.new_from_id job.plugin_id.not_nil!
+        plugin = Plugin.new job.plugin_id.not_nil!
         info = plugin.select_chapter job.plugin_chapter_id.not_nil!
 
         pages = info["pages"].as_i

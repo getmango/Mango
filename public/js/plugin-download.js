@@ -1,16 +1,16 @@
-const loadPlugin = title => {
-	localStorage.setItem('plugin', title);
+const loadPlugin = id => {
+	localStorage.setItem('plugin', id);
 	const url = `${location.protocol}//${location.host}${location.pathname}`;
 	const newURL = `${url}?${$.param({
-			plugin: encodeURIComponent(title)
+			plugin: id
 		})}`;
 	window.location.href = newURL;
 };
 
 $(() => {
-	var storedTitle = localStorage.getItem('plugin');
-	if (storedTitle && storedTitle !== plugin) {
-		loadPlugin(storedTitle);
+	var storedID = localStorage.getItem('plugin');
+	if (storedID && storedID !== pid) {
+		loadPlugin(storedID);
 	} else {
 		$('#controls').removeAttr('hidden');
 	}
@@ -20,10 +20,10 @@ $(() => {
 			search();
 		}
 	});
-	$('#plugin-select').val(plugin);
+	$('#plugin-select').val(pid);
 	$('#plugin-select').change(() => {
-		const title = $('#plugin-select').val();
-		loadPlugin(title);
+		const id = $('#plugin-select').val();
+		loadPlugin(id);
 	});
 });
 
@@ -39,7 +39,7 @@ const search = () => {
 			url: base_url + 'api/admin/plugin/search',
 			data: JSON.stringify({
 				query: query,
-				plugin: plugin
+				plugin: pid
 			}),
 			contentType: "application/json",
 			dataType: 'json'
@@ -112,7 +112,7 @@ const download = () => {
 				type: 'POST',
 				url: base_url + 'api/admin/plugin/download',
 				data: JSON.stringify({
-					plugin: plugin,
+					plugin: pid,
 					chapters: chapters,
 					title: mangaTitle
 				}),
