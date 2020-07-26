@@ -88,8 +88,7 @@ class Plugin
   getter storage_path = ""
 
   def self.build_info_ary
-    return unless @@info_ary.empty?
-
+    @@info_ary.clear
     dir = Config.current.plugin_path
     Dir.mkdir_p dir unless Dir.exists? dir
 
