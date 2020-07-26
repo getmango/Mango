@@ -7,7 +7,7 @@
     <div class="uk-section uk-section-default uk-section-small reader-bg">
       <div class="uk-container uk-container-small">
         <%- urls.each_with_index do |url, i| -%>
-          <img class="uk-align-center" data-src="<%= url %>" data-width data-height uk-img id="<%= reader_urls[i] %>" onclick="showControl(<%= pages.to_a[i] %>);">
+          <img class="uk-align-center" data-src="<%= url %>" src="<%= base_url %>img/loading.gif" data-width data-height uk-img id="<%= reader_urls[i] %>" onclick="showControl(<%= pages.to_a[i] %>);">
         <%- end -%>
         <%- if next_url -%>
           <a class="next-url" href="<%= next_url %>"></a>
