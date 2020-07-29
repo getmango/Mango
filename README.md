@@ -13,6 +13,7 @@ Mango is a self-hosted manga server and reader. Its features include
 - Supports nested folders in library
 - Automatically stores reading progress
 - Built-in [MangaDex](https://mangadex.org/) downloader
+- [Plugins](https://github.com/hkalexling/mango-plugins) support
 - The web reader is responsive and works well on mobile, so there is no need for a mobile app
 - All the static files are embedded in the binary, so the deployment process is easy and painless
 
@@ -50,7 +51,7 @@ The official docker images are available on [Dockerhub](https://hub.docker.com/r
 ### CLI
 
 ```
-  Mango - Manga Server and Web Reader. Version 0.8.0
+  Mango - Manga Server and Web Reader. Version 0.9.0
 
   Usage:
 
