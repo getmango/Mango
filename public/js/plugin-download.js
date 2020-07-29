@@ -36,7 +36,7 @@ const search = () => {
 	const query = $('#search-input').val();
 	$.ajax({
 			type: 'POST',
-			url: base_url + 'api/admin/plugin/search',
+			url: base_url + 'api/admin/plugin/list',
 			data: JSON.stringify({
 				query: query,
 				plugin: pid

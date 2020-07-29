@@ -153,15 +153,15 @@ class Plugin
     {% end %}
   end
 
-  def search(query : String)
-    json = eval_json "search('#{query}')"
+  def list_chapters(query : String)
+    json = eval_json "listChapters('#{query}')"
     begin
       check_fields ["title", "chapters"]
 
       ary = json["chapters"].as_a
       ary.each do |obj|
         id = obj["id"]?
-        raise "Field `id` missing from `search` outputs" if id.nil?
+        raise "Field `id` missing from `listChapters` outputs" if id.nil?
 
         unless id.to_s.alphanumeric_underscore?
           raise "The `id` field can only contain alphanumeric characters " \
@@ -169,7 +169,7 @@ class Plugin
         end
 
         title = obj["title"]?
-        raise "Field `title` missing from `search` outputs" if title.nil?
+        raise "Field `title` missing from `listChapters` outputs" if title.nil?
       end
     rescue e
       raise Error.new e.message

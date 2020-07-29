@@ -260,12 +260,12 @@ class APIRouter < Router
       end
     end
 
-    post "/api/admin/plugin/search" do |env|
+    post "/api/admin/plugin/list" do |env|
       begin
         query = env.params.json["query"].as String
         plugin = Plugin.new env.params.json["plugin"].as String
 
-        json = plugin.search query
+        json = plugin.list_chapters query
         chapters = json["chapters"]
         title = json["title"]
 
