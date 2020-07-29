@@ -82,10 +82,11 @@ class MainRouter < Router
       begin
         id = env.params.query["plugin"]?
         plugins = Plugin.list
+        plugin = nil
 
         if id
           plugin = Plugin.new id
-        else
+        elsif !plugins.empty?
           plugin = Plugin.new plugins[0][:id]
         end
 

@@ -1,6 +1,6 @@
 <% if plugins.empty? %>
   <div class="uk-container uk-text-center">
-    <h2>No Plugins found</h2>
+    <h2>No Plugins Found</h2>
     <p>We could't find any plugins in the directory <code><%= Config.current.plugin_path %></code>.</p>
     <p>You can download official plugins from the <a href="https://github.com/hkalexling/mango-plugins">Mango plugins repository</a>.</p>
   </div>
@@ -13,7 +13,7 @@
       <div class="uk-margin">
         <label class="uk-form-label" for="search-input">&nbsp;</label>
         <div class="uk-form-controls">
-          <input id="search-input" class="uk-input" type="text" placeholder="<%= plugin.info.placeholder %>">
+          <input id="search-input" class="uk-input" type="text" placeholder="<%= plugin.not_nil!.info.placeholder %>">
         </div>
       </div>
     </div>
@@ -40,7 +40,7 @@
   </div>
 
   <dl class="uk-description-list" id="toggle" hidden>
-    <% plugin.info.each do |k, v| %>
+    <% plugin.not_nil!.info.each do |k, v| %>
       <dt><%= k %></dt>
       <dd><%= v.to_s %></dd>
     <% end %>
@@ -63,9 +63,11 @@
 
 
 <% content_for "script" do %>
-  <script>
-    var pid = "<%= plugin.info.id %>";
-  </script>
+  <% if plugin %>
+    <script>
+      var pid = "<%= plugin.not_nil!.info.id %>";
+    </script>
+  <% end %>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.combined.min.js"></script>
   <script src="<%= base_url %>js/alert.js"></script>
