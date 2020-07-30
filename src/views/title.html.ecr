@@ -1,4 +1,8 @@
 <div>
+  <div class="uk-card uk-card-body uk-card-default uk-margin-bottom" uk-sticky x-data="{count: 0}" @add.window="count++" @remove.window="count--" x-show="count > 0" style="border:orange;border-style:solid;" x-cloak>
+    <p class="uk-display-inline" x-text="count + ' items selected'" style="color:orange"></p>
+    <a uk-icon="icon:close;" class="uk-align-right" @click="deselectAll(); count = 0"></a>
+  </div>
   <h2 class=uk-title><span><%= title.display_name %></span>
     &nbsp;
     <% if is_admin %>

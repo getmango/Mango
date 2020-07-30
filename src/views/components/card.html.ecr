@@ -35,12 +35,20 @@
       onclick="location='<%= base_url %>book/<%= item.id %>'" 
     <% end %>>
 
-    <div class="uk-card uk-card-default">
-      <div class="uk-card-media-top">
-        <img data-src="<%= item.cover_url %>" data-width data-height alt="" uk-img
+    <div class="uk-card uk-card-default" x-data="{selected: false, hover: false, disabled: true}" :class="{selected: selected}"
+      <% if page == "title" && item.is_a?(Entry) && item.err_msg.nil? %>
+        x-init="disabled = false"
+      <% end %>>
+      <div class="uk-card-media-top uk-inline" @mouseenter="hover = true" @mouseleave="hover = false">
+        <img data-src="<%= item.cover_url %>" width="100%" height="100%" alt="" uk-img
         <% if item.is_a? Entry && item.err_msg %>
           class="grayscale"
         <% end %>>
+        <div class="uk-overlay-primary uk-position-cover" x-show="!disabled && (selected || hover)">
+          <div class="uk-position-center">
+            <span class="fas fa-check-circle" @click.stop="selected = !selected; $dispatch(selected ? 'add' : 'remove')" :style="`color:${selected && 'orange'};transform:scale(3,3)`"></span>
+          </div>
+        </div>
       </div>
 
       <div class="uk-card-body">

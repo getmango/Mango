@@ -182,3 +182,11 @@ const setupUpload = (eid) => {
 		}
 	});
 };
+
+const deselectAll = () => {
+	$('.item .uk-card').each((i, e) => {
+		const data = e.__x.$data;
+		if (!data['disabled'])
+			data['selected'] = false;
+	});
+};
