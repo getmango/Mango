@@ -122,3 +122,7 @@ td>.uk-dropdown {
 .uk-light .uk-description-list>dt {
     color: #555;
 }
+
+[x-cloak] {
+    display: none;
+}
