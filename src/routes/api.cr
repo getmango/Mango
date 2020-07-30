@@ -97,6 +97,28 @@ class APIRouter < Router
       end
     end
 
+    post "/api/bulk-progress/:action/:title" do |env|
+      begin
+        username = get_username env
+        title = (@context.library.get_title env.params.url["title"]).not_nil!
+        action = env.params.url["action"]
+        ids = env.params.json["ids"].as(Array).map &.as_s
+
+        unless action.in? ["read", "unread"]
+          raise "Unknow action #{action}"
+        end
+        title.bulk_progress action, ids, username
+      rescue e
+        @context.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      else
+        send_json env, {"success" => true}.to_json
+      end
+    end
+
     post "/api/admin/display_name/:title/:name" do |env|
       begin
         title = (@context.library.get_title env.params.url["title"])

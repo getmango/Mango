@@ -127,3 +127,11 @@ td>.uk-dropdown {
 [x-cloak] {
     display: none;
 }
+
+#select-bar-controls a {
+    transform: scale(1.5, 1.5);
+}
+
+#select-bar-controls a:hover {
+    color: orange;
+}

@@ -186,7 +186,47 @@ const setupUpload = (eid) => {
 const deselectAll = () => {
 	$('.item .uk-card').each((i, e) => {
 		const data = e.__x.$data;
-		if (!data['disabled'])
-			data['selected'] = false;
+		data['selected'] = false;
 	});
+	$('#select-bar')[0].__x.$data['count'] = 0;
+};
+
+const selectedIDs = () => {
+	const ary = [];
+	$('.item .uk-card').each((i, e) => {
+		const data = e.__x.$data;
+		if (!data['disabled'] && data['selected']) {
+			const item = $(e).closest('.item');
+			ary.push($(item).attr('id'));
+		}
+	});
+	return ary;
+};
+
+const bulkProgress = (action, el) => {
+	const tid = $(el).attr('data-id');
+	const ids = selectedIDs();
+	const url = `${base_url}api/bulk-progress/${action}/${tid}`;
+	$.ajax({
+			type: 'POST',
+			url: url,
+			contentType: "application/json",
+			dataType: 'json',
+			data: JSON.stringify({
+				ids: ids
+			})
+		})
+		.done(data => {
+			if (data.error) {
+				alert('danger', `Failed to mark entries as ${action}. Error: ${data.error}`);
+				return;
+			}
+			location.reload();
+		})
+		.fail((jqXHR, status) => {
+			alert('danger', `Failed to mark entries as ${action}. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+		})
+		.always(() => {
+			deselectAll();
+		});
 };

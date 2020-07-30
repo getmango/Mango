@@ -355,4 +355,24 @@ class Title
     return zip if title_ids.empty?
     zip + titles.map { |t| t.deep_entries_with_date_added }.flatten
   end
+
+  def bulk_progress(action, ids : Array(String), username)
+    selected_entries = ids
+      .map { |id|
+        @entries.find { |e| e.id == id }
+      }
+      .select(Entry)
+
+    TitleInfo.new @dir do |info|
+      selected_entries.each do |e|
+        page = action == "read" ? e.pages : 0
+        if info.progress[username]?.nil?
+          info.progress[username] = {e.title => page}
+        else
+          info.progress[username][e.title] = page
+        end
+      end
+      info.save
+    end
+  end
 end

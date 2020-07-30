@@ -46,7 +46,7 @@
         <% end %>>
         <div class="uk-overlay-primary uk-position-cover" x-show="!disabled && (selected || hover)">
           <div class="uk-position-center">
-            <span class="fas fa-check-circle" @click.stop="selected = !selected; $dispatch(selected ? 'add' : 'remove')" :style="`color:${selected && 'orange'};transform:scale(3,3)`"></span>
+            <span class="fas fa-check-circle fa-3x" @click.stop="selected = !selected; $dispatch(selected ? 'add' : 'remove')" :style="`color:${selected && 'orange'};`"></span>
           </div>
         </div>
       </div>
