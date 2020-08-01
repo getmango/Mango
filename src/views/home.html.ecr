@@ -50,6 +50,17 @@
     </div>
   <%- end -%>
 
+  <%- unless start_reading.empty? -%>
+    <h2 class="uk-title home-headings">Start Reading</h2>
+    <div id="item-container-continue" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
+      <%- start_reading.each do |t| -%>
+        <% item = t %>
+        <% progress = 0.0 %>
+        <%= render_component "card" %>
+      <%- end -%>
+    </div>
+  <%- end -%>
+
   <%- unless recently_added.empty? -%>
     <h2 class="uk-title home-headings">Recently Added</h2>
     <div id="item-container-continue" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>

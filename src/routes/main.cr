@@ -103,6 +103,7 @@ class MainRouter < Router
         continue_reading = @context
           .library.get_continue_reading_entries username
         recently_added = @context.library.get_recently_added_entries username
+        start_reading = @context.library.get_start_reading_titles username
         titles = @context.library.titles
         new_user = !titles.any? { |t| t.load_percentage(username) > 0 }
         empty_library = titles.size == 0

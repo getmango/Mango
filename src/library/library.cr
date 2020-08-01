@@ -30,6 +30,41 @@ class Library
     @title_ids.map { |tid| self.get_title!(tid) }
   end
 
+  def sorted_titles(username, opt : SortOptions? = nil)
+    if opt.nil?
+      opt = SortOptions.from_info_json @dir, username
+    else
+      TitleInfo.new @dir do |info|
+        info.sort_by[username] = opt.to_tuple
+        info.save
+      end
+    end
+
+    # This is a hack to bypass a compiler bug
+    ary = titles
+
+    case opt.not_nil!.method
+    when .time_modified?
+      ary.sort! { |a, b| (a.mtime <=> b.mtime).or \
+        compare_numerically a.title, b.title }
+    when .progress?
+      ary.sort! do |a, b|
+        (a.load_percentage(username) <=> b.load_percentage(username)).or \
+          compare_numerically a.title, b.title
+      end
+    else
+      unless opt.method.auto?
+        Logger.warn "Unknown sorting method #{opt.not_nil!.method}. Using " \
+                    "Auto instead"
+      end
+      ary.sort! { |a, b| compare_numerically a.title, b.title }
+    end
+
+    ary.reverse! unless opt.not_nil!.ascend
+
+    ary
+  end
+
   def deep_titles
     titles + titles.map { |t| t.deep_titles }.flatten
   end
@@ -83,7 +118,7 @@ class Library
     cr_entries = deep_titles
       .map { |t| t.get_last_read_entry username }
       # Select elements with type `Entry` from the array and ignore all `Nil`s
-      .select(Entry)[0..11]
+      .select(Entry)[0...ENTRIES_IN_HOME_SECTIONS]
       .map { |e|
         # Get the last read time of the entry. If it hasn't been started, get
         #   the last read time of the previous entry
@@ -143,41 +178,20 @@ class Library
         end
       end
 
-    recently_added[0..11]
+    recently_added[0...ENTRIES_IN_HOME_SECTIONS]
   end
 
-  def sorted_titles(username, opt : SortOptions? = nil)
-    if opt.nil?
-      opt = SortOptions.from_info_json @dir, username
-    else
-      TitleInfo.new @dir do |info|
-        info.sort_by[username] = opt.to_tuple
-        info.save
-      end
-    end
-
-    # This is a hack to bypass a compiler bug
-    ary = titles
-
-    case opt.not_nil!.method
-    when .time_modified?
-      ary.sort! { |a, b| (a.mtime <=> b.mtime).or \
-        compare_numerically a.title, b.title }
-    when .progress?
-      ary.sort! do |a, b|
-        (a.load_percentage(username) <=> b.load_percentage(username)).or \
-          compare_numerically a.title, b.title
-      end
-    else
-      unless opt.method.auto?
-        Logger.warn "Unknown sorting method #{opt.not_nil!.method}. Using " \
-                    "Auto instead"
-      end
-      ary.sort! { |a, b| compare_numerically a.title, b.title }
-    end
-
-    ary.reverse! unless opt.not_nil!.ascend
-
-    ary
+  def get_start_reading_titles(username)
+    # Here we are not using `deep_titles` as it may cause unexpected behaviors
+    # For example, consider the following nested titles:
+    #   - One Puch Man
+    #     - Vol. 1
+    #     - Vol. 2
+    # If we use `deep_titles`, the start reading section might include `Vol. 2`
+    #   when the user hasn't started `Vol. 1` yet
+    titles
+      .select { |t| t.load_percentage(username) == 0 }
+      .sample(ENTRIES_IN_HOME_SECTIONS)
+      .shuffle
   end
 end
