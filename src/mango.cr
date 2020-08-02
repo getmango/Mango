@@ -8,6 +8,22 @@ require "./plugin/*"
 
 MANGO_VERSION = "0.10.0"
 
+# From http://www.network-science.de/ascii/
+BANNER = %{
+
+              _|      _|
+              _|_|  _|_|    _|_|_|  _|_|_|      _|_|_|    _|_|
+              _|  _|  _|  _|    _|  _|    _|  _|    _|  _|    _|
+              _|      _|  _|    _|  _|    _|  _|    _|  _|    _|
+              _|      _|    _|_|_|  _|    _|    _|_|_|    _|_|
+                                                    _|
+                                                _|_|
+
+
+}
+
+DESCRIPTION = "Mango - Manga Server and Web Reader. Version #{MANGO_VERSION}"
+
 macro common_option
   option "-c PATH", "--config=PATH", type: String,
     desc: "Path to the config file"
@@ -22,7 +38,7 @@ end
 
 class CLI < Clim
   main do
-    desc "Mango - Manga Server and Web Reader. Version #{MANGO_VERSION}"
+    desc DESCRIPTION
     usage "mango [sub_command] [options]"
     help short: "-h"
     version "Version #{MANGO_VERSION}", short: "-v"
@@ -31,6 +47,10 @@ class CLI < Clim
       Config.load(opts.config).set_current
       MangaDex::Downloader.default
       Plugin::Downloader.default
+
+      puts BANNER
+      puts DESCRIPTION
+      puts
 
       # empty ARGV so it won't be passed to Kemal
       ARGV.clear
