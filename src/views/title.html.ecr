@@ -1,5 +1,5 @@
 <div>
-  <div id="select-bar" class="uk-card uk-card-body uk-card-default uk-margin-bottom" uk-sticky x-data="{count: 0}" @add.window="count++" @remove.window="count--" x-show="count > 0" style="border:orange;border-style:solid;" x-cloak data-id="<%= title.id %>">
+  <div id="select-bar" class="uk-card uk-card-body uk-card-default uk-margin-bottom" uk-sticky="offset:10" x-data="{count: 0}" @add.window="count++" @remove.window="count--" x-show="count > 0" style="border:orange;border-style:solid;" x-cloak data-id="<%= title.id %>">
     <div class="uk-child-width-1-3" uk-grid>
       <div>
         <p x-text="count + ' items selected'" style="color:orange"></p>
