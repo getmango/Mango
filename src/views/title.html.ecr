@@ -12,8 +12,9 @@
           <i class="fas fa-times-circle"></i>
         </a>
       </div>
-      <div>
-        <a uk-icon="icon:close;" class="uk-align-right" @click="deselectAll();"></a>
+      <div class="uk-text-right">
+        <a @click="selectAll()" uk-tooltip="title: Select all"><i class="fas fa-check-double uk-margin-small-right"></i></a>
+        <a @click="deselectAll();" uk-tooltip="title: Deselect all"><i class="fas fa-times"></i></a>
       </div>
     </div>
   </div>

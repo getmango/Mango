@@ -191,6 +191,18 @@ const deselectAll = () => {
 	$('#select-bar')[0].__x.$data['count'] = 0;
 };
 
+const selectAll = () => {
+	let count = 0;
+	$('.item .uk-card').each((i, e) => {
+		const data = e.__x.$data;
+		if (!data['disabled']) {
+			data['selected'] = true;
+			count++;
+		}
+	});
+	$('#select-bar')[0].__x.$data['count'] = count;
+};
+
 const selectedIDs = () => {
 	const ary = [];
 	$('.item .uk-card').each((i, e) => {
