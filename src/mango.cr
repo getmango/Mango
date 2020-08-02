@@ -6,7 +6,7 @@ require "option_parser"
 require "clim"
 require "./plugin/*"
 
-MANGO_VERSION = "0.9.0"
+MANGO_VERSION = "0.10.0"
 
 macro common_option
   option "-c PATH", "--config=PATH", type: String,
