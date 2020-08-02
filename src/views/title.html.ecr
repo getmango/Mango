@@ -51,7 +51,8 @@
     <%= render_component "sort-form" %>
   </div>
 </div>
-<div id="item-container" class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
+
+<div class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
   <% title.titles.each_with_index do |item, i| %>
     <% progress = title_percentage[i] %>
     <%= render_component "card" %>
