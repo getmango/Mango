@@ -24,8 +24,15 @@ jobs:
       run: make check
     - name: Run tests
       run: make test
-    - name: Upload artifact
+    - name: Upload binary
       uses: actions/upload-artifact@v2
       with:
         name: mango
         path: mango
+    - name: build arm32v7 object file
+      run: make arm32v7
+    - name: Upload object files
+      uses: actions/upload-artifact@v2
+      with:
+        name: object files
+        path: *.o
