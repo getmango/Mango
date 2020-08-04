@@ -3,9 +3,6 @@ INSTALL_DIR=$(PREFIX)/bin
 
 all: uglify | build
 
-arm32v7: uglify | libs
-	crystal build src/mango.cr --release --progress --cross-compile --target='arm-linux-gnueabihf'
-
 uglify:
 	yarn
 	yarn uglify
@@ -33,6 +30,10 @@ check:
 	crystal tool format --check
 	./bin/ameba
 	./dev/linewidth.sh
+
+arm32v7:
+	crystal build src/mango.cr --release --progress --cross-compile --target='arm-linux-gnueabihf'
+	mv mango.o mango.arm32v7.o
 
 install:
 	cp mango $(INSTALL_DIR)/mango
