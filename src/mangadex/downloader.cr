@@ -27,14 +27,16 @@ module MangaDex
 
     def pop : Queue::Job?
       job = nil
-      DB.open "sqlite3://#{@queue.path}" do |db|
-        begin
-          db.query_one "select * from queue where id not like '%-%' " \
-                       "and (status = 0 or status = 1) " \
-                       "order by time limit 1" do |res|
-            job = Queue::Job.from_query_result res
+      MainFiber.run do
+        DB.open "sqlite3://#{@queue.path}" do |db|
+          begin
+            db.query_one "select * from queue where id not like '%-%' " \
+                         "and (status = 0 or status = 1) " \
+                         "order by time limit 1" do |res|
+              job = Queue::Job.from_query_result res
+            end
+          rescue
           end
-        rescue
         end
       end
       job
