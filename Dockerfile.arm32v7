@@ -1,0 +1,13 @@
+FROM arm32v7/ubuntu:18.04
+
+RUN apt-get update && apt-get install -y wget git make llvm-8 llvm-8-dev g++ libsqlite3-dev libyaml-dev libgc-dev libssl-dev libcrypto++-dev libevent-dev libgmp-dev zlib1g-dev libpcre++-dev pkg-config libarchive-dev libxml2-dev libacl1-dev nettle-dev liblzo2-dev liblzma-dev libbz2-dev
+
+RUN git clone https://github.com/crystal-lang/crystal && cd crystal && git checkout 0.32.1 && make deps && cd ..
+RUN git clone https://github.com/kostya/myhtml && cd myhtml/src/ext && make && cd ..
+RUN git clone https://github.com/jessedoyle/duktape.cr && cd duktape.cr/ext && make && cd ..
+
+COPY mango.o .
+
+RUN cc 'mango.o' -o 'mango'  -rdynamic  -lxml2 /myhtml/src/ext/modest-c/lib/libmodest_static.a -L/duktape.cr/src/.build/lib -L/duktape.cr/src/.build/include -lduktape -lm `pkg-config libarchive --libs` -lz `command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libssl || printf %s '-lssl -lcrypto'` `command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libcrypto || printf %s '-lcrypto'` -lgmp -lsqlite3 -lyaml -lpcre -lm /usr/lib/arm-linux-gnueabihf/libgc.so -lpthread /crystal/src/ext/libcrystal.a -levent -lrt -ldl -L/usr/bin/../lib/crystal/lib -L/usr/bin/../lib/crystal/lib
+
+CMD ["./mango"]

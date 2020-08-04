@@ -1,6 +1,7 @@
 require "./config"
 require "./queue"
 require "./server"
+require "./main_fiber"
 require "./mangadex/*"
 require "option_parser"
 require "clim"
@@ -54,8 +55,7 @@ class CLI < Clim
 
       # empty ARGV so it won't be passed to Kemal
       ARGV.clear
-      server = Server.new
-      server.start
+      Server.new.start
     end
 
     sub "admin" do
@@ -123,4 +123,8 @@ class CLI < Clim
   end
 end
 
-CLI.start(ARGV)
+spawn do
+  CLI.start(ARGV)
+end
+
+MainFiber.start_and_block

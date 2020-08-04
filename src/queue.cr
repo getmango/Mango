@@ -119,22 +119,24 @@ class Queue
                   "Attepmting to create it"
       Dir.mkdir_p dir
     end
-    DB.open "sqlite3://#{@path}" do |db|
-      begin
-        db.exec "create table if not exists queue " \
-                "(id text, manga_id text, title text, manga_title " \
-                "text, status integer, status_message text, " \
-                "pages integer, success_count integer, " \
-                "fail_count integer, time integer)"
-        db.exec "create unique index if not exists id_idx " \
-                "on queue (id)"
-        db.exec "create index if not exists manga_id_idx " \
-                "on queue (manga_id)"
-        db.exec "create index if not exists status_idx " \
-                "on queue (status)"
-      rescue e
-        Logger.error "Error when checking tables in DB: #{e}"
-        raise e
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        begin
+          db.exec "create table if not exists queue " \
+                  "(id text, manga_id text, title text, manga_title " \
+                  "text, status integer, status_message text, " \
+                  "pages integer, success_count integer, " \
+                  "fail_count integer, time integer)"
+          db.exec "create unique index if not exists id_idx " \
+                  "on queue (id)"
+          db.exec "create index if not exists manga_id_idx " \
+                  "on queue (manga_id)"
+          db.exec "create index if not exists status_idx " \
+                  "on queue (status)"
+        rescue e
+          Logger.error "Error when checking tables in DB: #{e}"
+          raise e
+        end
       end
     end
   end
@@ -143,23 +145,27 @@ class Queue
   #   inserted. Any job already exists in the queue will be ignored.
   def push(jobs : Array(Job))
     start_count = self.count
-    DB.open "sqlite3://#{@path}" do |db|
-      jobs.each do |job|
-        db.exec "insert or ignore into queue values " \
-                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-          job.id, job.manga_id, job.title, job.manga_title,
-          job.status.to_i, job.status_message, job.pages,
-          job.success_count, job.fail_count, job.time.to_unix_ms
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        jobs.each do |job|
+          db.exec "insert or ignore into queue values " \
+                  "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            job.id, job.manga_id, job.title, job.manga_title,
+            job.status.to_i, job.status_message, job.pages,
+            job.success_count, job.fail_count, job.time.to_unix_ms
+        end
       end
     end
     self.count - start_count
   end
 
   def reset(id : String)
-    DB.open "sqlite3://#{@path}" do |db|
-      db.exec "update queue set status = 0, status_message = '', " \
-              "pages = 0, success_count = 0, fail_count = 0 " \
-              "where id = (?)", id
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        db.exec "update queue set status = 0, status_message = '', " \
+                "pages = 0, success_count = 0, fail_count = 0 " \
+                "where id = (?)", id
+      end
     end
   end
 
@@ -169,16 +175,20 @@ class Queue
 
   # Reset all failed tasks (missing pages and error)
   def reset
-    DB.open "sqlite3://#{@path}" do |db|
-      db.exec "update queue set status = 0, status_message = '', " \
-              "pages = 0, success_count = 0, fail_count = 0 " \
-              "where status = 2 or status = 4"
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        db.exec "update queue set status = 0, status_message = '', " \
+                "pages = 0, success_count = 0, fail_count = 0 " \
+                "where status = 2 or status = 4"
+      end
     end
   end
 
   def delete(id : String)
-    DB.open "sqlite3://#{@path}" do |db|
-      db.exec "delete from queue where id = (?)", id
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        db.exec "delete from queue where id = (?)", id
+      end
     end
   end
 
@@ -187,71 +197,89 @@ class Queue
   end
 
   def delete_status(status : JobStatus)
-    DB.open "sqlite3://#{@path}" do |db|
-      db.exec "delete from queue where status = (?)", status.to_i
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        db.exec "delete from queue where status = (?)", status.to_i
+      end
     end
   end
 
   def count_status(status : JobStatus)
     num = 0
-    DB.open "sqlite3://#{@path}" do |db|
-      num = db.query_one "select count(*) from queue where " \
-                         "status = (?)", status.to_i, as: Int32
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        num = db.query_one "select count(*) from queue where " \
+                           "status = (?)", status.to_i, as: Int32
+      end
     end
     num
   end
 
   def count
     num = 0
-    DB.open "sqlite3://#{@path}" do |db|
-      num = db.query_one "select count(*) from queue", as: Int32
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        num = db.query_one "select count(*) from queue", as: Int32
+      end
     end
     num
   end
 
   def set_status(status : JobStatus, job : Job)
-    DB.open "sqlite3://#{@path}" do |db|
-      db.exec "update queue set status = (?) where id = (?)",
-        status.to_i, job.id
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        db.exec "update queue set status = (?) where id = (?)",
+          status.to_i, job.id
+      end
     end
   end
 
   def get_all
     jobs = [] of Job
-    DB.open "sqlite3://#{@path}" do |db|
-      jobs = db.query_all "select * from queue order by time" do |rs|
-        Job.from_query_result rs
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        jobs = db.query_all "select * from queue order by time" do |rs|
+          Job.from_query_result rs
+        end
       end
     end
     jobs
   end
 
   def add_success(job : Job)
-    DB.open "sqlite3://#{@path}" do |db|
-      db.exec "update queue set success_count = success_count + 1 " \
-              "where id = (?)", job.id
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        db.exec "update queue set success_count = success_count + 1 " \
+                "where id = (?)", job.id
+      end
     end
   end
 
   def add_fail(job : Job)
-    DB.open "sqlite3://#{@path}" do |db|
-      db.exec "update queue set fail_count = fail_count + 1 " \
-              "where id = (?)", job.id
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        db.exec "update queue set fail_count = fail_count + 1 " \
+                "where id = (?)", job.id
+      end
     end
   end
 
   def set_pages(pages : Int32, job : Job)
-    DB.open "sqlite3://#{@path}" do |db|
-      db.exec "update queue set pages = (?), success_count = 0, " \
-              "fail_count = 0 where id = (?)", pages, job.id
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        db.exec "update queue set pages = (?), success_count = 0, " \
+                "fail_count = 0 where id = (?)", pages, job.id
+      end
     end
   end
 
   def add_message(msg : String, job : Job)
-    DB.open "sqlite3://#{@path}" do |db|
-      db.exec "update queue set status_message = " \
-              "status_message || (?) || (?) where id = (?)",
-        "\n", msg, job.id
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        db.exec "update queue set status_message = " \
+                "status_message || (?) || (?) where id = (?)",
+          "\n", msg, job.id
+      end
     end
   end
 
