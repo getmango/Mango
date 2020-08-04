@@ -52,12 +52,8 @@ class Config
       config.fill_defaults
       return config
     end
-    puts "The config file #{cfg_path} does not exist." \
-         " Do you want mango to dump the default config there? [Y/n]"
-    input = gets
-    if input && input.downcase == "n"
-      abort "Aborting..."
-    end
+    puts "The config file #{cfg_path} does not exist. " \
+         "Dumping the default config there."
     default = self.allocate
     default.path = path
     default.fill_defaults
