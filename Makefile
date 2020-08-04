@@ -3,6 +3,9 @@ INSTALL_DIR=$(PREFIX)/bin
 
 all: uglify | build
 
+arm32v7: uglify | libs
+	crystal build src/mango.cr --release --progress --cross-compile --target='arm-linux-gnueabihf'
+
 uglify:
 	yarn
 	yarn uglify
