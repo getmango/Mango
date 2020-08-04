@@ -8,6 +8,6 @@ RUN git clone https://github.com/jessedoyle/duktape.cr && cd duktape.cr/ext && m
 
 COPY mango.o .
 
-RUN cc 'mango.o' -o 'mango'  -rdynamic  -lxml2 /myhtml/src/ext/modest-c/lib/libmodest_static.a -L/duktape.cr/src/.build/lib -L/duktape.cr/src/.build/include -lduktape -lm `pkg-config libarchive --libs` -lz `command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libssl || printf %s '-lssl -lcrypto'` `command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libcrypto || printf %s '-lcrypto'` -lgmp -lsqlite3 -lyaml -lpcre -lm /usr/lib/arm-linux-gnueabihf/libgc.so -lpthread /crystal/src/ext/libcrystal.a -levent -lrt -ldl -L/usr/bin/../lib/crystal/lib -L/usr/bin/../lib/crystal/lib
+RUN cc 'mango.o' -o 'mango' -rdynamic -lxml2 /myhtml/src/ext/modest-c/lib/libmodest_static.a -L/duktape.cr/src/.build/lib -L/duktape.cr/src/.build/include -lduktape -lm `pkg-config libarchive --libs` -lz `command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libssl || printf %s '-lssl -lcrypto'` `command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libcrypto || printf %s '-lcrypto'` -lgmp -lsqlite3 -lyaml -lpcre -lm /usr/lib/arm-linux-gnueabihf/libgc.so -lpthread /crystal/src/ext/libcrystal.a -levent -lrt -ldl -L/usr/bin/../lib/crystal/lib -L/usr/bin/../lib/crystal/lib
 
 CMD ["./mango"]
