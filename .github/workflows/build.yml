@@ -31,8 +31,10 @@ jobs:
         path: mango
     - name: build arm32v7 object file
       run: make arm32v7
+    - name: build arm64v8 object file
+      run: make arm64v8
     - name: Upload object files
       uses: actions/upload-artifact@v2
       with:
         name: object files
-        path: *.o
+        path: ./*.o
