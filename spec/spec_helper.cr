@@ -2,6 +2,7 @@ require "spec"
 require "../src/queue"
 require "../src/server"
 require "../src/config"
+require "../src/main_fiber"
 
 class State
   @@hash = {} of String => String
