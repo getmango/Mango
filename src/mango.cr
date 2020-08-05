@@ -45,17 +45,22 @@ class CLI < Clim
     version "Version #{MANGO_VERSION}", short: "-v"
     common_option
     run do |opts|
-      Config.load(opts.config).set_current
-      MangaDex::Downloader.default
-      Plugin::Downloader.default
-
       puts BANNER
       puts DESCRIPTION
       puts
 
       # empty ARGV so it won't be passed to Kemal
       ARGV.clear
-      Server.new.start
+
+      Config.load(opts.config).set_current
+      MangaDex::Downloader.default
+      Plugin::Downloader.default
+
+      spawn do
+        Server.new.start
+      end
+
+      MainFiber.start_and_block
     end
 
     sub "admin" do
@@ -123,8 +128,4 @@ class CLI < Clim
   end
 end
 
-spawn do
-  CLI.start(ARGV)
-end
-
-MainFiber.start_and_block
+CLI.start(ARGV)

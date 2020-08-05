@@ -6,6 +6,7 @@
 class MainFiber
   @@channel = Channel(-> Nil).new
   @@done = Channel(Bool).new
+  @@main_fiber = Fiber.current
 
   def self.start_and_block
     loop do
@@ -21,9 +22,13 @@ class MainFiber
   end
 
   def self.run(&block : -> Nil)
-    @@channel.send block
-    until @@done.receive
-      Fiber.yield
+    if @@main_fiber == Fiber.current
+      block.call
+    else
+      @@channel.send block
+      until @@done.receive
+        Fiber.yield
+      end
     end
   end
 end
