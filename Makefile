@@ -32,8 +32,10 @@ check:
 	./dev/linewidth.sh
 
 arm32v7:
-	crystal build src/mango.cr --release --progress --cross-compile --target='arm-linux-gnueabihf'
-	mv mango.o mango.arm32v7.o
+	crystal build src/mango.cr --release --progress --cross-compile --target='arm-linux-gnueabihf' -o mango-arm32v7
+
+arm64v8:
+	crystal build src/mango.cr --release --progress --cross-compile --target='aarch64-linux-gnu' -o mango-arm64v8
 
 install:
 	cp mango $(INSTALL_DIR)/mango
