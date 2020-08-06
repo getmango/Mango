@@ -139,6 +139,10 @@ Mobile UI:
 
 ![mobile screenshot](./.github/screenshots/mobile.png)
 
+## Sponsors
+
+<a href="https://casinoshunter.com/online-casinos/"><img src="https://i.imgur.com/EJb3wBo.png" width="150" height="auto"></a>
+
 ## Contributors
 
 Please check the [development guideline](https://github.com/hkalexling/Mango/wiki/Development) if you are interest in code contributions.
