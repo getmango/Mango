@@ -1,6 +1,5 @@
 require "duktape/runtime"
 require "myhtml"
-require "http"
 require "xml"
 
 class Plugin

@@ -1,4 +1,3 @@
-require "http/client"
 require "json"
 require "csv"
 require "../rename"
