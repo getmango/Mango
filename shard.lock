@@ -28,6 +28,10 @@ shards:
     github: crystal-loot/exception_page
     version: 0.1.4
 
+  http_proxy:
+    github: mamantoha/http_proxy
+    version: 0.7.1
+
   kemal:
     github: kemalcr/kemal
     version: 0.26.1

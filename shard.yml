@@ -32,3 +32,5 @@ dependencies:
     version: ~> 0.20.0
   myhtml:
     github: kostya/myhtml
+  http_proxy:
+    github: mamantoha/http_proxy
