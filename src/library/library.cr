@@ -92,7 +92,6 @@ class Library
                   "Attempting to create it"
       Dir.mkdir_p @dir
     end
-    @title_ids.clear
 
     storage = Storage.new auto_close: false
 
@@ -103,6 +102,7 @@ class Library
       .map { |path| Title.new path, "", storage, self }
       .select { |title| !(title.entries.empty? && title.titles.empty?) }
       .sort { |a, b| a.title <=> b.title }
+      .tap { |_| @title_ids.clear }
       .each do |title|
         @title_hash[title.id] = title
         @title_ids << title.id
