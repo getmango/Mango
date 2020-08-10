@@ -12,10 +12,10 @@ setup: libs
 	yarn gulp dev
 
 build: libs
-	crystal build src/mango.cr --release --progress
+	crystal build src/mango.cr --release --progress --error-trace
 
 static: uglify | libs
-	crystal build src/mango.cr --release --progress --static
+	crystal build src/mango.cr --release --progress --static --error-trace
 
 libs:
 	shards install --production
@@ -32,10 +32,10 @@ check:
 	./dev/linewidth.sh
 
 arm32v7:
-	crystal build src/mango.cr --release --progress --cross-compile --target='arm-linux-gnueabihf' -o mango-arm32v7
+	crystal build src/mango.cr --release --progress --error-trace --cross-compile --target='arm-linux-gnueabihf' -o mango-arm32v7
 
 arm64v8:
-	crystal build src/mango.cr --release --progress --cross-compile --target='aarch64-linux-gnu' -o mango-arm64v8
+	crystal build src/mango.cr --release --progress --error-trace --cross-compile --target='aarch64-linux-gnu' -o mango-arm64v8
 
 install:
 	cp mango $(INSTALL_DIR)/mango
