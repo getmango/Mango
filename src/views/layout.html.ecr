@@ -67,10 +67,13 @@
     </div>
     <div class="uk-section uk-section-small">
     </div>
-    <div class="uk-section uk-section-small">
+    <div class="uk-section uk-section-small" id="main-section">
       <div class="uk-container uk-container-small">
         <div id="alert"></div>
         <%= content %>
+        <div class="uk-visible@m" id="totop-wrapper" x-data="{}" x-show="$('body').height() > 1.5 * $(window).height()">
+          <a href="#" uk-totop uk-scroll></a>
+        </div>
       </div>
     </div>
     <script>

@@ -135,3 +135,20 @@ td>.uk-dropdown {
 #select-bar-controls a:hover {
     color: orange;
 }
+
+#main-section {
+    position: relative;
+}
+
+#totop-wrapper {
+    position: absolute;
+    top: 100vh;
+    right: 2em;
+    bottom: 0;
+}
+
+#totop-wrapper a {
+    position: fixed;
+    position: sticky;
+    top: calc(100vh - 5em);
+}
