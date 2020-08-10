@@ -139,8 +139,12 @@ Mobile UI:
 
 ![mobile screenshot](./.github/screenshots/mobile.png)
 
+## Sponsors
+
+<a href="https://casinoshunter.com/online-casinos/"><img src="https://i.imgur.com/EJb3wBo.png" width="150" height="auto"></a>
+
 ## Contributors
 
-Please check the [development guideline](https://github.com/hkalexling/Mango/wiki/Development) if you are interest in code contributions.
+Please check the [development guideline](https://github.com/hkalexling/Mango/wiki/Development) if you are interested in code contributions.
 
 [![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/0)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/0)[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/1)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/1)[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/2)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/2)[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/3)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/3)[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/4)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/4)[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/5)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/5)[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/6)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/6)[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/7)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/7)
