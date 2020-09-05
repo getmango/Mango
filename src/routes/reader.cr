@@ -13,10 +13,6 @@ class ReaderRouter < Router
 
         # load progress
         page = entry.load_progress username
-        # we go back 2 * `IMGS_PER_PAGE` pages. the infinite scroll
-        #   library perloads a few pages in advance, and the user
-        #   might not have actually read them
-        page = [page - 2 * IMGS_PER_PAGE, 1].max
 
         # start from page 1 if the user has finished reading the entry
         page = 1 if entry.finished? username
@@ -32,29 +28,17 @@ class ReaderRouter < Router
       begin
         base_url = Config.current.base_url
 
+        username = get_username env
+
         title = (@context.library.get_title env.params.url["title"]).not_nil!
         entry = (title.get_entry env.params.url["entry"]).not_nil!
         page = env.params.url["page"].to_i
         raise "" if page > entry.pages || page <= 0
 
-        # save progress
-        username = get_username env
-        entry.save_progress username, page
-
-        pages = (page...[entry.pages + 1, page + IMGS_PER_PAGE].min)
-        urls = pages.map { |idx|
-          "#{base_url}api/page/#{title.id}/#{entry.id}/#{idx}"
-        }
-        reader_urls = pages.map { |idx|
-          "#{base_url}reader/#{title.id}/#{entry.id}/#{idx}"
-        }
-        next_page = page + IMGS_PER_PAGE
-        next_url = next_entry_url = nil
         exit_url = "#{base_url}book/#{title.id}"
+
+        next_entry_url = nil
         next_entry = entry.next_entry username
-        unless next_page > entry.pages
-          next_url = "#{base_url}reader/#{title.id}/#{entry.id}/#{next_page}"
-        end
         unless next_entry.nil?
           next_entry_url = "#{base_url}reader/#{title.id}/#{next_entry.id}"
         end

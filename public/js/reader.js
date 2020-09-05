@@ -1,64 +1,62 @@
-$(function() {
-	function bind() {
-		var controller = new ScrollMagic.Controller();
+$(() => {
+	getPages();
 
-		// replace history on scroll
-		$('img').each(function(idx) {
-			var scene = new ScrollMagic.Scene({
-					triggerElement: $(this).get(),
-					triggerHook: 'onEnter',
-					reverse: true
-				})
-				.addTo(controller)
-				.on('enter', function(event) {
-					current = $(event.target.triggerElement()).attr('id');
-					replaceHistory(current);
-				})
-				.on('leave', function(event) {
-					var prev = $(event.target.triggerElement()).prev();
-					current = $(prev).attr('id');
-					replaceHistory(current);
-				});
-		});
+	$('#page-select').change(() => {
+		const p = parseInt($('#page-select').val());
+		toPage(p);
+	});
+});
 
-		// poor man's infinite scroll
-		var scene = new ScrollMagic.Scene({
-				triggerElement: $('.next-url').get(),
-				triggerHook: 'onEnter',
-				offset: -500
-			})
-			.addTo(controller)
-			.on('enter', function() {
-				var nextURL = $('.next-url').attr('href');
-				$('.next-url').remove();
-				if (!nextURL) {
-					console.log('No .next-url found. Reached end of page');
-					var lastURL = $('img').last().attr('id');
-					// load the reader URL for the last page to update reading progrss to 100%
-					$.get(lastURL);
-					$('#next-btn').removeAttr('hidden');
-					return;
-				}
-				$('#hidden').load(encodeURI(nextURL) + ' .uk-container', function(res, status, xhr) {
-					if (status === 'error') console.log(xhr.statusText);
-					if (status === 'success') {
-						console.log(nextURL + ' loaded');
-						// new page loaded to #hidden, we now append it
-						$('.uk-section > .uk-container').append($('#hidden .uk-container').children());
-						$('#hidden').empty();
-						bind();
-					}
-				});
+const getPages = () => {
+	$.get(`${base_url}api/dimensions/${tid}/${eid}`)
+		.then(data => {
+			if (!data.success && data.error)
+				throw new Error(resp.error);
+			const dimensions = data.dimensions;
+
+			const items = dimensions.map((d, i) => {
+				return {
+					id: i + 1,
+					url: `${base_url}api/page/${tid}/${eid}/${i+1}`,
+					width: d.width,
+					height: d.height
+				};
 			});
-	}
 
-	bind();
-});
-$('#page-select').change(function() {
-	jumpTo(parseInt($('#page-select').val()));
-});
+			setProp('items', items);
+			setProp('loading', false);
 
-function showControl(idx) {
+			waitForPage(items.length, () => {
+				toPage(page);
+				setupScroller();
+			});
+		})
+		.catch(e => {
+			const errMsg = `Failed to get the page dimensions. ${e}`;
+			console.error(e);
+			setProp('alertClass', 'uk-alert-danger');
+			setProp('msg', errMsg);
+		})
+};
+
+const toPage = (idx) => {
+	$(`#${idx}`).get(0).scrollIntoView(true);
+	UIkit.modal($('#modal-sections')).hide();
+};
+
+const waitForPage = (idx, cb) => {
+	if ($(`#${idx}`).length > 0) return cb();
+	setTimeout(() => {
+		waitForPage(idx, cb)
+	}, 100);
+};
+
+const setProp = (key, prop) => {
+	$('#root').get(0).__x.$data[key] = prop;
+};
+
+const showControl = (event) => {
+	const idx = parseInt($(event.currentTarget).attr('id'));
 	const pageCount = $('#page-select > option').length;
 	const progressText = `Progress: ${idx}/${pageCount} (${(idx/pageCount * 100).toFixed(1)}%)`;
 	$('#progress-label').text(progressText);
@@ -66,19 +64,43 @@ function showControl(idx) {
 	UIkit.modal($('#modal-sections')).show();
 }
 
-function jumpTo(page) {
-	var ary = window.location.pathname.split('/');
-	ary[ary.length - 1] = page;
-	ary.shift(); // remove leading `/`
-	ary.unshift(window.location.origin);
-	window.location.replace(ary.join('/'));
-}
-
-function replaceHistory(url) {
-	history.replaceState(null, "", url);
-	console.log('reading ' + url);
-}
-
-function redirect(url) {
+const redirect = (url) => {
 	window.location.replace(url);
 }
+
+const replaceHistory = (idx) => {
+	const ary = window.location.pathname.split('/');
+	ary[ary.length - 1] = idx;
+	ary.shift(); // remove leading `/`
+	ary.unshift(window.location.origin);
+	const url = ary.join('/');
+	saveProgress(idx);
+	history.replaceState(null, "", url);
+}
+
+const setupScroller = () => {
+	$('#root img').each((idx, el) => {
+		$(el).on('inview', (event, inView) => {
+			if (inView) {
+				const current = $(event.currentTarget).attr('id');
+				replaceHistory(current);
+			}
+		});
+	});
+};
+
+let lastSavedPage = page;
+const saveProgress = (idx) => {
+	if (Math.abs(idx - lastSavedPage) < 5) return;
+	lastSavedPage = idx;
+
+	const url = `${base_url}api/progress/${tid}/${idx}?${$.param({entry: eid})}`;
+	$.post(url)
+		.then(data => {
+			if (data.error) throw new Error(data.error);
+		})
+		.catch(e => {
+			console.error(e);
+			alert('danger', e);
+		});
+};

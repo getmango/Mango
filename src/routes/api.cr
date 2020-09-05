@@ -333,7 +333,7 @@ class APIRouter < Router
       end
     end
 
-    get "/api/ratios/:tid/:eid" do |env|
+    get "/api/dimensions/:tid/:eid" do |env|
       begin
         tid = env.params.url["tid"]
         eid = env.params.url["eid"]
@@ -343,10 +343,10 @@ class APIRouter < Router
         entry = title.get_entry eid
         raise "Entry ID `#{eid}` of `#{title.title}` not found" if entry.nil?
 
-        ratios = entry.page_aspect_ratios
+        sizes = entry.page_dimensions
         send_json env, {
-          "success" => true,
-          "ratios"  => ratios,
+          "success"    => true,
+          "dimensions" => sizes,
         }.to_json
       rescue e
         send_json env, {

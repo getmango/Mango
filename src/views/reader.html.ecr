@@ -6,21 +6,39 @@
   <body>
     <div class="uk-section uk-section-default uk-section-small reader-bg">
       <div class="uk-container uk-container-small">
-        <%- urls.each_with_index do |url, i| -%>
-          <img class="uk-align-center" data-src="<%= url %>" src="<%= base_url %>img/loading.gif" data-width data-height uk-img id="<%= reader_urls[i] %>" onclick="showControl(<%= pages.to_a[i] %>);">
-        <%- end -%>
-        <%- if next_url -%>
-          <a class="next-url" href="<%= next_url %>"></a>
-        <%- end -%>
+        <div id="alert"></div>
+        <div id="root" x-data="{
+        loading: true, 
+        msg: 'Loading the web reader. Please wait...',
+        alertClass: 'uk-alert-primary',
+        items: []
+        }">
+          <div x-show="loading">
+            <div :class="alertClass" x-show="msg" uk-alert>
+              <p x-text="msg"></p>
+            </div>
+          </div>
+          <div x-show="!loading" x-cloak>
+            <template x-for="item in items">
+              <img
+                      uk-img
+                      class="uk-align-center"
+                      :data-src="item.url"
+                      :width="item.width"
+                      :height="item.height"
+                      :id="item.id"
+                      @click="showControl($event)"
+                      />
+            </template>
+            <%- if next_entry_url -%>
+              <button id="next-btn" class="uk-align-center uk-button uk-button-primary" @click="redirect('<%= next_entry_url %>')">Next Entry</button>
+            <%- else -%>
+              <button id="next-btn" class="uk-align-center uk-button uk-button-primary" @click="redirect('<%= exit_url %>')">Exit Reader</button>
+            <%- end -%>
+          </div>
+        </div>
       </div>
-      <%- if next_entry_url -%>
-        <button id="next-btn" class="uk-align-center uk-button uk-button-primary" hidden onclick="redirect('<%= next_entry_url %>')">Next Entry</button>
-      <%- else -%>
-        <button id="next-btn" class="uk-align-center uk-button uk-button-primary" hidden onclick="redirect('<%= exit_url %>')">Exit Reader</button>
-      <%- end -%>
     </div>
-
-    <div id="hidden" hidden></div>
 
     <div id="modal-sections" class="uk-flex-top" uk-modal>
       <div class="uk-modal-dialog uk-margin-auto-vertical">
@@ -49,14 +67,23 @@
         </div>
       </div>
     </div>
+
     <script>
-      const base_url = "<%= base_url %>"
+      const base_url = "<%= base_url %>";
+      const page = <%= page %>;
+      const tid = "<%= title.id %>";
+      const eid = "<%= entry.id %>";
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/ScrollMagic.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/protonet-jquery.inview/1.1.2/jquery.inview.min.js"></script>
+    <script src="<%= base_url %>js/alert.js"></script>
     <script src="<%= base_url %>js/uikit.min.js"></script>
     <script src="<%= base_url %>js/uikit-icons.min.js"></script>
     <script src="<%= base_url %>js/reader.js"></script>
   </body>
+
+  <style>
+img[data-src][src*='data:image'] { background: white; }
+#root img { width: 100%; }
+  </style>
 
 </html>

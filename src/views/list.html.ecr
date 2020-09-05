@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html class="reader-bg">
+
+  <%= render_component "head" %>
+
+  <body>
+    <div class="uk-section uk-section-default uk-section-small reader-bg">
+      <div class="uk-container uk-container-small" id="container">
+      </div>
+    </div>
+
+    <script>
+      const base_url = "<%= base_url %>"
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/ScrollMagic.min.js"></script>
+    <script src="<%= base_url %>js/uikit.min.js"></script>
+    <script src="<%= base_url %>js/uikit-icons.min.js"></script>
+    <script src="<%= base_url %>js/hyperlist.js"></script>
+    <script>
+      const container = $('#container').get(0);
+      const list = new HyperList(container, {
+        itemHeight: 500,
+        total: 38,
+        generate(idx) {
+          const el = document.createElement('img');
+          el.setAttribute('class', 'uk-align-center');
+          el.setAttribute('data-src', `/api/page/364cdcf8c17340ba95a20862dbcbe934/786fb3d0fb0c4675a34efb0019b62c4e/${idx+1}`);
+          el.setAttribute('data-width', '');
+          el.setAttribute('data-height', '');
+          el.setAttribute('uk-img', '');
+          return {
+            height: 500,
+            element: el
+          };
+        }
+      });
+    </script>
+  </body>
+
+</html>

@@ -101,8 +101,8 @@ class Entry
     img
   end
 
-  def page_aspect_ratios
-    ratios = [] of Float64
+  def page_dimensions
+    sizes = [] of Hash(String, Int32)
     ArchiveFile.open @zip_path do |file|
       file.entries
         .select { |e|
@@ -116,14 +116,17 @@ class Entry
           begin
             data = file.read_entry(e).not_nil!
             size = ImageSize.get data
-            ratios << size.height / size.width
+            sizes << {
+              "width"  => size.width,
+              "height" => size.height,
+            }
           rescue
             Logger.warn "Failed to read page #{i} of entry #{@id}"
-            ratios << 1_f64
+            sizes << {"width" => 1000_i32, "height" => 1000_i32}
           end
         end
     end
-    ratios
+    sizes
   end
 
   def next_entry(username)
