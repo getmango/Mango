@@ -34,3 +34,5 @@ dependencies:
     github: kostya/myhtml
   http_proxy:
     github: mamantoha/http_proxy
+  image_size:
+   github: hkalexling/image_size.cr

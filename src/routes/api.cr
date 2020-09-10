@@ -332,5 +332,28 @@ class APIRouter < Router
         }.to_json
       end
     end
+
+    get "/api/ratios/:tid/:eid" do |env|
+      begin
+        tid = env.params.url["tid"]
+        eid = env.params.url["eid"]
+
+        title = @context.library.get_title tid
+        raise "Title ID `#{tid}` not found" if title.nil?
+        entry = title.get_entry eid
+        raise "Entry ID `#{eid}` of `#{title.title}` not found" if entry.nil?
+
+        ratios = entry.page_aspect_ratios
+        send_json env, {
+          "success" => true,
+          "ratios"  => ratios,
+        }.to_json
+      rescue e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
   end
 end

@@ -32,6 +32,10 @@ shards:
     github: mamantoha/http_proxy
     version: 0.7.1
 
+  image_size:
+    github: hkalexling/image_size.cr
+    version: 0.1.1
+
   kemal:
     github: kemalcr/kemal
     version: 0.26.1

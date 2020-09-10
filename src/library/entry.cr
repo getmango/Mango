@@ -1,3 +1,5 @@
+require "image_size"
+
 class Entry
   property zip_path : String, book : Title, title : String,
     size : String, pages : Int32, id : String, encoded_path : String,
@@ -97,6 +99,31 @@ class Entry
       end
     end
     img
+  end
+
+  def page_aspect_ratios
+    ratios = [] of Float64
+    ArchiveFile.open @zip_path do |file|
+      file.entries
+        .select { |e|
+          SUPPORTED_IMG_TYPES.includes? \
+            MIME.from_filename? e.filename
+        }
+        .sort { |a, b|
+          compare_numerically a.filename, b.filename
+        }
+        .each_with_index do |e, i|
+          begin
+            data = file.read_entry(e).not_nil!
+            size = ImageSize.get data
+            ratios << size.height / size.width
+          rescue
+            Logger.warn "Failed to read page #{i} of entry #{@id}"
+            ratios << 1_f64
+          end
+        end
+    end
+    ratios
   end
 
   def next_entry(username)
