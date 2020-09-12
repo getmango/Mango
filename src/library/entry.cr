@@ -79,11 +79,9 @@ class Entry
     url
   end
 
-  def read_page(page_num)
-    raise "Unreadble archive. #{@err_msg}" if @err_msg
-    img = nil
+  private def sorted_archive_entries
     ArchiveFile.open @zip_path do |file|
-      page = file.entries
+      entries = file.entries
         .select { |e|
           SUPPORTED_IMG_TYPES.includes? \
             MIME.from_filename? e.filename
@@ -91,7 +89,15 @@ class Entry
         .sort { |a, b|
           compare_numerically a.filename, b.filename
         }
-        .[page_num - 1]
+      yield file, entries
+    end
+  end
+
+  def read_page(page_num)
+    raise "Unreadble archive. #{@err_msg}" if @err_msg
+    img = nil
+    sorted_archive_entries do |file, entries|
+      page = entries[page_num - 1]
       data = file.read_entry page
       if data
         img = Image.new data, MIME.from_filename(page.filename), page.filename,
@@ -103,28 +109,20 @@ class Entry
 
   def page_dimensions
     sizes = [] of Hash(String, Int32)
-    ArchiveFile.open @zip_path do |file|
-      file.entries
-        .select { |e|
-          SUPPORTED_IMG_TYPES.includes? \
-            MIME.from_filename? e.filename
-        }
-        .sort { |a, b|
-          compare_numerically a.filename, b.filename
-        }
-        .each_with_index do |e, i|
-          begin
-            data = file.read_entry(e).not_nil!
-            size = ImageSize.get data
-            sizes << {
-              "width"  => size.width,
-              "height" => size.height,
-            }
-          rescue
-            Logger.warn "Failed to read page #{i} of entry #{@id}"
-            sizes << {"width" => 1000_i32, "height" => 1000_i32}
-          end
+    sorted_archive_entries do |file, entries|
+      entries.each_with_index do |e, i|
+        begin
+          data = file.read_entry(e).not_nil!
+          size = ImageSize.get data
+          sizes << {
+            "width"  => size.width,
+            "height" => size.height,
+          }
+        rescue
+          Logger.warn "Failed to read page #{i} of entry #{@id}"
+          sizes << {"width" => 1000_i32, "height" => 1000_i32}
         end
+      end
     end
     sizes
   end
