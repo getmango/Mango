@@ -7,6 +7,20 @@ $(() => {
 	});
 });
 
+/**
+ * Set an alpine.js property
+ *
+ * @function setProp
+ * @param {string} key - Key of the data property
+ * @param {*} prop - The data property
+ */
+const setProp = (key, prop) => {
+	$('#root').get(0).__x.$data[key] = prop;
+};
+
+/**
+ * Get dimension of the pages in the entry from the API and update the view
+ */
 const getPages = () => {
 	$.get(`${base_url}api/dimensions/${tid}/${eid}`)
 		.then(data => {
@@ -39,11 +53,24 @@ const getPages = () => {
 		})
 };
 
+/**
+ * Jump to a specific page
+ *
+ * @function toPage
+ * @param {number} idx - One-based index of the page
+ */
 const toPage = (idx) => {
 	$(`#${idx}`).get(0).scrollIntoView(true);
 	UIkit.modal($('#modal-sections')).hide();
 };
 
+/**
+ * Check if a page exists every 100ms. If so, invoke the callback function.
+ *
+ * @function waitForPage
+ * @param {number} idx - One-based index of the page
+ * @param {function} cb - Callback function
+ */
 const waitForPage = (idx, cb) => {
 	if ($(`#${idx}`).length > 0) return cb();
 	setTimeout(() => {
@@ -51,10 +78,12 @@ const waitForPage = (idx, cb) => {
 	}, 100);
 };
 
-const setProp = (key, prop) => {
-	$('#root').get(0).__x.$data[key] = prop;
-};
-
+/**
+ * Show the control modal
+ *
+ * @function showControl
+ * @param {object} event - The onclick event that triggers the function
+ */
 const showControl = (event) => {
 	const idx = parseInt($(event.currentTarget).attr('id'));
 	const pageCount = $('#page-select > option').length;
@@ -64,10 +93,22 @@ const showControl = (event) => {
 	UIkit.modal($('#modal-sections')).show();
 }
 
+/**
+ * Redirect to a URL
+ *
+ * @function redirect
+ * @param {string} url - The target URL
+ */
 const redirect = (url) => {
 	window.location.replace(url);
 }
 
+/**
+ * Replace the address bar history and save th ereading progress if necessary
+ *
+ * @function replaceHistory
+ * @param {number} idx - One-based index of the current page
+ */
 const replaceHistory = (idx) => {
 	const ary = window.location.pathname.split('/');
 	ary[ary.length - 1] = idx;
@@ -78,6 +119,12 @@ const replaceHistory = (idx) => {
 	history.replaceState(null, "", url);
 }
 
+/**
+ * Set up the scroll handler that calls `replaceHistory` when an image
+ * 		enters the view port
+ *
+ * @function setupScroller
+ */
 const setupScroller = () => {
 	$('#root img').each((idx, el) => {
 		$(el).on('inview', (event, inView) => {
@@ -90,6 +137,14 @@ const setupScroller = () => {
 };
 
 let lastSavedPage = page;
+
+/**
+ * Update the backend reading progress if the current page is more than
+ * 		five pages away from the last saved page
+ *
+ * @function saveProgress
+ * @param {number} idx - One-based index of the page
+ */
 const saveProgress = (idx) => {
 	if (Math.abs(idx - lastSavedPage) < 5) return;
 	lastSavedPage = idx;
