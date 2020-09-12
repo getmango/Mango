@@ -2,9 +2,9 @@ def validate_username(username)
   if username.size < 3
     raise "Username should contain at least 3 characters"
   end
-  if (username =~ /^[A-Za-z0-9_]+$/).nil?
-    raise "Username should contain alphanumeric characters " \
-          "and underscores only"
+  if (username =~ /^[a-zA-Z_][a-zA-Z0-9_\-]*$/).nil?
+    raise "Username can only contain alphanumeric characters, " \
+          "underscores, and hyphens"
   end
 end
 
