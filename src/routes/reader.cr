@@ -12,7 +12,7 @@ class ReaderRouter < Router
         next layout "reader-error" if entry.err_msg
 
         # load progress
-        page = entry.load_progress username
+        page = [1, entry.load_progress username].max
 
         # start from page 1 if the user has finished reading the entry
         page = 1 if entry.finished? username
