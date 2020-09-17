@@ -8,6 +8,16 @@ gulp.task('copy-uikit-js', () => {
 		.pipe(gulp.dest('public/js'));
 });
 
+gulp.task('copy-fontawesome', () => {
+	return gulp.src([
+			'node_modules/@fortawesome/fontawesome-free/js/fontawesome.min.js',
+			'node_modules/@fortawesome/fontawesome-free/js/solid.min.js'
+		])
+		.pipe(gulp.dest('public/js'));
+});
+
+gulp.task('copy-js', gulp.series('copy-uikit-js', 'copy-fontawesome'));
+
 gulp.task('minify-js', () => {
 	return gulp.src('public/js/*.js')
 		.pipe(minify({
@@ -45,12 +55,12 @@ gulp.task('copy-files', () => {
 });
 
 gulp.task('default', gulp.parallel(
-	gulp.series('copy-uikit-js', 'minify-js'),
+	gulp.series('copy-js', 'minify-js'),
 	gulp.series('less', 'minify-css'),
 	gulp.series('copy-uikit-icons', 'img'),
 	'copy-files'
 ));
 
 gulp.task('dev', gulp.parallel(
-	'copy-uikit-js', 'less', 'copy-uikit-icons'
+	'copy-js', 'less', 'copy-uikit-icons'
 ));

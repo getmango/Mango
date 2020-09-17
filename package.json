@@ -16,6 +16,7 @@
     "uglify": "gulp"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.14.0",
     "uikit": "^3.5.4"
   }
 }
