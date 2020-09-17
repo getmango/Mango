@@ -4,7 +4,10 @@ const minifyCss = require('gulp-minify-css');
 const less = require('gulp-less');
 
 gulp.task('copy-uikit-js', () => {
-	return gulp.src('node_modules/uikit/dist/js/*.min.js')
+	return gulp.src([
+			'node_modules/uikit/dist/js/uikit.min.js',
+			'node_modules/uikit/dist/js/uikit-icons.min.js'
+		])
 		.pipe(gulp.dest('public/js'));
 });
 
