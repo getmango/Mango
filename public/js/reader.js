@@ -1,3 +1,7 @@
+let lastSavedPage = page;
+let items = [];
+let longPages = false;
+
 $(() => {
 	getPages();
 
@@ -28,7 +32,7 @@ const getPages = () => {
 				throw new Error(resp.error);
 			const dimensions = data.dimensions;
 
-			const items = dimensions.map((d, i) => {
+			items = dimensions.map((d, i) => {
 				return {
 					id: i + 1,
 					url: `${base_url}api/page/${tid}/${eid}/${i+1}`,
@@ -36,6 +40,13 @@ const getPages = () => {
 					height: d.height
 				};
 			});
+
+			const avgRatio = items.reduce((acc, cur) => {
+				return acc + cur.height / cur.width
+			}, 0) / items.length;
+
+			console.log(avgRatio);
+			longPages = avgRatio > 2;
 
 			setProp('items', items);
 			setProp('loading', false);
@@ -136,26 +147,49 @@ const setupScroller = () => {
 	});
 };
 
-let lastSavedPage = page;
-
 /**
- * Update the backend reading progress if the current page is more than
- * 		five pages away from the last saved page
+ * Update the backend reading progress if:
+ * 		1) the current page is more than five pages away from the last 
+ * 			saved page, or
+ * 		2) the average height/width ratio of the pages is over 2, or
+ * 		3) the current page is the first page, or
+ * 		4) the current page is the last page
  *
  * @function saveProgress
  * @param {number} idx - One-based index of the page
+ * @param {function} cb - Callback
  */
-const saveProgress = (idx) => {
-	if (Math.abs(idx - lastSavedPage) < 5) return;
-	lastSavedPage = idx;
+const saveProgress = (idx, cb) => {
+	idx = parseInt(idx);
+	if (Math.abs(idx - lastSavedPage) >= 5 ||
+		longPages ||
+		idx === 1 || idx === items.length
+	) {
+		lastSavedPage = idx;
+		console.log('saving progress', idx);
 
-	const url = `${base_url}api/progress/${tid}/${idx}?${$.param({entry: eid})}`;
-	$.post(url)
-		.then(data => {
-			if (data.error) throw new Error(data.error);
-		})
-		.catch(e => {
-			console.error(e);
-			alert('danger', e);
-		});
+		const url = `${base_url}api/progress/${tid}/${idx}?${$.param({entry: eid})}`;
+		$.post(url)
+			.then(data => {
+				if (data.error) throw new Error(data.error);
+				if (cb) cb();
+			})
+			.catch(e => {
+				console.error(e);
+				alert('danger', e);
+			});
+	}
+};
+
+/**
+ * Mark progress to 100% and redirect to the next entry
+ * 	Used as the onclick handler for the "Next Entry" button
+ *
+ * @function nextEntry
+ * @param {string} nextUrl - URL of the next entry
+ */
+const nextEntry = (nextUrl) => {
+	saveProgress(items.length, () => {
+		redirect(nextUrl);
+	});
 };

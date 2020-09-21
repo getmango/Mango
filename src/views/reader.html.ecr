@@ -31,7 +31,7 @@
                       />
             </template>
             <%- if next_entry_url -%>
-              <button id="next-btn" class="uk-align-center uk-button uk-button-primary" @click="redirect('<%= next_entry_url %>')">Next Entry</button>
+              <button id="next-btn" class="uk-align-center uk-button uk-button-primary" @click="nextEntry('<%= next_entry_url %>')">Next Entry</button>
             <%- else -%>
               <button id="next-btn" class="uk-align-center uk-button uk-button-primary" @click="redirect('<%= exit_url %>')">Exit Reader</button>
             <%- end -%>
