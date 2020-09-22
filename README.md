@@ -142,6 +142,7 @@ Mobile UI:
 ## Sponsors
 
 <a href="https://casinoshunter.com/online-casinos/"><img src="https://i.imgur.com/EJb3wBo.png" width="150" height="auto"></a>
+<a href="https://www.browserstack.com/open-source"><img src="https://i.imgur.com/hGJUJXD.png" width="150" height="auto"></a>
 
 ## Contributors
 
