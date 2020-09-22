@@ -7,9 +7,12 @@
   <link rel="stylesheet" href="<%= base_url %>css/uikit.css" />
   <link rel="stylesheet" href="<%= base_url %>css/mango.css" />
   <link rel="icon" href="<%= base_url %>favicon.ico">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=matchMedia%2Cdefault&flags=gated"></script>
   <script defer src="<%= base_url %>js/fontawesome.min.js"></script>
   <script defer src="<%= base_url %>js/solid.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.5.0/dist/alpine.min.js" defer></script>
+  <script type="module" src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.5.0/dist/alpine.min.js"></script>
+  <script nomodule src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.5.0/dist/alpine-ie11.min.js" defer></script>
   <script src="<%= base_url %>js/theme.js"></script>
 </head>

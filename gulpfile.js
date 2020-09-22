@@ -1,5 +1,6 @@
 const gulp = require('gulp');
-const minify = require("gulp-babel-minify");
+const babel = require('gulp-babel');
+const minify = require('gulp-babel-minify');
 const minifyCss = require('gulp-minify-css');
 const less = require('gulp-less');
 
@@ -21,8 +22,16 @@ gulp.task('copy-fontawesome', () => {
 
 gulp.task('copy-js', gulp.series('copy-uikit-js', 'copy-fontawesome'));
 
-gulp.task('minify-js', () => {
-	return gulp.src('public/js/*.js')
+gulp.task('babel', () => {
+	return gulp.src(['public/js/*.js'])
+		.pipe(babel({
+			presets: [
+				['@babel/preset-env', {
+					debug: true,
+					targets: '>0.25%, not dead, ios>=9'
+				}]
+			],
+		}))
 		.pipe(minify({
 			removeConsole: true,
 			builtIns: false
@@ -58,7 +67,7 @@ gulp.task('copy-files', () => {
 });
 
 gulp.task('default', gulp.parallel(
-	gulp.series('copy-js', 'minify-js'),
+	gulp.series('copy-js', 'babel'),
 	gulp.series('less', 'minify-css'),
 	gulp.series('copy-uikit-icons', 'img'),
 	'copy-files'
