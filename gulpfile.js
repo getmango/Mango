@@ -4,30 +4,36 @@ const minify = require('gulp-babel-minify');
 const minifyCss = require('gulp-minify-css');
 const less = require('gulp-less');
 
-gulp.task('copy-uikit-js', () => {
+// Copy libraries from node_moduels to public/js
+gulp.task('copy-js', () => {
 	return gulp.src([
+			'node_modules/@fortawesome/fontawesome-free/js/fontawesome.min.js',
+			'node_modules/@fortawesome/fontawesome-free/js/solid.min.js',
 			'node_modules/uikit/dist/js/uikit.min.js',
 			'node_modules/uikit/dist/js/uikit-icons.min.js'
 		])
 		.pipe(gulp.dest('public/js'));
 });
 
-gulp.task('copy-fontawesome', () => {
-	return gulp.src([
-			'node_modules/@fortawesome/fontawesome-free/js/fontawesome.min.js',
-			'node_modules/@fortawesome/fontawesome-free/js/solid.min.js'
-		])
-		.pipe(gulp.dest('public/js'));
+// Copy UIKit SVG icons to public/img
+gulp.task('copy-uikit-icons', () => {
+	return gulp.src('node_modules/uikit/src/images/backgrounds/*.svg')
+		.pipe(gulp.dest('public/img'));
 });
 
-gulp.task('copy-js', gulp.series('copy-uikit-js', 'copy-fontawesome'));
+// Compile less
+gulp.task('less', () => {
+	return gulp.src('public/css/*.less')
+		.pipe(less())
+		.pipe(gulp.dest('public/css'));
+});
 
+// Transpile and minify JS files and output to dist
 gulp.task('babel', () => {
-	return gulp.src(['public/js/*.js'])
+	return gulp.src(['public/js/*.js', '!public/js/*.min.js'])
 		.pipe(babel({
 			presets: [
 				['@babel/preset-env', {
-					debug: true,
 					targets: '>0.25%, not dead, ios>=9'
 				}]
 			],
@@ -39,40 +45,26 @@ gulp.task('babel', () => {
 		.pipe(gulp.dest('dist/js'));
 });
 
-gulp.task('less', () => {
-	return gulp.src('public/css/*.less')
-		.pipe(less())
-		.pipe(gulp.dest('public/css'));
-});
-
+// Minify CSS and output to dist
 gulp.task('minify-css', () => {
 	return gulp.src('public/css/*.css')
 		.pipe(minifyCss())
 		.pipe(gulp.dest('dist/css'));
 });
 
-gulp.task('copy-uikit-icons', () => {
-	return gulp.src('node_modules/uikit/src/images/backgrounds/*.svg')
-		.pipe(gulp.dest('public/img'));
-});
-
-gulp.task('img', () => {
-	return gulp.src('public/img/*')
-		.pipe(gulp.dest('dist/img'));
-});
-
+// Copy static files (includeing images) to dist
 gulp.task('copy-files', () => {
-	return gulp.src('public/*.*')
+	return gulp.src(['public/img/*', 'public/*.*', 'public/js/*.min.js'], {
+			base: 'public'
+		})
 		.pipe(gulp.dest('dist'));
 });
 
-gulp.task('default', gulp.parallel(
-	gulp.series('copy-js', 'babel'),
-	gulp.series('less', 'minify-css'),
-	gulp.series('copy-uikit-icons', 'img'),
-	'copy-files'
-));
+// Set up the public folder for development
+gulp.task('dev', gulp.parallel('copy-js', 'copy-uikit-icons', 'less'));
 
-gulp.task('dev', gulp.parallel(
-	'copy-js', 'less', 'copy-uikit-icons'
-));
+// Set up the dist folder for deployment
+gulp.task('deploy', gulp.parallel('babel', 'minify-css', 'copy-files'));
+
+// Default task
+gulp.task('default', gulp.series('dev', 'deploy'));
