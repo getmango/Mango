@@ -5,11 +5,67 @@ let longPages = false;
 $(() => {
 	getPages();
 
+	const storedMode = localStorage.getItem('mode') || 'continuous';
+
+	setProp('mode', storedMode);
+	updateMode(storedMode, page);
+	$('#mode-select').val(storedMode);
+
 	$('#page-select').change(() => {
 		const p = parseInt($('#page-select').val());
 		toPage(p);
 	});
+
+	$('#mode-select').change(() => {
+		const mode = $('#mode-select').val();
+		const curIdx = parseInt($('#page-select').val());
+
+		updateMode(mode, curIdx);
+	});
 });
+
+$(window).resize(() => {
+	const mode = getProp('mode');
+	if (mode === 'continuous') return;
+
+	const wideScreen = $(window).width() > $(window).height();
+	const propMode = wideScreen ? 'height' : 'width';
+	setProp('mode', propMode);
+});
+
+/**
+ * Update the reader mode
+ *
+ * @function updateMode
+ * @param {string} mode - The mode. Can be one of the followings:
+ * 		{'continuous', 'paged', 'height', 'width'}
+ * @param {number} targetPage - The one-based index of the target page
+ */
+const updateMode = (mode, targetPage) => {
+	localStorage.setItem('mode', mode);
+
+	// The mode to be put into the `mode` prop. It can't be `screen`
+	let propMode = mode;
+
+	if (mode === 'paged') {
+		const wideScreen = $(window).width() > $(window).height();
+		propMode = wideScreen ? 'height' : 'width';
+	}
+
+	setProp('mode', propMode);
+
+	if (mode === 'continuous') {
+		waitForPage(items.length, () => {
+			setupScroller();
+		});
+	}
+
+	waitForPage(targetPage, () => {
+		setTimeout(() => {
+			toPage(targetPage);
+		}, 100);
+	});
+};
 
 /**
  * Set an alpine.js property
@@ -20,6 +76,17 @@ $(() => {
  */
 const setProp = (key, prop) => {
 	$('#root').get(0).__x.$data[key] = prop;
+};
+
+/**
+ * Get an alpine.js property
+ *
+ * @function getProp
+ * @param {string} key - Key of the data property
+ * @return {*} The data property
+ */
+const getProp = (key) => {
+	return $('#root').get(0).__x.$data[key];
 };
 
 /**
@@ -50,11 +117,6 @@ const getPages = () => {
 
 			setProp('items', items);
 			setProp('loading', false);
-
-			waitForPage(items.length, () => {
-				toPage(page);
-				setupScroller();
-			});
 		})
 		.catch(e => {
 			const errMsg = `Failed to get the page dimensions. ${e}`;
@@ -71,7 +133,15 @@ const getPages = () => {
  * @param {number} idx - One-based index of the page
  */
 const toPage = (idx) => {
-	$(`#${idx}`).get(0).scrollIntoView(true);
+	const mode = getProp('mode');
+	if (mode === 'continuous') {
+		$(`#${idx}`).get(0).scrollIntoView(true);
+	} else {
+		if (idx >= 1 && idx <= items.length) {
+			setProp('curItem', items[idx - 1]);
+		}
+	}
+	replaceHistory(idx);
 	UIkit.modal($('#modal-sections')).hide();
 };
 
@@ -137,6 +207,8 @@ const replaceHistory = (idx) => {
  * @function setupScroller
  */
 const setupScroller = () => {
+	const mode = getProp('mode');
+	if (mode !== 'continuous') return;
 	$('#root img').each((idx, el) => {
 		$(el).on('inview', (event, inView) => {
 			if (inView) {
@@ -192,4 +264,31 @@ const nextEntry = (nextUrl) => {
 	saveProgress(items.length, () => {
 		redirect(nextUrl);
 	});
+};
+
+/**
+ * Show the next or the previous page
+ *
+ * @function flipPage
+ * @param {bool} isNext - Whether we are going to the next page
+ */
+const flipPage = (isNext) => {
+	const curItem = getProp('curItem');
+	const idx = parseInt(curItem.id);
+	const delta = isNext ? 1 : -1;
+	const newIdx = idx + delta;
+
+	toPage(newIdx);
+
+	if (isNext)
+		setProp('flipAnimation', 'right');
+	else
+		setProp('flipAnimation', 'left');
+
+	setTimeout(() => {
+		setProp('flipAnimation', null);
+	}, 500);
+
+	replaceHistory(newIdx);
+	saveProgress(newIdx);
 };

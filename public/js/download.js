@@ -95,7 +95,7 @@ const search = () => {
 
 	try {
 		const path = new URL(input).pathname;
-		const match = /\/title\/([0-9]+)/.exec(path);
+		const match = /\/(?:title|manga)\/([0-9]+)/.exec(path);
 		int_id = parseInt(match[1]);
 	} catch (e) {
 		int_id = parseInt(input);

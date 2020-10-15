@@ -5,7 +5,7 @@ require "http_proxy"
 module HTTP
   class Client
     private def self.exec(uri : URI, tls : TLSContext = nil)
-      Logger.debug "Using monkey-patched HTTP::Client"
+      Logger.debug "Setting proxy"
       previous_def uri, tls do |client, path|
         client.set_proxy get_proxy uri
         yield client, path

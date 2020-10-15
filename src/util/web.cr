@@ -81,3 +81,15 @@ macro get_sort_opt
     sort_opt = SortOptions.new sort_method, is_ascending
   end
 end
+
+module HTTP
+  class Client
+    private def self.exec(uri : URI, tls : TLSContext = nil)
+      Logger.debug "Setting read timeout"
+      previous_def uri, tls do |client, path|
+        client.read_timeout = Config.current.download_timeout_seconds.seconds
+        yield client, path
+      end
+    end
+  end
+end

@@ -3,40 +3,66 @@
 
   <%= render_component "head" %>
 
-  <body>
-    <div class="uk-section uk-section-default uk-section-small reader-bg">
+  <body style="position:relative;">
+    <div class="uk-section uk-section-default uk-section-small reader-bg"
+         id="root" 
+         :style="mode === 'continuous' ? '' : 'padding:0'"
+         x-data="{
+         loading: true, 
+         mode: 'continuous', // can be 'continuous', 'height' or 'width'
+         msg: 'Loading the web reader. Please wait...',
+         alertClass: 'uk-alert-primary',
+         items: [],
+         curItem: {},
+         flipAnimation: null
+         }">
+
       <div class="uk-container uk-container-small">
         <div id="alert"></div>
-        <div id="root" x-data="{
-        loading: true, 
-        msg: 'Loading the web reader. Please wait...',
-        alertClass: 'uk-alert-primary',
-        items: []
-        }">
-          <div x-show="loading">
-            <div :class="alertClass" x-show="msg" uk-alert>
-              <p x-text="msg"></p>
-            </div>
-          </div>
-          <div x-show="!loading" x-cloak>
-            <template x-for="item in items">
-              <img
-                      uk-img
-                      class="uk-align-center"
-                      :data-src="item.url"
-                      :width="item.width"
-                      :height="item.height"
-                      :id="item.id"
-                      @click="showControl($event)"
-                      />
-            </template>
-            <%- if next_entry_url -%>
-              <button id="next-btn" class="uk-align-center uk-button uk-button-primary" @click="nextEntry('<%= next_entry_url %>')">Next Entry</button>
-            <%- else -%>
-              <button id="next-btn" class="uk-align-center uk-button uk-button-primary" @click="redirect('<%= exit_url %>')">Exit Reader</button>
-            <%- end -%>
+        <div x-show="loading">
+          <div :class="alertClass" x-show="msg" uk-alert>
+            <p x-text="msg"></p>
           </div>
         </div>
+      </div>
+
+      <div
+               :class="{'uk-container': true, 'uk-container-small': mode === 'continuous', 'uk-container-expand': mode !== 'continuous'}">
+        <div x-show="!loading && mode === 'continuous'" x-cloak>
+          <template x-for="item in items">
+            <img
+                    uk-img
+                    class="uk-align-center"
+                    :data-src="item.url"
+                    :width="item.width"
+                    :height="item.height"
+                    :id="item.id"
+                    @click="showControl($event)"
+                    />
+          </template>
+          <%- if next_entry_url -%>
+            <button id="next-btn" class="uk-align-center uk-button uk-button-primary" @click="nextEntry('<%= next_entry_url %>')">Next Entry</button>
+          <%- else -%>
+            <button id="next-btn" class="uk-align-center uk-button uk-button-primary" @click="redirect('<%= exit_url %>')">Exit Reader</button>
+          <%- end -%>
+        </div>
+
+        <div x-cloak x-show="!loading && mode !== 'continuous'" class="uk-flex uk-flex-middle" style="height:100vh">
+
+          <img uk-img :class="{
+          'uk-align-center': true, 
+          'uk-animation-slide-left': flipAnimation === 'left', 
+          'uk-animation-slide-right': flipAnimation === 'right'
+          }" :data-src="curItem.url" :width="curItem.width" :height="curItem.height" :id="curItem.id" @click="showControl($event)" :style="`
+          width:${mode === 'width' ? '100vw' : 'auto'}; 
+          height:${mode === 'height' ? '100vh' : 'auto'}; 
+          margin-bottom:0;
+          `" />
+
+          <div style="position:absolute;z-index:1; top:0;left:0; width:30%;height:100%;" @click="flipPage(false)"></div>
+          <div style="position:absolute;z-index:1; top:0;right:0; width:30%;height:100%;" @click="flipPage(true)"></div>
+        </div>
+
       </div>
     </div>
 
@@ -52,12 +78,21 @@
             <p id="progress-label"></p>
           </div>
           <div class="uk-margin">
-            <label class="uk-form-label" for="form-stacked-select">Jump to page</label>
+            <label class="uk-form-label" for="page-select">Jump to page</label>
             <div class="uk-form-controls">
               <select id="page-select" class="uk-select">
                 <%- (1..entry.pages).each do |p| -%>
                   <option value="<%= p %>"><%= p %></option>
                 <%- end -%>
+              </select>
+            </div>
+          </div>
+          <div class="uk-margin">
+            <label class="uk-form-label" for="mode-select">Mode</label>
+            <div class="uk-form-controls">
+              <select id="mode-select" class="uk-select">
+                <option value="continuous">Continuous</option>
+                <option value="paged">Paged</option>
               </select>
             </div>
           </div>
