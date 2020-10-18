@@ -51,7 +51,7 @@ The official docker images are available on [Dockerhub](https://hub.docker.com/r
 ### CLI
 
 ```
-  Mango - Manga Server and Web Reader. Version 0.12.3
+  Mango - Manga Server and Web Reader. Version 0.13.0
 
   Usage:
 
