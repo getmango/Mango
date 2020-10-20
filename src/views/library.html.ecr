@@ -24,8 +24,7 @@
 </div>
 
 <% content_for "script" do %>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery.dotdotdot/4.0.11/dotdotdot.js"></script>
-  <script src="<%= base_url %>js/dots.js"></script>
+  <%= render_component "dots-scripts" %>
   <script src="<%= base_url %>js/search.js"></script>
   <script src="<%= base_url %>js/sort-items.js"></script>
 <% end %>
