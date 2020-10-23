@@ -34,7 +34,7 @@ shards:
 
   image_size:
     github: hkalexling/image_size.cr
-    version: 0.2.0
+    version: 0.4.0
 
   kemal:
     github: kemalcr/kemal
