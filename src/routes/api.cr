@@ -26,6 +26,28 @@ class APIRouter < Router
       end
     end
 
+    get "/api/cover/:tid/:eid" do |env|
+      begin
+        tid = env.params.url["tid"]
+        eid = env.params.url["eid"]
+
+        title = @context.library.get_title tid
+        raise "Title ID `#{tid}` not found" if title.nil?
+        entry = title.get_entry eid
+        raise "Entry ID `#{eid}` of `#{title.title}` not found" if entry.nil?
+
+        img = entry.get_thumbnail || entry.read_page 1
+        raise "Failed to get cover of `#{title.title}/#{entry.title}`" \
+           if img.nil?
+
+        send_img env, img
+      rescue e
+        @context.error e
+        env.response.status_code = 500
+        e.message
+      end
+    end
+
     get "/api/book/:tid" do |env|
       begin
         tid = env.params.url["tid"]
