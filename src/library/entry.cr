@@ -213,11 +213,17 @@ class Entry
 
     img = read_page(1).not_nil!
     begin
-      thumbnail = ImageSize.resize img.data, height: 300
+      size = ImageSize.get img.data
+      if size.height > size.width
+        thumbnail = ImageSize.resize img.data, width: 200
+      else
+        thumbnail = ImageSize.resize img.data, height: 300
+      end
       img.data = thumbnail
       Storage.default.save_thumbnail @id, img
     rescue e
-      Logger.warn "Failed to generate thumbnail for entry #{@id}. #{e}"
+      Logger.warn "Failed to generate thumbnail for entry " \
+                  "#{@book.title}/#{@title}. #{e}"
     end
 
     img

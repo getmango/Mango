@@ -1,7 +1,6 @@
 class Library
-  property dir : String, title_ids : Array(String), scan_interval : Int32,
-    title_hash : Hash(String, Title), entries_count = 0,
-    thumbnails_count = 0
+  property dir : String, title_ids : Array(String),
+    title_hash : Hash(String, Title), entries_count = 0, thumbnails_count = 0
 
   use_default
 
@@ -9,20 +8,45 @@ class Library
     register_mime_types
 
     @dir = Config.current.library_path
-    @scan_interval = Config.current.scan_interval
     # explicitly initialize @titles to bypass the compiler check. it will
     #   be filled with actual Titles in the `scan` call below
     @title_ids = [] of String
     @title_hash = {} of String => Title
 
-    return scan if @scan_interval < 1
-    spawn do
-      loop do
-        start = Time.local
-        scan
-        ms = (Time.local - start).total_milliseconds
-        Logger.info "Scanned #{@title_ids.size} titles in #{ms}ms"
-        sleep @scan_interval * 60
+    scan_interval = Config.current.scan_interval_minutes
+    if scan_interval < 1
+      scan
+    else
+      spawn do
+        loop do
+          start = Time.local
+          scan
+          ms = (Time.local - start).total_milliseconds
+          Logger.info "Scanned #{@title_ids.size} titles in #{ms}ms"
+          sleep scan_interval.minutes
+        end
+      end
+    end
+
+    thumbnail_interval = Config.current.thumbnail_generation_interval_hours
+    unless thumbnail_interval < 1
+      spawn do
+        loop do
+          # Wait for scan to complete (in most cases)
+          sleep 1.minutes
+          generate_thumbnails
+          sleep thumbnail_interval.hours
+        end
+      end
+    end
+
+    db_interval = Config.current.db_optimization_interval_hours
+    unless db_interval < 1
+      spawn do
+        loop do
+          Storage.default.optimize
+          sleep db_interval.hours
+        end
       end
     end
   end
@@ -194,5 +218,39 @@ class Library
       .select { |t| t.load_percentage(username) == 0 }
       .sample(ENTRIES_IN_HOME_SECTIONS)
       .shuffle
+  end
+
+  def thumbnail_generation_progress
+    @thumbnails_count / @entries_count
+  end
+
+  def generate_thumbnails
+    Logger.info "Starting thumbnail generation"
+    entries = deep_titles.map(&.deep_entries).flatten.reject &.err_msg
+    @entries_count = entries.size
+    @thumbnails_count = 0
+
+    # Report generation progress regularly
+    spawn do
+      loop do
+        break if thumbnail_generation_progress.to_i == 1
+        Logger.debug "Thumbnail generation progress: " \
+                     "#{(thumbnail_generation_progress * 100).round 1}%"
+        sleep 30.seconds
+      end
+    end
+
+    entries.each do |e|
+      unless e.get_thumbnail
+        e.generate_thumbnail
+        # Sleep after each generation to minimize the impact on disk IO
+        #   and CPU
+        sleep 0.5.seconds
+      end
+      @thumbnails_count += 1
+    end
+    Logger.info "Thumbnail generation finished. " \
+                "#{@thumbnails_count}/#{@entries_count} " \
+                "thumbnails generated"
   end
 end

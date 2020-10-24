@@ -266,6 +266,29 @@ class Storage
     img
   end
 
+  def optimize
+    MainFiber.run do
+      Logger.info "Starting DB optimization"
+      get_db do |db|
+        trash_ids = [] of String
+        db.query "select path, id from ids" do |rs|
+          rs.each do
+            path = rs.read String
+            trash_ids << rs.read String unless File.exists? path
+          end
+        end
+
+        # Delete dangling IDs
+        db.exec "delete from ids where id in " \
+                "(#{trash_ids.map { |i| "'#{i}'" }.join ","})"
+
+        # Delete dangling thumbnails
+        db.exec "delete from thumbnails where id not in (select id from ids)"
+      end
+      Logger.info "DB optimization finished"
+    end
+  end
+
   def close
     MainFiber.run do
       unless @db.nil?
