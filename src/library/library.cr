@@ -1,6 +1,7 @@
 class Library
   property dir : String, title_ids : Array(String), scan_interval : Int32,
-    title_hash : Hash(String, Title)
+    title_hash : Hash(String, Title), entries_count = 0,
+    thumbnails_count = 0
 
   use_default
 
