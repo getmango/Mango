@@ -69,7 +69,7 @@ class Entry
 
   def cover_url
     return "#{Config.current.base_url}img/icon.png" if @err_msg
-    url = "#{Config.current.base_url}api/page/#{@book.id}/#{@id}/1"
+    url = "#{Config.current.base_url}api/cover/#{@book.id}/#{@id}"
     TitleInfo.new @book.dir do |info|
       info_url = info.entry_cover_url[@title]?
       unless info_url.nil? || info_url.empty?
@@ -206,5 +206,30 @@ class Entry
 
   def started?(username)
     load_progress(username) > 0
+  end
+
+  def generate_thumbnail : Image?
+    return if @err_msg
+
+    img = read_page(1).not_nil!
+    begin
+      size = ImageSize.get img.data
+      if size.height > size.width
+        thumbnail = ImageSize.resize img.data, width: 200
+      else
+        thumbnail = ImageSize.resize img.data, height: 300
+      end
+      img.data = thumbnail
+      Storage.default.save_thumbnail @id, img
+    rescue e
+      Logger.warn "Failed to generate thumbnail for entry " \
+                  "#{@book.title}/#{@title}. #{e}"
+    end
+
+    img
+  end
+
+  def get_thumbnail : Image?
+    Storage.default.get_thumbnail @id
   end
 end

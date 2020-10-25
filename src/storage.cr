@@ -35,9 +35,11 @@ class Storage
     MainFiber.run do
       DB.open "sqlite3://#{@path}" do |db|
         begin
-          # We create the `ids` table first. even if the uses has an
-          #   early version installed and has the `user` table only,
-          #   we will still be able to create `ids`
+          db.exec "create table thumbnails " \
+                  "(id text, data blob, filename text, " \
+                  "mime text, size integer)"
+          db.exec "create unique index tn_index on thumbnails (id)"
+
           db.exec "create table ids" \
                   "(path text, id text, is_title integer)"
           db.exec "create unique index path_idx on ids (path)"
@@ -240,6 +242,58 @@ class Storage
         end
       end
       @insert_ids.clear
+    end
+  end
+
+  def save_thumbnail(id : String, img : Image)
+    MainFiber.run do
+      get_db do |db|
+        db.exec "insert into thumbnails values (?, ?, ?, ?, ?)", id, img.data,
+          img.filename, img.mime, img.size
+      end
+    end
+  end
+
+  def get_thumbnail(id : String) : Image?
+    img = nil
+    MainFiber.run do
+      get_db do |db|
+        db.query_one? "select * from thumbnails where id = (?)", id do |res|
+          img = Image.from_db res
+        end
+      end
+    end
+    img
+  end
+
+  def optimize
+    MainFiber.run do
+      Logger.info "Starting DB optimization"
+      get_db do |db|
+        trash_ids = [] of String
+        db.query "select path, id from ids" do |rs|
+          rs.each do
+            path = rs.read String
+            trash_ids << rs.read String unless File.exists? path
+          end
+        end
+
+        # Delete dangling IDs
+        db.exec "delete from ids where id in " \
+                "(#{trash_ids.map { |i| "'#{i}'" }.join ","})"
+        Logger.debug "#{trash_ids.size} dangling IDs deleted" \
+           if trash_ids.size > 0
+
+        # Delete dangling thumbnails
+        trash_thumbnails_count = db.query_one "select count(*) from " \
+                                              "thumbnails where id not in " \
+                                              "(select id from ids)", as: Int32
+        if trash_thumbnails_count > 0
+          db.exec "delete from thumbnails where id not in (select id from ids)"
+          Logger.info "#{trash_thumbnails_count} dangling thumbnails deleted"
+        end
+      end
+      Logger.debug "DB optimization finished"
     end
   end
 

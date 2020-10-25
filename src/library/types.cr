@@ -57,6 +57,16 @@ struct Image
 
   def initialize(@data, @mime, @filename, @size)
   end
+
+  def self.from_db(res : DB::ResultSet)
+    img = Image.allocate
+    res.read String
+    img.data = res.read Bytes
+    img.filename = res.read String
+    img.mime = res.read String
+    img.size = res.read Int32
+    img
+  end
 end
 
 class TitleInfo
