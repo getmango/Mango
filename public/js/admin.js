@@ -7,6 +7,7 @@ $(() => {
 		setTheme();
 	});
 
+	getProgress();
 	setInterval(getProgress, 5000);
 });
 
@@ -65,7 +66,8 @@ const getProgress = () => {
 const generateThumbnails = () => {
 	setProp('generating', true);
 	setProp('progress', 0.0);
-	$.post(`${base_url}api/admin/generate_thumbnails`);
+	$.post(`${base_url}api/admin/generate_thumbnails`)
+		.then(getProgress);
 };
 
 /**
