@@ -1,6 +1,6 @@
 class Library
   property dir : String, title_ids : Array(String),
-    title_hash : Hash(String, Title), entries_count = 0, thumbnails_count = 0
+    title_hash : Hash(String, Title)
 
   use_default
 
@@ -12,6 +12,9 @@ class Library
     #   be filled with actual Titles in the `scan` call below
     @title_ids = [] of String
     @title_hash = {} of String => Title
+
+    @entries_count = 0
+    @thumbnails_count = 0
 
     scan_interval = Config.current.scan_interval_minutes
     if scan_interval < 1
