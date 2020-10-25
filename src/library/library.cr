@@ -221,10 +221,16 @@ class Library
   end
 
   def thumbnail_generation_progress
+    return 0 if @entries_count == 0
     @thumbnails_count / @entries_count
   end
 
   def generate_thumbnails
+    if @thumbnails_count > 0
+      Logger.debug "Thumbnail generation in progress"
+      return
+    end
+
     Logger.info "Starting thumbnail generation"
     entries = deep_titles.map(&.deep_entries).flatten.reject &.err_msg
     @entries_count = entries.size
@@ -233,10 +239,18 @@ class Library
     # Report generation progress regularly
     spawn do
       loop do
-        break if thumbnail_generation_progress.to_i == 1
-        Logger.debug "Thumbnail generation progress: " \
-                     "#{(thumbnail_generation_progress * 100).round 1}%"
-        sleep 30.seconds
+        unless @thumbnails_count == 0
+          Logger.debug "Thumbnail generation progress: " \
+                       "#{(thumbnail_generation_progress * 100).round 1}%"
+        end
+        # Generation is completed. We reset the count to 0 to allow subsequent
+        #   calls to the function, and break from the loop to stop the progress
+        #   report fiber
+        if thumbnail_generation_progress.to_i == 1
+          @thumbnails_count = 0
+          break
+        end
+        sleep 10.seconds
       end
     end
 
@@ -249,8 +263,6 @@ class Library
       end
       @thumbnails_count += 1
     end
-    Logger.info "Thumbnail generation finished. " \
-                "#{@thumbnails_count}/#{@entries_count} " \
-                "thumbnails generated"
+    Logger.info "Thumbnail generation finished"
   end
 end

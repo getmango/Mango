@@ -76,6 +76,18 @@ class APIRouter < Router
       }.to_json
     end
 
+    get "/api/admin/thumbnail_progress" do |env|
+      send_json env, {
+        "progress" => Library.default.thumbnail_generation_progress,
+      }.to_json
+    end
+
+    post "/api/admin/generate_thumbnails" do |env|
+      spawn do
+        Library.default.generate_thumbnails
+      end
+    end
+
     post "/api/admin/user/delete/:username" do |env|
       begin
         username = env.params.url["username"]
