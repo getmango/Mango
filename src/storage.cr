@@ -281,11 +281,19 @@ class Storage
         # Delete dangling IDs
         db.exec "delete from ids where id in " \
                 "(#{trash_ids.map { |i| "'#{i}'" }.join ","})"
+        Logger.debug "#{trash_ids.size} dangling IDs deleted" \
+           if trash_ids.size > 0
 
         # Delete dangling thumbnails
-        db.exec "delete from thumbnails where id not in (select id from ids)"
+        trash_thumbnails_count = db.query_one "select count(*) from " \
+                                              "thumbnails where id not in " \
+                                              "(select id from ids)", as: Int32
+        if trash_thumbnails_count > 0
+          db.exec "delete from thumbnails where id not in (select id from ids)"
+          Logger.info "#{trash_thumbnails_count} dangling thumbnails deleted"
+        end
       end
-      Logger.info "DB optimization finished"
+      Logger.debug "DB optimization finished"
     end
   end
 
