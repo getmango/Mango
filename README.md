@@ -12,6 +12,7 @@ Mango is a self-hosted manga server and reader. Its features include
 - Supported formats: `.cbz`, `.zip`, `.cbr` and `.rar`
 - Supports nested folders in library
 - Automatically stores reading progress
+- Thumbnail generation
 - Built-in [MangaDex](https://mangadex.org/) downloader
 - Supports [plugins](https://github.com/hkalexling/mango-plugins) to download from thrid-party sites
 - The web reader is responsive and works well on mobile, so there is no need for a mobile app
@@ -76,22 +77,27 @@ The default config file location is `~/.config/mango/config.yml`. It might be di
 ---
 port: 9000
 base_url: /
-library_path: ~/mango/library
-db_path: ~/mango/mango.db
+session_secret: mango-session-secret
+library_path: /home/alex_ling/mango/library
+db_path: /home/alex_ling/mango/mango.db
 scan_interval_minutes: 5
+thumbnail_generation_interval_hours: 24
+db_optimization_interval_hours: 24
 log_level: info
-upload_path: ~/mango/uploads
+upload_path: /home/alex_ling/mango/uploads
+plugin_path: /home/alex_ling/mango/plugins
+download_timeout_seconds: 30
 mangadex:
   base_url: https://mangadex.org
   api_url: https://mangadex.org/api
   download_wait_seconds: 5
   download_retries: 4
-  download_queue_db_path: ~/mango/queue.db
+  download_queue_db_path: /home/alex_ling/mango/queue.db
   chapter_rename_rule: '[Vol.{volume} ][Ch.{chapter} ]{title|id}'
   manga_rename_rule: '{title}'
 ```
 
-- `scan_interval_minutes` can be any non-negative integer. Setting it to `0` disables the periodic scan
+- `scan_interval_minutes`, `thumbnail_generation_interval_hours` and `db_optimization_interval_hours` can be any non-negative integer. Setting them to `0` disables the periodic tasks
 - `log_level` can be `debug`, `info`, `warn`, `error`, `fatal` or `off`. Setting it to `off` disables the logging
 
 ### Library Structure
