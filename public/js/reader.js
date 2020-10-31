@@ -5,12 +5,6 @@ let longPages = false;
 $(() => {
 	getPages();
 
-	const storedMode = localStorage.getItem('mode') || 'continuous';
-
-	setProp('mode', storedMode);
-	updateMode(storedMode, page);
-	$('#mode-select').val(storedMode);
-
 	$('#page-select').change(() => {
 		const p = parseInt($('#page-select').val());
 		toPage(p);
@@ -117,6 +111,12 @@ const getPages = () => {
 
 			setProp('items', items);
 			setProp('loading', false);
+
+			const storedMode = localStorage.getItem('mode') || 'continuous';
+
+			setProp('mode', storedMode);
+			updateMode(storedMode, page);
+			$('#mode-select').val(storedMode);
 		})
 		.catch(e => {
 			const errMsg = `Failed to get the page dimensions. ${e}`;
