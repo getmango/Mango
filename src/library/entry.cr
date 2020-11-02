@@ -220,6 +220,11 @@ class Entry
         thumbnail = ImageSize.resize img.data, height: 300
       end
       img.data = thumbnail
+      img.size = thumbnail.size
+      unless img.mime == "image/webp"
+        # image_size.cr resizes non-webp images to jpg
+        img.mime = "image/jpeg"
+      end
       Storage.default.save_thumbnail @id, img
     rescue e
       Logger.warn "Failed to generate thumbnail for entry " \
