@@ -118,8 +118,8 @@ class Entry
             "width"  => size.width,
             "height" => size.height,
           }
-        rescue
-          Logger.warn "Failed to read page #{i} of entry #{@id}"
+        rescue e
+          Logger.warn "Failed to read page #{i} of entry #{zip_path}. #{e}"
           sizes << {"width" => 1000_i32, "height" => 1000_i32}
         end
       end
@@ -227,8 +227,7 @@ class Entry
       end
       Storage.default.save_thumbnail @id, img
     rescue e
-      Logger.warn "Failed to generate thumbnail for entry " \
-                  "#{@book.title}/#{@title}. #{e}"
+      Logger.warn "Failed to generate thumbnail for file #{@zip_path}. #{e}"
     end
 
     img

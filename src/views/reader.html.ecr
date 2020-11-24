@@ -17,6 +17,8 @@
          flipAnimation: null
          }">
 
+      <div @keydown.window.debounce="keyHandler($event)"></div>
+
       <div class="uk-container uk-container-small">
         <div id="alert"></div>
         <div x-show="loading">

@@ -7,7 +7,7 @@ require "option_parser"
 require "clim"
 require "./plugin/*"
 
-MANGO_VERSION = "0.15.1"
+MANGO_VERSION = "0.16.0"
 
 # From http://www.network-science.de/ascii/
 BANNER = %{

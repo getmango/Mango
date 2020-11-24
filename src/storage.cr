@@ -293,7 +293,7 @@ class Storage
           Logger.info "#{trash_thumbnails_count} dangling thumbnails deleted"
         end
       end
-      Logger.debug "DB optimization finished"
+      Logger.info "DB optimization finished"
     end
   end
 
