@@ -4,6 +4,8 @@ on:
     types: [published]
 jobs:
   update:
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
