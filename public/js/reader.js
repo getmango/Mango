@@ -292,3 +292,19 @@ const flipPage = (isNext) => {
 	replaceHistory(newIdx);
 	saveProgress(newIdx);
 };
+
+/**
+ * Handle the global keydown events
+ *
+ * @function keyHandler
+ * @param {event} event - The $event object
+ */
+const keyHandler = (event) => {
+	const mode = getProp('mode');
+	if (mode === 'continuous') return;
+
+	if (event.key === 'ArrowLeft' || event.key === 'j')
+		flipPage(false);
+	if (event.key === 'ArrowRight' || event.key === 'k')
+		flipPage(true);
+};
