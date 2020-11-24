@@ -303,8 +303,8 @@ const keyHandler = (event) => {
 	const mode = getProp('mode');
 	if (mode === 'continuous') return;
 
-	if (event.key === 'ArrowLeft' || event.key === 'j')
+	if (event.key === 'ArrowLeft' || event.key === 'k')
 		flipPage(false);
-	if (event.key === 'ArrowRight' || event.key === 'k')
+	if (event.key === 'ArrowRight' || event.key === 'j')
 		flipPage(true);
 };
