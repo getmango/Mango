@@ -53,7 +53,7 @@ class Plugin
         end
 
         zip_path = File.join manga_dir, "#{chapter_title}.cbz.part"
-        writer = Zip::Writer.new zip_path
+        writer = Compress::Zip::Writer.new zip_path
       rescue e
         @queue.set_status Queue::JobStatus::Error, job
         unless e.message.nil?
