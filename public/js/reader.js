@@ -141,10 +141,9 @@ const waitForPage = (idx, cb) => {
  * Show the control modal
  *
  * @function showControl
- * @param {object} event - The onclick event that triggers the function
+ * @param {string} idx - One-based index of the current page
  */
-const showControl = (event) => {
-	const idx = parseInt($(event.currentTarget).attr('id'));
+const showControl = (idx) => {
 	const pageCount = $('#page-select > option').length;
 	const progressText = `Progress: ${idx}/${pageCount} (${(idx/pageCount * 100).toFixed(1)}%)`;
 	$('#progress-label').text(progressText);
@@ -191,6 +190,8 @@ const setupScroller = () => {
 		$(el).on('inview', (event, inView) => {
 			if (inView) {
 				const current = $(event.currentTarget).attr('id');
+
+				setProp('curItem', getProp('items')[current - 1]);
 				replaceHistory(current);
 			}
 		});

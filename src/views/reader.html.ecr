@@ -39,7 +39,7 @@
                     :width="item.width"
                     :height="item.height"
                     :id="item.id"
-                    @click="showControl($event)"
+                    :onclick="`showControl('${item.id}')`"
                     />
           </template>
           <%- if next_entry_url -%>
@@ -55,7 +55,7 @@
           'uk-align-center': true, 
           'uk-animation-slide-left': flipAnimation === 'left', 
           'uk-animation-slide-right': flipAnimation === 'right'
-          }" :data-src="curItem.url" :width="curItem.width" :height="curItem.height" :id="curItem.id" @click="showControl($event)" :style="`
+          }" :data-src="curItem.url" :width="curItem.width" :height="curItem.height" :id="curItem.id" :onclick="`showControl('${curItem.id}')`" :style="`
           width:${mode === 'width' ? '100vw' : 'auto'}; 
           height:${mode === 'height' ? '100vh' : 'auto'}; 
           margin-bottom:0;
