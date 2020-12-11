@@ -1,26 +1,4 @@
 /**
- * Set an alpine.js property
- *
- * @function setProp
- * @param {string} key - Key of the data property
- * @param {*} prop - The data property
- */
-const setProp = (key, prop) => {
-	$('#root').get(0).__x.$data[key] = prop;
-};
-
-/**
- * Get an alpine.js property
- *
- * @function getProp
- * @param {string} key - Key of the data property
- * @return {*} The data property
- */
-const getProp = (key) => {
-	return $('#root').get(0).__x.$data[key];
-};
-
-/**
  * Get the current queue and update the view
  *
  * @function load
