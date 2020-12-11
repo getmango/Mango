@@ -2,8 +2,8 @@
   <div class="uk-margin">
     <button class="uk-button uk-button-default" @click="jobAction('delete')">Delete Completed Tasks</button>
     <button class="uk-button uk-button-default" @click="jobAction('retry')">Retry Failed Tasks</button>
-    <button class="uk-button uk-button-default" @click="load()" :disabled="loading ? '' : false">Refresh Queue</button>
-    <button class="uk-button uk-button-default" x-show="paused !== undefined" x-text="paused ? 'Resume Download' : 'Pause Download'" @click="toggle()" :disabled="toggling ? '' : false"></button>
+    <button class="uk-button uk-button-default" @click="load()" :disabled="loading">Refresh Queue</button>
+    <button class="uk-button uk-button-default" x-show="paused !== undefined" x-text="paused ? 'Resume Download' : 'Pause Download'" @click="toggle()" :disabled="toggling"></button>
   </div>
   <table class="uk-table uk-table-striped uk-overflow-auto">
     <thead>
