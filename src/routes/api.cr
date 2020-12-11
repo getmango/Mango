@@ -212,6 +212,18 @@ class APIRouter < Router
       end
     end
 
+    ws "/api/admin/mangadex/queue" do |socket, env|
+      interval_raw = env.params.query["interval"]?
+      interval = (interval_raw.to_i? if interval_raw) || 5
+      loop do
+        socket.send({
+          "jobs"   => @context.queue.get_all,
+          "paused" => @context.queue.paused?,
+        }.to_json)
+        sleep interval.seconds
+      end
+    end
+
     get "/api/admin/mangadex/queue" do |env|
       begin
         jobs = @context.queue.get_all
