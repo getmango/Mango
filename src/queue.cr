@@ -196,6 +196,21 @@ class Queue
     self.delete job.id
   end
 
+  def exists?(id : String)
+    res = false
+    MainFiber.run do
+      DB.open "sqlite3://#{@path}" do |db|
+        res = db.query_one "select count(*) from queue where id = (?)", id,
+          as: Bool
+      end
+    end
+    res
+  end
+
+  def exists?(job : Job)
+    self.exists? job.id
+  end
+
   def delete_status(status : JobStatus)
     MainFiber.run do
       DB.open "sqlite3://#{@path}" do |db|
