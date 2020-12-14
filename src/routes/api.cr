@@ -15,11 +15,21 @@ class APIRouter < Router
   end
 
   def initialize
-    Koa.init "Mango API", version: MANGO_VERSION
+    Koa.init "Mango API", version: MANGO_VERSION, desc: <<-MD
+      ## Terminalogies
+
+      - Entry: An entry is a `cbz`/`cbr` file in your library. Depending on how you organize your manga collection, an entry can contain a chapter, a volume or even an entire manga.
+      - Title: A title contains a list of entries and optionally some sub-titles. For example, your can have a title to store a manga, and  it contains a list of sub-titles representing the volumes in the manga. Each sub-title would then contain a list of entries representing the chapters in the volume.
+      - Library: The library is a collection of the top-level titles, and it does not contain entries (though the titles do). A Mango instance can only have one library.
+
+      ## Authentication
+
+      All endpoints require authentication. After logging in, your session ID would be stored as a cookie named `mango-sessid-#{Config.current.port}`, which can be used to authenticate the API access. Note that all admin API enpoints (`/api/admin/...`) require the logged in user to have admin access.
+    MD
 
     Koa.cookie_auth "cookie", "mango-sessid-#{Config.current.port}"
     Koa.global_tag "admin", desc: <<-MD
-      These are the admin APIs only accessible for users with admin access. A non-admin user will get HTTP 403 when calling the APIs.
+      These are the admin endpoints only accessible for users with admin access. A non-admin user will get HTTP 403 when calling the endpoints.
     MD
 
     Koa.binary "binary", desc: "A binary file"
@@ -31,7 +41,7 @@ class APIRouter < Router
       "pages" => "integer",
       "mtime" => "integer",
     }.merge s %w(zip_path title size id title_id display_name cover_url)
-    Koa.object "entry", entry_schema, desc: "An entry (aka. chapter) in a book"
+    Koa.object "entry", entry_schema, desc: "An entry in a book"
 
     title_schema = {
       "mtime"   => "integer",
