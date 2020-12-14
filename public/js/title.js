@@ -55,7 +55,7 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 
 	$('#modal-edit-btn').attr('onclick', `edit("${entryID}")`);
 
-	$('#modal-download-btn').attr('href', `${base_url}opds/download/${titleID}/${entryID}`);
+	$('#modal-download-btn').attr('href', `${base_url}api/download/${titleID}/${entryID}`);
 
 	UIkit.modal($('#modal')).show();
 }

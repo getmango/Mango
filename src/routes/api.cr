@@ -652,6 +652,23 @@ class APIRouter < Router
       end
     end
 
+    Koa.describe "Downloads an entry"
+    Koa.path "tid", desc: "A title ID"
+    Koa.path "eid", desc: "An entry ID"
+    Koa.response 200, ref: "$binary"
+    Koa.response 404, "Entry not found"
+    get "/api/download/:tid/:eid" do |env|
+      begin
+        title = (@context.library.get_title env.params.url["tid"]).not_nil!
+        entry = (title.get_entry env.params.url["eid"]).not_nil!
+
+        send_attachment env, entry.zip_path
+      rescue e
+        @context.error e
+        env.response.status_code = 404
+      end
+    end
+
     doc = Koa.generate
     @@api_json = doc.to_json if doc
 
