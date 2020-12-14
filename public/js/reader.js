@@ -219,7 +219,7 @@ const saveProgress = (idx, cb) => {
 		lastSavedPage = idx;
 		console.log('saving progress', idx);
 
-		const url = `${base_url}api/progress/${tid}/${idx}?${$.param({entry: eid})}`;
+		const url = `${base_url}api/progress/${tid}/${idx}?${$.param({eid: eid})}`;
 		$.post(url)
 			.then(data => {
 				if (data.error) throw new Error(data.error);

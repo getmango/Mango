@@ -48,9 +48,17 @@ shards:
     git: https://github.com/jeromegn/kilt.git
     version: 0.4.0
 
+  koa:
+    git: https://github.com/hkalexling/koa.git
+    version: 0.5.0
+
   myhtml:
     git: https://github.com/kostya/myhtml.git
     version: 1.5.1
+
+  open_api:
+    git: https://github.com/jreinert/open_api.cr.git
+    version: 1.2.1+git.commit.95e4df2ca10b1fe88b8b35c62a18b06a10267b6c
 
   radix:
     git: https://github.com/luislavena/radix.git

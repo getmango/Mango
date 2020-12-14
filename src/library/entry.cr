@@ -47,8 +47,7 @@ class Entry
 
   def to_json(json : JSON::Builder)
     json.object do
-      {% for str in ["zip_path", "title", "size", "id",
-                     "encoded_path", "encoded_title"] %}
+      {% for str in ["zip_path", "title", "size", "id"] %}
         json.field {{str}}, @{{str.id}}
       {% end %}
       json.field "title_id", @book.id

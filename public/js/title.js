@@ -63,7 +63,7 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 const updateProgress = (tid, eid, page) => {
 	let url = `${base_url}api/progress/${tid}/${page}`
 	const query = $.param({
-		entry: eid
+		eid: eid
 	});
 	if (eid)
 		url += `?${query}`;
@@ -89,7 +89,7 @@ const renameSubmit = (name, eid) => {
 	}
 
 	const query = $.param({
-		entry: eid
+		eid: eid
 	});
 	let url = `${base_url}api/admin/display_name/${titleId}/${name}`;
 	if (eid)
@@ -150,10 +150,10 @@ const setupUpload = (eid) => {
 	const bar = $('#upload-progress').get(0);
 	const titleId = upload.attr('data-title-id');
 	const queryObj = {
-		title: titleId
+		tid: titleId
 	};
 	if (eid)
-		queryObj['entry'] = eid;
+		queryObj['eid'] = eid;
 	const query = $.param(queryObj);
 	const url = `${base_url}api/admin/upload/cover?${query}`;
 	console.log(url);

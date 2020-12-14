@@ -113,5 +113,9 @@ class MainRouter < Router
         env.response.status_code = 500
       end
     end
+
+    get "/swagger" do |env|
+      render "src/views/swagger.html.ecr"
+    end
   end
 end

@@ -56,7 +56,7 @@ class Title
 
   def to_json(json : JSON::Builder)
     json.object do
-      {% for str in ["dir", "title", "id", "encoded_title"] %}
+      {% for str in ["dir", "title", "id"] %}
         json.field {{str}}, @{{str.id}}
       {% end %}
       json.field "display_name", display_name
