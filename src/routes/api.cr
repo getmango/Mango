@@ -311,7 +311,7 @@ class APIRouter < Router
     Koa.path "tid", desc: "Title ID"
     Koa.body ref: "$strAry", desc: "An array of entry IDs"
     Koa.response 200, ref: "$result"
-    post "/api/bulk-progress/:action/:tid" do |env|
+    post "/api/bulk_progress/:action/:tid" do |env|
       begin
         username = get_username env
         title = (@context.library.get_title env.params.url["tid"]).not_nil!

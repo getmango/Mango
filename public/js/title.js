@@ -218,7 +218,7 @@ const selectedIDs = () => {
 const bulkProgress = (action, el) => {
 	const tid = $(el).attr('data-id');
 	const ids = selectedIDs();
-	const url = `${base_url}api/bulk-progress/${action}/${tid}`;
+	const url = `${base_url}api/bulk_progress/${action}/${tid}`;
 	$.ajax({
 			type: 'POST',
 			url: url,
