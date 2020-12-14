@@ -220,14 +220,18 @@ const saveProgress = (idx, cb) => {
 		console.log('saving progress', idx);
 
 		const url = `${base_url}api/progress/${tid}/${idx}?${$.param({eid: eid})}`;
-		$.post(url)
-			.then(data => {
-				if (data.error) throw new Error(data.error);
+		$.ajax({
+				method: 'PUT',
+				url: url,
+				dataType: 'json'
+			})
+			.done(data => {
+				if (data.error)
+					alert('danger', data.error);
 				if (cb) cb();
 			})
-			.catch(e => {
-				console.error(e);
-				alert('danger', e);
+			.fail((jqXHR, status) => {
+				alert('danger', `Error: [${jqXHR.status}] ${jqXHR.statusText}`);
 			});
 	}
 };

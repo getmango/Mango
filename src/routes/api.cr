@@ -140,6 +140,10 @@ class APIRouter < Router
       "error"      => "string?",
     }
 
+    Koa.object "ids", {
+      "ids" => "$strAry",
+    }
+
     Koa.describe "Returns a page in a manga entry"
     Koa.path "tid", desc: "Title ID"
     Koa.path "eid", desc: "Entry ID"
@@ -252,7 +256,7 @@ class APIRouter < Router
     Koa.describe "Deletes a user with `username`"
     Koa.tag "admin"
     Koa.response 200, ref: "$result"
-    post "/api/admin/user/delete/:username" do |env|
+    delete "/api/admin/user/delete/:username" do |env|
       begin
         username = env.params.url["username"]
         @context.storage.delete_user username
@@ -279,7 +283,7 @@ class APIRouter < Router
     Koa.query "eid", desc: "Entry ID", required: false
     Koa.path "page", desc: "The new page number indicating the progress"
     Koa.response 200, ref: "$result"
-    post "/api/progress/:tid/:page" do |env|
+    put "/api/progress/:tid/:page" do |env|
       begin
         username = get_username env
         title = (@context.library.get_title env.params.url["tid"]).not_nil!
@@ -309,9 +313,9 @@ class APIRouter < Router
     Koa.describe "Updates the reading progress of multiple entries in a title"
     Koa.path "action", desc: "The action to perform. Can be either `read` or `unread`"
     Koa.path "tid", desc: "Title ID"
-    Koa.body ref: "$strAry", desc: "An array of entry IDs"
+    Koa.body ref: "$ids", desc: "An array of entry IDs"
     Koa.response 200, ref: "$result"
-    post "/api/bulk_progress/:action/:tid" do |env|
+    put "/api/bulk_progress/:action/:tid" do |env|
       begin
         username = get_username env
         title = (@context.library.get_title env.params.url["tid"]).not_nil!
@@ -341,7 +345,7 @@ class APIRouter < Router
     Koa.query "eid", desc: "Entry ID", required: false
     Koa.path "name", desc: "The new display name"
     Koa.response 200, ref: "$result"
-    post "/api/admin/display_name/:tid/:name" do |env|
+    put "/api/admin/display_name/:tid/:name" do |env|
       begin
         title = (@context.library.get_title env.params.url["tid"])
           .not_nil!
@@ -566,10 +570,10 @@ class APIRouter < Router
     Koa.tag "admin"
     Koa.body ref: "$pluginListBody"
     Koa.response 200, ref: "$pluginList"
-    post "/api/admin/plugin/list" do |env|
+    get "/api/admin/plugin/list" do |env|
       begin
-        query = env.params.json["query"].as String
-        plugin = Plugin.new env.params.json["plugin"].as String
+        query = env.params.query["query"].as String
+        plugin = Plugin.new env.params.query["plugin"].as String
 
         json = plugin.list_chapters query
         chapters = json["chapters"]

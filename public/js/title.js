@@ -67,14 +67,23 @@ const updateProgress = (tid, eid, page) => {
 	});
 	if (eid)
 		url += `?${query}`;
-	$.post(url, (data) => {
-		if (data.success) {
-			location.reload();
-		} else {
-			error = data.error;
-			alert('danger', error);
-		}
-	});
+
+	$.ajax({
+			method: 'PUT',
+			url: url,
+			dataType: 'json'
+		})
+		.done(data => {
+			if (data.success) {
+				location.reload();
+			} else {
+				error = data.error;
+				alert('danger', error);
+			}
+		})
+		.fail((jqXHR, status) => {
+			alert('danger', `Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+		});
 };
 
 const renameSubmit = (name, eid) => {
@@ -96,7 +105,7 @@ const renameSubmit = (name, eid) => {
 		url += `?${query}`;
 
 	$.ajax({
-			type: 'POST',
+			type: 'PUT',
 			url: url,
 			contentType: "application/json",
 			dataType: 'json'
@@ -131,6 +140,7 @@ const edit = (eid) => {
 
 	const displayNameField = $('#display-name-field');
 	displayNameField.attr('value', displayName);
+	console.log(displayNameField);
 	displayNameField.keyup(event => {
 		if (event.keyCode === 13) {
 			renameSubmit(displayNameField.val(), eid);
@@ -220,7 +230,7 @@ const bulkProgress = (action, el) => {
 	const ids = selectedIDs();
 	const url = `${base_url}api/bulk_progress/${action}/${tid}`;
 	$.ajax({
-			type: 'POST',
+			type: 'PUT',
 			url: url,
 			contentType: "application/json",
 			dataType: 'json',
