@@ -167,8 +167,7 @@ module MangaDex
     end
 
     private def cached_client(url : URI)
-      Logger.debug "getting client for #{url.host}"
-      return @client_cache[url.host.not_nil!]? || (@client_cache[url.host.not_nil!] = HTTP::Client.new(url))
+      @client_cache[url.host.not_nil!]? || (@client_cache[url.host.not_nil!] = HTTP::Client.new(url))
     end
   end
 end
