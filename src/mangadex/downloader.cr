@@ -4,7 +4,7 @@ require "compress/zip"
 module MangaDex
   class PageJob
     property success = false
-    property url : String
+    property url : URI
     property filename : String
     property writer : Compress::Zip::Writer
     property tries_remaning : Int32
@@ -17,6 +17,7 @@ module MangaDex
     @wait_seconds : Int32 = Config.current.mangadex["download_wait_seconds"]
       .to_i32
     @retries : Int32 = Config.current.mangadex["download_retries"].to_i32
+    @client_cache = {} of String => HTTP::Client
 
     use_default
 
@@ -77,7 +78,7 @@ module MangaDex
           fn, url = tuple
           ext = File.extname fn
           fn = "#{i.to_s.rjust len, '0'}#{ext}"
-          page_job = PageJob.new url, fn, writer, @retries
+          page_job = PageJob.new URI.parse(url), fn, writer, @retries
           Logger.debug "Downloading #{url}"
           loop do
             sleep @wait_seconds.seconds
@@ -149,8 +150,9 @@ module MangaDex
       headers = HTTP::Headers{
         "User-agent" => "Mangadex.cr",
       }
+
       begin
-        HTTP::Client.get job.url, headers do |res|
+        cached_client(job.url).get job.url.full_path, headers do |res|
           unless res.success?
             raise "Failed to download page #{job.url}. " \
                   "[#{res.status_code}] #{res.status_message}"
@@ -162,6 +164,11 @@ module MangaDex
         Logger.error e
         job.success = false
       end
+    end
+
+    private def cached_client(url : URI)
+      Logger.debug "getting client for #{url.host}"
+      return @client_cache[url.host.not_nil!]? || (@client_cache[url.host.not_nil!] = HTTP::Client.new(url))
     end
   end
 end
