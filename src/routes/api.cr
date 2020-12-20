@@ -6,6 +6,8 @@ require "koa"
 class APIRouter < Router
   @@api_json : String?
 
+  API_VERSION = "0.1.0"
+
   macro s(fields)
     {
       {% for field in fields %}
@@ -15,16 +17,20 @@ class APIRouter < Router
   end
 
   def initialize
-    Koa.init "Mango API", version: MANGO_VERSION, desc: <<-MD
-      ## Terminalogies
+    Koa.init "Mango API", version: API_VERSION, desc: <<-MD
+    # A Word of Caution
 
-      - Entry: An entry is a `cbz`/`cbr` file in your library. Depending on how you organize your manga collection, an entry can contain a chapter, a volume or even an entire manga.
-      - Title: A title contains a list of entries and optionally some sub-titles. For example, your can have a title to store a manga, and  it contains a list of sub-titles representing the volumes in the manga. Each sub-title would then contain a list of entries representing the chapters in the volume.
-      - Library: The library is a collection of the top-level titles, and it does not contain entries (though the titles do). A Mango instance can only have one library.
+    This API was designed for internal use only, and the design doesn't comply with the resources convention of a RESTful API. Because of this, most of the API endpoints listed here will soon be updated and removed in future versions of Mango, so use them at your own risk!
 
-      ## Authentication
+    # Authentication
 
-      All endpoints require authentication. After logging in, your session ID would be stored as a cookie named `mango-sessid-#{Config.current.port}`, which can be used to authenticate the API access. Note that all admin API enpoints (`/api/admin/...`) require the logged in user to have admin access.
+    All endpoints require authentication. After logging in, your session ID would be stored as a cookie named `mango-sessid-#{Config.current.port}`, which can be used to authenticate the API access. Note that all admin API endpoints (`/api/admin/...`) require the logged in user to have admin access.
+
+    # Terminologies
+
+    - Entry: An entry is a `cbz`/`cbr` file in your library. Depending on how you organize your manga collection, an entry can contain a chapter, a volume or even an entire manga.
+    - Title: A title contains a list of entries and optionally some sub-titles. For example, you can have a title to store a manga, and it contains a list of sub-titles representing the volumes in the manga. Each sub-title would then contain a list of entries representing the chapters in the volume.
+    - Library: The library is a collection of top-level titles, and it does not contain entries (though the titles do). A Mango instance can only have one library.
     MD
 
     Koa.cookie_auth "cookie", "mango-sessid-#{Config.current.port}"
@@ -635,7 +641,7 @@ class APIRouter < Router
       end
     end
 
-    Koa.describe "Returns the image dimention of all pages in an entry"
+    Koa.describe "Returns the image dimensions of all pages in an entry"
     Koa.path "tid", desc: "A title ID"
     Koa.path "eid", desc: "An entry ID"
     Koa.response 200, ref: "$dimensionResult"

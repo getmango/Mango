@@ -114,8 +114,8 @@ class MainRouter < Router
       end
     end
 
-    get "/swagger" do |env|
-      render "src/views/swagger.html.ecr"
+    get "/api" do |env|
+      render "src/views/api.html.ecr"
     end
   end
 end
