@@ -85,9 +85,16 @@ end
 module HTTP
   class Client
     private def self.exec(uri : URI, tls : TLSContext = nil)
-      Logger.debug "Setting read timeout"
       previous_def uri, tls do |client, path|
+        disable_ssl_verification = ENV["DISABLE_SSL_VERIFICATION"]? ||
+                                   ENV["disable_ssl_verification"]?
+        if disable_ssl_verification && client.tls?
+          Logger.debug "Disabling SSL verification"
+          client.tls.verify_mode = OpenSSL::SSL::VerifyMode::NONE
+        end
+        Logger.debug "Setting read timeout"
         client.read_timeout = Config.current.download_timeout_seconds.seconds
+        Logger.debug "Requesting #{uri}"
         yield client, path
       end
     end
