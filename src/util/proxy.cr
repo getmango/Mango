@@ -35,7 +35,8 @@ private def env_to_proxy(key : String) : HTTP::Proxy::Client?
 
   begin
     uri = URI.parse val
-    HTTP::Proxy::Client.new uri.hostname.not_nil!, uri.port.not_nil!
+    HTTP::Proxy::Client.new uri.hostname.not_nil!, uri.port.not_nil!,
+      username: uri.user, password: uri.password
   rescue
     nil
   end
