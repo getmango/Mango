@@ -63,7 +63,7 @@ const validThemeSetting = (theme) => {
  */
 const loadThemeSetting = () => {
 	let str = localStorage.getItem('theme');
-	if (!str || !validThemeSetting(str)) str = 'light';
+	if (!str || !validThemeSetting(str)) str = 'system';
 	return str;
 };
 
@@ -88,7 +88,7 @@ const loadTheme = () => {
  * @param {string} setting - A theme setting
  */
 const saveThemeSetting = setting => {
-	if (!validThemeSetting(setting)) setting = 'light';
+	if (!validThemeSetting(setting)) setting = 'system';
 	localStorage.setItem('theme', setting);
 };
 
