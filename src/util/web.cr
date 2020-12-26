@@ -86,9 +86,7 @@ module HTTP
   class Client
     private def self.exec(uri : URI, tls : TLSContext = nil)
       previous_def uri, tls do |client, path|
-        disable_ssl_verification = ENV["DISABLE_SSL_VERIFICATION"]? ||
-                                   ENV["disable_ssl_verification"]?
-        if disable_ssl_verification && client.tls?
+        if client.tls? && env_is_true? "DISABLE_SSL_VERIFICATION"
           Logger.debug "Disabling SSL verification"
           client.tls.verify_mode = OpenSSL::SSL::VerifyMode::NONE
         end

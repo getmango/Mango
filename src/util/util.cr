@@ -61,3 +61,9 @@ class String
     self.chars.all? { |c| c.alphanumeric? || c == '_' }
   end
 end
+
+def env_is_true?(key : String) : Bool
+  val = ENV[key.upcase]? || ENV[key.downcase]?
+  return false unless val
+  val.downcase.in? "1", "true"
+end
