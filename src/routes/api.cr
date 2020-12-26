@@ -24,7 +24,7 @@ class APIRouter < Router
 
     # Authentication
 
-    All endpoints require authentication. After logging in, your session ID would be stored as a cookie named `mango-sessid-#{Config.current.port}`, which can be used to authenticate the API access. Note that all admin API endpoints (`/api/admin/...`) require the logged in user to have admin access.
+    All endpoints require authentication. After logging in, your session ID would be stored as a cookie named `mango-sessid-#{Config.current.port}`, which can be used to authenticate the API access. Note that all admin API endpoints (`/api/admin/...`) require the logged-in user to have admin access.
 
     # Terminologies
 
@@ -252,7 +252,7 @@ class APIRouter < Router
       }.to_json
     end
 
-    Koa.describe "Returns the thumbanil generation progress between 0 and 1"
+    Koa.describe "Returns the thumbnail generation progress between 0 and 1"
     Koa.tag "admin"
     Koa.response 200, ref: "$progressResult"
     get "/api/admin/thumbnail_progress" do |env|
@@ -261,7 +261,7 @@ class APIRouter < Router
       }.to_json
     end
 
-    Koa.describe "Triggers a thumbanil generation"
+    Koa.describe "Triggers a thumbnail generation"
     Koa.tag "admin"
     post "/api/admin/generate_thumbnails" do |env|
       spawn do
@@ -288,7 +288,7 @@ class APIRouter < Router
     end
 
     Koa.describe "Updates the reading progress of an entry or the whole title for the current user", <<-MD
-      When `eid` is provided, sets the reading progress the the entry to `page`.
+      When `eid` is provided, sets the reading progress of the entry to `page`.
 
       When `eid` is omitted, updates the progress of the entire title. Specifically:
 
@@ -472,7 +472,7 @@ class APIRouter < Router
 
       When `action` is set to `delete`, the behavior depends on `id`. If `id` is provided, deletes the specific job identified by the ID. Otherwise, deletes all **completed** jobs in the queue.
 
-      When `action` is set to `retry`, the behaviro depends on `id`. If `id` is provided, restarts the job identified by the ID. Otherwise, retries all jobs in the `Error` or `MissingPages` status in the queue.
+      When `action` is set to `retry`, the behavior depends on `id`. If `id` is provided, restarts the job identified by the ID. Otherwise, retries all jobs in the `Error` or `MissingPages` status in the queue.
     MD
     Koa.tag "admin"
     Koa.path "action", desc: "The action to perform. It should be one of the followins: `delete`, `retry`, `pause` and `resume`."
@@ -513,7 +513,7 @@ class APIRouter < Router
     end
 
     Koa.describe "Uploads a file to the server", <<-MD
-      Currently the only supported value for the `targe` parameter is `cover`.
+      Currently the only supported value for the `target` parameter is `cover`.
 
       ### Cover
 
