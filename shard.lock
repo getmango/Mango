@@ -1,62 +1,70 @@
-version: 1.0
+version: 2.0
 shards:
   ameba:
-    github: crystal-ameba/ameba
+    git: https://github.com/crystal-ameba/ameba.git
     version: 0.12.1
 
   archive:
-    github: hkalexling/archive.cr
+    git: https://github.com/hkalexling/archive.cr.git
     version: 0.4.0
 
   baked_file_system:
-    github: schovi/baked_file_system
-    version: 0.9.8
+    git: https://github.com/schovi/baked_file_system.git
+    version: 0.9.8+git.commit.fb3091b546797fbec3c25dc0e1e2cff60bb9033b
 
   clim:
-    github: at-grandpa/clim
+    git: https://github.com/at-grandpa/clim.git
     version: 0.12.0
 
   db:
-    github: crystal-lang/crystal-db
+    git: https://github.com/crystal-lang/crystal-db.git
     version: 0.9.0
 
   duktape:
-    github: jessedoyle/duktape.cr
+    git: https://github.com/jessedoyle/duktape.cr.git
     version: 0.20.0
 
   exception_page:
-    github: crystal-loot/exception_page
+    git: https://github.com/crystal-loot/exception_page.git
     version: 0.1.4
 
   http_proxy:
-    github: mamantoha/http_proxy
+    git: https://github.com/mamantoha/http_proxy.git
     version: 0.7.1
 
   image_size:
-    github: hkalexling/image_size.cr
+    git: https://github.com/hkalexling/image_size.cr.git
     version: 0.4.0
 
   kemal:
-    github: kemalcr/kemal
-    version: 0.26.1
+    git: https://github.com/kemalcr/kemal.git
+    version: 0.27.0
 
   kemal-session:
-    github: kemalcr/kemal-session
+    git: https://github.com/kemalcr/kemal-session.git
     version: 0.12.1
 
   kilt:
-    github: jeromegn/kilt
+    git: https://github.com/jeromegn/kilt.git
     version: 0.4.0
 
+  koa:
+    git: https://github.com/hkalexling/koa.git
+    version: 0.5.0
+
   myhtml:
-    github: kostya/myhtml
+    git: https://github.com/kostya/myhtml.git
     version: 1.5.1
 
+  open_api:
+    git: https://github.com/jreinert/open_api.cr.git
+    version: 1.2.1+git.commit.95e4df2ca10b1fe88b8b35c62a18b06a10267b6c
+
   radix:
-    github: luislavena/radix
+    git: https://github.com/luislavena/radix.git
     version: 0.3.9
 
   sqlite3:
-    github: crystal-lang/crystal-sqlite3
+    git: https://github.com/crystal-lang/crystal-sqlite3.git
     version: 0.16.0
 

@@ -1,32 +1,68 @@
-<div class="uk-margin">
-  <div id="actions" class="uk-margin">
-    <button class="uk-button uk-button-default" onclick="remove()">Delete Completed Tasks</button>
-    <button class="uk-button uk-button-default" onclick="refresh()">Retry Failed Tasks</button>
-    <button class="uk-button uk-button-default" onclick="load()">Refresh Queue</button>
-    <button class="uk-button uk-button-default" onclick="toggle()" id="pause-resume-btn" hidden></button>
+<div id="root" x-data="{jobs: [], paused: undefined, loading: false, toggling: false}" x-init="load()">
+  <div class="uk-margin">
+    <button class="uk-button uk-button-default" @click="jobAction('delete')">Delete Completed Tasks</button>
+    <button class="uk-button uk-button-default" @click="jobAction('retry')">Retry Failed Tasks</button>
+    <button class="uk-button uk-button-default" @click="load()" :disabled="loading">Refresh Queue</button>
+    <button class="uk-button uk-button-default" x-show="paused !== undefined" x-text="paused ? 'Resume Download' : 'Pause Download'" @click="toggle()" :disabled="toggling"></button>
   </div>
-  <div id="config" class="uk-margin">
-    <label><input id="auto-refresh" class="uk-checkbox" type="checkbox" checked> Auto Refresh</label>
-  </div>
+  <table class="uk-table uk-table-striped uk-overflow-auto">
+    <thead>
+      <tr>
+        <th>Chapter</th>
+        <th>Manga</th>
+        <th>Progress</th>
+        <th>Time</th>
+        <th>Status</th>
+        <th>Plugin</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <template x-for="job in jobs" :key="job">
+        <tr :id="`chapter-${job.id}`">
+
+          <template x-if="job.plugin_id">
+            <td x-text="job.title"></td>
+          </template>
+          <template x-if="!job.plugin_id">
+            <td><a :href="`${'<%= mangadex_base_url %>'.replace(/\/$/, '')}/chapter/${job.id}`" x-text="job.title"></td>
+          </template>
+
+          <template x-if="job.plugin_id">
+            <td x-text="job.manga_title"></td>
+          </template>
+          <template x-if="!job.plugin_id">
+            <td><a :href="`${'<%= mangadex_base_url %>'.replace(/\/$/, '')}/manga/${job.manga_id}`" x-text="job.manga_title"></td>
+          </template>
+
+          <td x-text="`${job.success_count}/${job.pages}`"></td>
+          <td x-text="`${moment(job.time).fromNow()}`"></td>
+
+          <td>
+            <span :class="statusClass(job.status)" x-text="job.status"></span>
+            <template x-if="job.status_message.length > 0">
+              <div class="uk-inline">
+                <span uk-icon="info"></span>
+                <div uk-dropdown x-text="job.status_message"></div>
+              </div>
+            </template>
+          </td>
+
+          <td x-text="`${job.plugin_id || ''}`"></td>
+
+          <td>
+            <a :onclick="`jobAction('delete', '${job.id}')`" uk-icon="trash"></a>
+            <template x-if="job.status_message.length > 0">
+              <a :onclick="`jobAction('retry', '${job.id}')`" uk-icon="refresh"></a>
+            </template>
+          </td>
+        </tr>
+      </template>
+    </tbody>
+  </table>
 </div>
-<table class="uk-table uk-table-striped uk-overflow-auto">
-  <thead>
-    <tr>
-      <th>Chapter</th>
-      <th>Manga</th>
-      <th>Progress</th>
-      <th>Time</th>
-      <th>Status</th>
-      <th>Plugin</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-</table>
 
 <% content_for "script" do %>
-  <script>
-    var baseURL = "<%= mangadex_base_url %>".replace(/\/$/, "");
-  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
   <script src="<%= base_url %>js/alert.js"></script>
   <script src="<%= base_url %>js/download-manager.js"></script>

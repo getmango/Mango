@@ -1,12 +1,12 @@
 require "./api"
-require "zip"
+require "compress/zip"
 
 module MangaDex
   class PageJob
     property success = false
     property url : String
     property filename : String
-    property writer : Zip::Writer
+    property writer : Compress::Zip::Writer
     property tries_remaning : Int32
 
     def initialize(@url, @filename, @writer, @tries_remaning)
@@ -69,7 +69,7 @@ module MangaDex
       # Find the number of digits needed to store the number of pages
       len = Math.log10(chapter.pages.size).to_i + 1
 
-      writer = Zip::Writer.new zip_path
+      writer = Compress::Zip::Writer.new zip_path
       # Create a buffered channel. It works as an FIFO queue
       channel = Channel(PageJob).new chapter.pages.size
       spawn do
@@ -91,6 +91,7 @@ module MangaDex
           end
 
           channel.send page_job
+          break unless @queue.exists? job
         end
       end
 
@@ -98,6 +99,9 @@ module MangaDex
         page_jobs = [] of PageJob
         chapter.pages.size.times do
           page_job = channel.receive
+
+          break unless @queue.exists? job
+
           Logger.debug "[#{page_job.success ? "success" : "failed"}] " \
                        "#{page_job.url}"
           page_jobs << page_job
@@ -110,6 +114,13 @@ module MangaDex
             Logger.error msg
           end
         end
+
+        unless @queue.exists? job
+          Logger.debug "Download cancelled"
+          @downloading = false
+          next
+        end
+
         fail_count = page_jobs.count { |j| !j.success }
         Logger.debug "Download completed. " \
                      "#{fail_count}/#{page_jobs.size} failed"

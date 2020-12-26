@@ -33,14 +33,13 @@ const search = () => {
 	if (searching)
 		return;
 
-	const query = $('#search-input').val();
+	const query = $.param({
+		query: $('#search-input').val(),
+		plugin: pid
+	});
 	$.ajax({
-			type: 'POST',
-			url: base_url + 'api/admin/plugin/list',
-			data: JSON.stringify({
-				query: query,
-				plugin: pid
-			}),
+			type: 'GET',
+			url: `${base_url}api/admin/plugin/list?${query}`,
 			contentType: "application/json",
 			dataType: 'json'
 		})

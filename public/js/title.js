@@ -55,7 +55,7 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 
 	$('#modal-edit-btn').attr('onclick', `edit("${entryID}")`);
 
-	$('#modal-download-btn').attr('href', `${base_url}opds/download/${titleID}/${entryID}`);
+	$('#modal-download-btn').attr('href', `${base_url}api/download/${titleID}/${entryID}`);
 
 	UIkit.modal($('#modal')).show();
 }
@@ -63,18 +63,27 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 const updateProgress = (tid, eid, page) => {
 	let url = `${base_url}api/progress/${tid}/${page}`
 	const query = $.param({
-		entry: eid
+		eid: eid
 	});
 	if (eid)
 		url += `?${query}`;
-	$.post(url, (data) => {
-		if (data.success) {
-			location.reload();
-		} else {
-			error = data.error;
-			alert('danger', error);
-		}
-	});
+
+	$.ajax({
+			method: 'PUT',
+			url: url,
+			dataType: 'json'
+		})
+		.done(data => {
+			if (data.success) {
+				location.reload();
+			} else {
+				error = data.error;
+				alert('danger', error);
+			}
+		})
+		.fail((jqXHR, status) => {
+			alert('danger', `Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+		});
 };
 
 const renameSubmit = (name, eid) => {
@@ -89,14 +98,14 @@ const renameSubmit = (name, eid) => {
 	}
 
 	const query = $.param({
-		entry: eid
+		eid: eid
 	});
 	let url = `${base_url}api/admin/display_name/${titleId}/${name}`;
 	if (eid)
 		url += `?${query}`;
 
 	$.ajax({
-			type: 'POST',
+			type: 'PUT',
 			url: url,
 			contentType: "application/json",
 			dataType: 'json'
@@ -131,6 +140,7 @@ const edit = (eid) => {
 
 	const displayNameField = $('#display-name-field');
 	displayNameField.attr('value', displayName);
+	console.log(displayNameField);
 	displayNameField.keyup(event => {
 		if (event.keyCode === 13) {
 			renameSubmit(displayNameField.val(), eid);
@@ -150,10 +160,10 @@ const setupUpload = (eid) => {
 	const bar = $('#upload-progress').get(0);
 	const titleId = upload.attr('data-title-id');
 	const queryObj = {
-		title: titleId
+		tid: titleId
 	};
 	if (eid)
-		queryObj['entry'] = eid;
+		queryObj['eid'] = eid;
 	const query = $.param(queryObj);
 	const url = `${base_url}api/admin/upload/cover?${query}`;
 	console.log(url);
@@ -218,9 +228,9 @@ const selectedIDs = () => {
 const bulkProgress = (action, el) => {
 	const tid = $(el).attr('data-id');
 	const ids = selectedIDs();
-	const url = `${base_url}api/bulk-progress/${action}/${tid}`;
+	const url = `${base_url}api/bulk_progress/${action}/${tid}`;
 	$.ajax({
-			type: 'POST',
+			type: 'PUT',
 			url: url,
 			contentType: "application/json",
 			dataType: 'json',

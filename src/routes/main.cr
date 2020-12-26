@@ -113,5 +113,9 @@ class MainRouter < Router
         env.response.status_code = 500
       end
     end
+
+    get "/api" do |env|
+      render "src/views/api.html.ecr"
+    end
   end
 end

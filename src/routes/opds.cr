@@ -16,17 +16,5 @@ class OPDSRouter < Router
         env.response.status_code = 404
       end
     end
-
-    get "/opds/download/:title/:entry" do |env|
-      begin
-        title = (@context.library.get_title env.params.url["title"]).not_nil!
-        entry = (title.get_entry env.params.url["entry"]).not_nil!
-
-        send_attachment env, entry.zip_path
-      rescue e
-        @context.error e
-        env.response.status_code = 404
-      end
-    end
   end
 end

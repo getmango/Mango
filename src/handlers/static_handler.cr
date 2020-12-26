@@ -23,7 +23,7 @@ class StaticHandler < Kemal::Handler
 
       slice = Bytes.new file.size
       file.read slice
-      return send_file env, slice, file.mime_type
+      return send_file env, slice, MIME.from_filename file.path
     end
     call_next env
   end

@@ -53,7 +53,7 @@ class Plugin
         end
 
         zip_path = File.join manga_dir, "#{chapter_title}.cbz.part"
-        writer = Zip::Writer.new zip_path
+        writer = Compress::Zip::Writer.new zip_path
       rescue e
         @queue.set_status Queue::JobStatus::Error, job
         unless e.message.nil?
@@ -66,6 +66,8 @@ class Plugin
       fail_count = 0
 
       while page = plugin.next_page
+        break unless @queue.exists? job
+
         fn = process_filename page["filename"].as_s
         url = page["url"].as_s
         headers = HTTP::Headers.new
@@ -107,6 +109,12 @@ class Plugin
 
           break if page_success || tries < 0
         end
+      end
+
+      unless @queue.exists? job
+        Logger.debug "Download cancelled"
+        @downloading = false
+        return
       end
 
       Logger.debug "Download completed. #{fail_count}/#{pages} failed"
