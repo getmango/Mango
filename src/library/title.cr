@@ -3,7 +3,8 @@ require "../archive"
 class Title
   property dir : String, parent_id : String, title_ids : Array(String),
     entries : Array(Entry), title : String, id : String,
-    encoded_title : String, mtime : Time
+    encoded_title : String, mtime : Time,
+    entry_display_name_cache : Hash(String, String)?
 
   def initialize(@dir : String, @parent_id, storage,
                  @library : Library)
@@ -129,12 +130,16 @@ class Title
   end
 
   def display_name(entry_name)
-    dn = entry_name
-    TitleInfo.new @dir do |info|
-      info_dn = info.entry_display_name[entry_name]?
-      unless info_dn.nil? || info_dn.empty?
-        dn = info_dn
+    unless @entry_display_name_cache
+      TitleInfo.new @dir do |info|
+        @entry_display_name_cache = info.entry_display_name
       end
+    end
+
+    dn = entry_name
+    info_dn = @entry_display_name_cache.not_nil![entry_name]?
+    unless info_dn.nil? || info_dn.empty?
+      dn = info_dn
     end
     dn
   end
