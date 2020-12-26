@@ -78,14 +78,14 @@ The default config file location is `~/.config/mango/config.yml`. It might be di
 port: 9000
 base_url: /
 session_secret: mango-session-secret
-library_path: /home/alex_ling/mango/library
-db_path: /home/alex_ling/mango/mango.db
+library_path: ~/mango/library
+db_path: ~/mango/mango.db
 scan_interval_minutes: 5
 thumbnail_generation_interval_hours: 24
 db_optimization_interval_hours: 24
 log_level: info
-upload_path: /home/alex_ling/mango/uploads
-plugin_path: /home/alex_ling/mango/plugins
+upload_path: ~/mango/uploads
+plugin_path: ~/mango/plugins
 download_timeout_seconds: 30
 mangadex:
   base_url: https://mangadex.org
