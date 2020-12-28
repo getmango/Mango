@@ -56,12 +56,7 @@ def hash_to_query(hash)
 end
 
 def request_path_startswith(env, ary)
-  ary.each do |prefix|
-    if env.request.path.starts_with? prefix
-      return true
-    end
-  end
-  false
+  ary.any? { |prefix| env.request.path.starts_with? prefix }
 end
 
 def requesting_static_file(env)
