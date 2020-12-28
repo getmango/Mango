@@ -64,6 +64,14 @@ class Storage
 
           init_admin if init_user
         end
+
+        # Verifies that the default username in config is valid
+        if Config.current.disable_login
+          username = Config.current.default_username
+          unless username_exists username
+            raise "Default username #{username} does not exist"
+          end
+        end
       end
       unless @auto_close
         @db = DB.open "sqlite3://#{@path}"
@@ -88,6 +96,28 @@ class Storage
     else
       yield @db.not_nil!
     end
+  end
+
+  def username_exists(username)
+    exists = false
+    MainFiber.run do
+      get_db do |db|
+        exists = db.query_one("select count(*) from users where " \
+                              "username = (?)", username, as: Int32) > 0
+      end
+    end
+    exists
+  end
+
+  def username_is_admin(username)
+    is_admin = false
+    MainFiber.run do
+      get_db do |db|
+        is_admin = db.query_one("select admin from users where " \
+                                "username = (?)", username, as: Int32) > 0
+      end
+    end
+    is_admin
   end
 
   def verify_user(username, password)

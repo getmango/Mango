@@ -20,6 +20,8 @@ class Config
   property plugin_path : String = File.expand_path "~/mango/plugins",
     home: true
   property download_timeout_seconds : Int32 = 30
+  property disable_login = false
+  property default_username = ""
   property mangadex = Hash(String, String | Int32).new
 
   @[YAML::Field(ignore: true)]
@@ -84,6 +86,10 @@ class Config
     end
     unless base_url.ends_with? "/"
       @base_url += "/"
+    end
+    if disable_login && default_username.empty?
+      raise "Login is disabled, but default username is not set. " \
+            "Please set a default username"
     end
   end
 end

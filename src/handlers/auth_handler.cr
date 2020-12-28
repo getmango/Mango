@@ -68,13 +68,14 @@ class AuthHandler < Kemal::Handler
       return call_next(env)
     end
 
-    unless validate_token env
+    unless validate_token(env) || Config.current.disable_login
       env.session.string "callback", env.request.path
       return redirect env, "/login"
     end
 
     if request_path_startswith env, ["/admin", "/api/admin", "/download"]
-      unless validate_token_admin env
+      unless validate_token_admin(env) ||
+             Storage.default.username_is_admin Config.current.default_username
         env.response.status_code = 403
       end
     end

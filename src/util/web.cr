@@ -7,6 +7,10 @@ macro layout(name)
     if token = env.session.string? "token"
       is_admin = @context.storage.verify_admin token
     end
+    if Config.current.disable_login
+      is_admin = @context.storage.
+        username_is_admin Config.current.default_username
+    end
     page = {{name}}
     render "src/views/#{{{name}}}.html.ecr", "src/views/layout.html.ecr"
   rescue e
@@ -21,10 +25,16 @@ macro send_img(env, img)
 end
 
 macro get_username(env)
-  # if the request gets here, it has gone through the auth handler, and
-  #   we can be sure that a valid token exists, so we can use not_nil! here
-  token = env.session.string "token"
-  (@context.storage.verify_token token).not_nil!
+  begin
+    token = env.session.string "token"
+    (@context.storage.verify_token token).not_nil!
+  rescue e
+    if Config.current.disable_login
+      Config.current.default_username
+    else
+      raise e
+    end
+  end
 end
 
 def send_json(env, json)
