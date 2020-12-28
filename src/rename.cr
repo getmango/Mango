@@ -139,9 +139,13 @@ module Rename
       post_process str
     end
 
+    # Post-processes the generated file/folder name
+    #   - Handles the rare case where the string is `..`
+    #   - Removes trailing spaces and periods
+    #   - Replace illegal characters with `_`
     private def post_process(str)
       return "_" if str == ".."
-      str.gsub "/", "_"
+      str.rstrip(" .").gsub /[\/?<>\\:*|"^]/, "_"
     end
   end
 end
