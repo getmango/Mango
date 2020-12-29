@@ -108,8 +108,18 @@ class Title
     ary.reverse
   end
 
-  def size
-    @entries.size + @title_ids.size
+  # Returns a string the describes the content of the title
+  #   e.g., - 3 titles and 1 entry
+  #         - 4 entries
+  #         - 1 title
+  def content_label
+    ary = [] of String
+    tsize = titles.size
+    esize = entries.size
+
+    ary << "#{tsize} #{tsize > 1 ? "titles" : "title"}" if tsize > 0
+    ary << "#{esize} #{esize > 1 ? "entries" : "entry"}" if esize > 0
+    ary.join " and "
   end
 
   def get_entry(eid)

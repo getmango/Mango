@@ -76,7 +76,7 @@
         <% end %>
         <% if item.is_a? Title %>
           <% if grouped_count == 1 %>
-            <p class="uk-text-meta"><%= item.size %> entries</p>
+            <p class="uk-text-meta"><%= item.content_label %></p>
           <% else %>
             <p class="uk-text-meta"><%= grouped_count %> new entries</p>
           <% end %>
