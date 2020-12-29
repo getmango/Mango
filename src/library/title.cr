@@ -122,6 +122,18 @@ class Title
     ary.join " and "
   end
 
+  def tags
+    Storage.default.get_title_tags @id
+  end
+
+  def add_tag(tag)
+    Storage.default.add_tag @id, tag
+  end
+
+  def delete_tag(tag)
+    Storage.default.delete_tag @id, tag
+  end
+
   def get_entry(eid)
     @entries.find { |e| e.id == eid }
   end

@@ -304,7 +304,7 @@ class Storage
     img
   end
 
-  def get_tags(id : String) : Array(String)
+  def get_title_tags(id : String) : Array(String)
     tags = [] of String
     MainFiber.run do
       get_db do |db|
