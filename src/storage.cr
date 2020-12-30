@@ -36,7 +36,7 @@ class Storage
       DB.open "sqlite3://#{@path}" do |db|
         begin
           # v0.18.0
-          db.exec "create table tags (id text, tag text)"
+          db.exec "create table tags (id text, tag text, unique (id, tag))"
           db.exec "create index tags_id_idx on tags (id)"
           db.exec "create index tags_tag_idx on tags (tag)"
 
@@ -347,11 +347,17 @@ class Storage
   end
 
   def add_tag(id : String, tag : String)
+    err = nil
     MainFiber.run do
-      get_db do |db|
-        db.exec "insert into tags values (?, ?)", id, tag
+      begin
+        get_db do |db|
+          db.exec "insert into tags values (?, ?)", id, tag
+        end
+      rescue e
+        err = e
       end
     end
+    raise err.not_nil! if err
   end
 
   def delete_tag(id : String, tag : String)
