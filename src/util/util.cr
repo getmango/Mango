@@ -67,3 +67,28 @@ def env_is_true?(key : String) : Bool
   return false unless val
   val.downcase.in? "1", "true"
 end
+
+def sort_titles(titles : Array(Title), opt : SortOptions, username : String)
+  ary = titles
+
+  case opt.method
+  when .time_modified?
+    ary.sort! { |a, b| (a.mtime <=> b.mtime).or \
+      compare_numerically a.title, b.title }
+  when .progress?
+    ary.sort! do |a, b|
+      (a.load_percentage(username) <=> b.load_percentage(username)).or \
+        compare_numerically a.title, b.title
+    end
+  else
+    unless opt.method.auto?
+      Logger.warn "Unknown sorting method #{opt.not_nil!.method}. Using " \
+                  "Auto instead"
+    end
+    ary.sort! { |a, b| compare_numerically a.title, b.title }
+  end
+
+  ary.reverse! unless opt.not_nil!.ascend
+
+  ary
+end

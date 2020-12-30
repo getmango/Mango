@@ -114,6 +114,31 @@ class MainRouter < Router
       end
     end
 
+    get "/tags/:tag" do |env|
+      begin
+        username = get_username env
+        tag = env.params.url["tag"]
+
+        sort_opt = SortOptions.new
+        get_sort_opt
+
+        title_ids = Storage.default.get_tag_titles tag
+
+        raise "Tag #{tag} not found" if title_ids.empty?
+
+        titles = title_ids.map { |id| @context.library.get_title id }
+          .select Title
+
+        titles = sort_titles titles, sort_opt, username
+        percentage = titles.map &.load_percentage username
+
+        layout "tags"
+      rescue e
+        @context.error e
+        env.response.status_code = 404
+      end
+    end
+
     get "/api" do |env|
       render "src/views/api.html.ecr"
     end

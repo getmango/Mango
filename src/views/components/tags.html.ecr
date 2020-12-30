@@ -6,7 +6,7 @@
   <span style="position:relative; bottom:3px; margin-right:5px;">Tags: </span>
   <template x-for="tag in tags" :key="tag">
     <span class="uk-label uk-label-primary" style="padding:2px 5px; margin:0 5px 5px 5px; text-transform:none;">
-      <a class="uk-link-reset" @click="rm($event)" :id="`${tag}-rm`"><span uk-icon="close" style="margin-right: 5px; position: relative; bottom: 1.5px;"></span></a><a class="uk-link-reset" x-text="tag" :href="`<%= base_url %>tag/${tag}`"></a>
+      <a class="uk-link-reset" @click="rm($event)" :id="`${tag}-rm`"><span uk-icon="close" style="margin-right: 5px; position: relative; bottom: 1.5px;"></span></a><a class="uk-link-reset" x-text="tag" :href="`<%= base_url %>tags/${tag}`"></a>
     </span>
   </template>
   <a class="uk-link-reset" style="position:relative; bottom:3px;" :uk-icon="inputShown ? 'close' : 'plus'" @click="toggleInput($nextTick)"></a>

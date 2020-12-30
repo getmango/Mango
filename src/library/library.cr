@@ -68,29 +68,8 @@ class Library
       end
     end
 
-    # This is a hack to bypass a compiler bug
-    ary = titles
-
-    case opt.not_nil!.method
-    when .time_modified?
-      ary.sort! { |a, b| (a.mtime <=> b.mtime).or \
-        compare_numerically a.title, b.title }
-    when .progress?
-      ary.sort! do |a, b|
-        (a.load_percentage(username) <=> b.load_percentage(username)).or \
-          compare_numerically a.title, b.title
-      end
-    else
-      unless opt.method.auto?
-        Logger.warn "Unknown sorting method #{opt.not_nil!.method}. Using " \
-                    "Auto instead"
-      end
-      ary.sort! { |a, b| compare_numerically a.title, b.title }
-    end
-
-    ary.reverse! unless opt.not_nil!.ascend
-
-    ary
+    # Helper function from src/util/util.cr
+    sort_titles titles, opt.not_nil!, username
   end
 
   def deep_titles
