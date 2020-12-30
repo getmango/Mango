@@ -1,30 +1,8 @@
-<h2 class=uk-title>Tag: <%= tag %></h2>
-<p class="uk-text-meta"><%= titles.size %> titles tagged</p>
-<div class="uk-grid-small" uk-grid>
-  <div class="uk-margin-bottom uk-width-3-4@s">
-    <form class="uk-search uk-search-default">
-      <span uk-search-icon></span>
-      <input class="uk-search-input" type="search" placeholder="Search">
-    </form>
-  </div>
-  <div class="uk-margin-bottom uk-width-1-4@s">
-    <% hash = {
-      "auto" => "Auto",
-      "time_modified" => "Date Modified",
-      "progress" => "Progress"
-    } %>
-    <%= render_component "sort-form" %>
-  </div>
-</div>
-<div class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
-  <% titles.each_with_index do |item, i| %>
-    <% progress = percentage[i] %>
-    <%= render_component "card" %>
-  <% end %>
-</div>
+<h2 class=uk-title>Tags</h2>
+<p class="uk-text-meta"><%= tags.size %> <%= tags.size > 1 ? "tags" : "tag" %> found</p>
 
-<% content_for "script" do %>
-  <%= render_component "dots-scripts" %>
-  <script src="<%= base_url %>js/search.js"></script>
-  <script src="<%= base_url %>js/sort-items.js"></script>
+<% tags.zip(encoded_tags, counts).each do |tag, encoded, count| %>
+  <span class="uk-label uk-label-primary" style="padding:2px 5px; margin:0 5px 5px 5px; text-transform:none;">
+    <a class="uk-link-reset" href="<%= base_url %>tags/<%= encoded %>"><%= tag %> (<%= count %> <%= count > 1 ? "titles" : "title" %>)</a>
+  </span>
 <% end %>

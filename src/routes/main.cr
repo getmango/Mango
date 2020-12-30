@@ -132,11 +132,23 @@ class MainRouter < Router
         titles = sort_titles titles, sort_opt, username
         percentage = titles.map &.load_percentage username
 
-        layout "tags"
+        layout "tag"
       rescue e
         @context.error e
         env.response.status_code = 404
       end
+    end
+
+    get "/tags" do |env|
+      tags = Storage.default.list_tags
+      encoded_tags = tags.map do |t|
+        URI.encode_www_form t, space_to_plus: false
+      end
+      counts = tags.map do |t|
+        Storage.default.get_tag_titles(t).size
+      end
+
+      layout "tags"
     end
 
     get "/api" do |env|

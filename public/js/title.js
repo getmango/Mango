@@ -255,12 +255,22 @@ const bulkProgress = (action, el) => {
 
 const tagsComponent = () => {
 	return {
-		tags: tags,
+		loading: true,
+		tags: [],
 		newTag: '',
 		inputShown: false,
+		tid: $('.upload-field').attr('data-title-id'),
+		load() {
+			const url = `${base_url}api/tags/${this.tid}`;
+			this.request(url, 'GET', (data) => {
+				this.tags = data.tags;
+				this.loading = false;
+			});
+		},
 		add() {
 			const tag = this.newTag.trim();
-			this.request(tag, 'PUT', () => {
+			const url = `${base_url}api/tags/${this.tid}/${encodeURIComponent(tag)}`;
+			this.request(url, 'PUT', () => {
 				this.tags.push(tag);
 				this.newTag = '';
 			});
@@ -271,7 +281,8 @@ const tagsComponent = () => {
 		},
 		rm(event) {
 			const tag = event.currentTarget.id.split('-')[0];
-			this.request(tag, 'DELETE', () => {
+			const url = `${base_url}api/tags/${this.tid}/${encodeURIComponent(tag)}`;
+			this.request(url, 'DELETE', () => {
 				const idx = this.tags.indexOf(tag);
 				if (idx < 0) return;
 				this.tags.splice(idx, 1);
@@ -285,9 +296,10 @@ const tagsComponent = () => {
 				});
 			}
 		},
-		request(tag, method, cb) {
-			const tid = $('.upload-field').attr('data-title-id');
-			const url = `${base_url}api/tags/${tid}/${encodeURIComponent(tag)}`;
+		buildURL(tid, tag) {
+
+		},
+		request(url, method, cb) {
 			$.ajax({
 					url: url,
 					method: method,
@@ -295,7 +307,7 @@ const tagsComponent = () => {
 				})
 				.done(data => {
 					if (data.success)
-						cb();
+						cb(data);
 					else {
 						alert('danger', data.error);
 					}
