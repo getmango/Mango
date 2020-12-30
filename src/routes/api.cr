@@ -160,6 +160,12 @@ class APIRouter < Router
       "ids" => "$strAry",
     }
 
+    Koa.object "tagsResult", {
+      "success" => "boolean",
+      "tags"    => "$strAry?",
+      "error"   => "string?",
+    }
+
     Koa.describe "Returns a page in a manga entry"
     Koa.path "tid", desc: "Title ID"
     Koa.path "eid", desc: "Entry ID"
@@ -682,6 +688,73 @@ class APIRouter < Router
       rescue e
         @context.error e
         env.response.status_code = 404
+      end
+    end
+
+    Koa.describe "Gets the tags of a title"
+    Koa.path "tid", desc: "A title ID"
+    Koa.response 200, ref: "$tagsResult"
+    get "/api/tags/:tid" do |env|
+      begin
+        title = (@context.library.get_title env.params.url["tid"]).not_nil!
+        tags = title.tags
+
+        send_json env, {
+          "success" => true,
+          "tags"    => tags,
+        }.to_json
+      rescue e
+        @context.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Adds a new tag to a title"
+    Koa.path "tid", desc: "A title ID"
+    Koa.response 200, ref: "$result"
+    Koa.tag "admin"
+    put "/api/admin/tags/:tid/:tag" do |env|
+      begin
+        title = (@context.library.get_title env.params.url["tid"]).not_nil!
+        tag = env.params.url["tag"]
+
+        title.add_tag tag
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+        }.to_json
+      rescue e
+        @context.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Deletes a tag from a title"
+    Koa.path "tid", desc: "A title ID"
+    Koa.response 200, ref: "$result"
+    Koa.tag "admin"
+    delete "/api/admin/tags/:tid/:tag" do |env|
+      begin
+        title = (@context.library.get_title env.params.url["tid"]).not_nil!
+        tag = env.params.url["tag"]
+
+        title.delete_tag tag
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+        }.to_json
+      rescue e
+        @context.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
       end
     end
 

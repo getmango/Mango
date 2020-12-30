@@ -252,3 +252,68 @@ const bulkProgress = (action, el) => {
 			deselectAll();
 		});
 };
+
+const tagsComponent = () => {
+	return {
+		loading: true,
+		isAdmin: false,
+		tags: [],
+		newTag: '',
+		inputShown: false,
+		tid: $('.upload-field').attr('data-title-id'),
+		load(admin) {
+			this.isAdmin = admin;
+			const url = `${base_url}api/tags/${this.tid}`;
+			this.request(url, 'GET', (data) => {
+				this.tags = data.tags;
+				this.loading = false;
+			});
+		},
+		add() {
+			const tag = this.newTag.trim();
+			const url = `${base_url}api/admin/tags/${this.tid}/${encodeURIComponent(tag)}`;
+			this.request(url, 'PUT', () => {
+				this.tags.push(tag);
+				this.newTag = '';
+			});
+		},
+		keydown(event) {
+			if (event.key === 'Enter')
+				this.add()
+		},
+		rm(event) {
+			const tag = event.currentTarget.id.split('-')[0];
+			const url = `${base_url}api/admin/tags/${this.tid}/${encodeURIComponent(tag)}`;
+			this.request(url, 'DELETE', () => {
+				const idx = this.tags.indexOf(tag);
+				if (idx < 0) return;
+				this.tags.splice(idx, 1);
+			});
+		},
+		toggleInput(nextTick) {
+			this.inputShown = !this.inputShown;
+			if (this.inputShown) {
+				nextTick(() => {
+					$('#tag-input').get(0).focus();
+				});
+			}
+		},
+		request(url, method, cb) {
+			$.ajax({
+					url: url,
+					method: method,
+					dataType: 'json'
+				})
+				.done(data => {
+					if (data.success)
+						cb(data);
+					else {
+						alert('danger', data.error);
+					}
+				})
+				.fail((jqXHR, status) => {
+					alert('danger', `Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+				});
+		}
+	};
+};

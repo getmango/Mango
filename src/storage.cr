@@ -35,16 +35,24 @@ class Storage
     MainFiber.run do
       DB.open "sqlite3://#{@path}" do |db|
         begin
+          # v0.18.0
+          db.exec "create table tags (id text, tag text, unique (id, tag))"
+          db.exec "create index tags_id_idx on tags (id)"
+          db.exec "create index tags_tag_idx on tags (tag)"
+
+          # v0.15.0
           db.exec "create table thumbnails " \
                   "(id text, data blob, filename text, " \
                   "mime text, size integer)"
           db.exec "create unique index tn_index on thumbnails (id)"
 
+          # v0.1.1
           db.exec "create table ids" \
                   "(path text, id text, is_title integer)"
           db.exec "create unique index path_idx on ids (path)"
           db.exec "create unique index id_idx on ids (id)"
 
+          # v0.1.0
           db.exec "create table users" \
                   "(username text, password text, token text, admin integer)"
         rescue e
@@ -296,6 +304,70 @@ class Storage
     img
   end
 
+  def get_title_tags(id : String) : Array(String)
+    tags = [] of String
+    MainFiber.run do
+      get_db do |db|
+        db.query "select tag from tags where id = (?)", id do |rs|
+          rs.each do
+            tags << rs.read String
+          end
+        end
+      end
+    end
+    tags
+  end
+
+  def get_tag_titles(tag : String) : Array(String)
+    tids = [] of String
+    MainFiber.run do
+      get_db do |db|
+        db.query "select id from tags where tag = (?)", tag do |rs|
+          rs.each do
+            tids << rs.read String
+          end
+        end
+      end
+    end
+    tids
+  end
+
+  def list_tags : Array(String)
+    tags = [] of String
+    MainFiber.run do
+      get_db do |db|
+        db.query "select distinct tag from tags" do |rs|
+          rs.each do
+            tags << rs.read String
+          end
+        end
+      end
+    end
+    tags
+  end
+
+  def add_tag(id : String, tag : String)
+    err = nil
+    MainFiber.run do
+      begin
+        get_db do |db|
+          db.exec "insert into tags values (?, ?)", id, tag
+        end
+      rescue e
+        err = e
+      end
+    end
+    raise err.not_nil! if err
+  end
+
+  def delete_tag(id : String, tag : String)
+    MainFiber.run do
+      get_db do |db|
+        db.exec "delete from tags where id = (?) and tag = (?)", id, tag
+      end
+    end
+  end
+
   def optimize
     MainFiber.run do
       Logger.info "Starting DB optimization"
@@ -321,6 +393,15 @@ class Storage
         if trash_thumbnails_count > 0
           db.exec "delete from thumbnails where id not in (select id from ids)"
           Logger.info "#{trash_thumbnails_count} dangling thumbnails deleted"
+        end
+
+        # Delete dangling tags
+        trash_tags_count = db.query_one "select count(*) from tags " \
+                                        "where id not in " \
+                                        "(select id from ids)", as: Int32
+        if trash_tags_count > 0
+          db.exec "delete from tags where id not in (select id from ids)"
+          Logger.info "#{trash_tags_count} dangling tags deleted"
         end
       end
       Logger.info "DB optimization finished"

@@ -74,10 +74,17 @@ class AuthHandler < Kemal::Handler
     end
 
     if request_path_startswith env, ["/admin", "/api/admin", "/download"]
-      unless validate_token_admin(env) ||
-             Storage.default.username_is_admin Config.current.default_username
-        env.response.status_code = 403
+      # The token (if exists) takes precedence over the default user option.
+      #   this is why we check the default username first before checking the
+      #   token.
+      should_reject = true
+      if Storage.default.username_is_admin Config.current.default_username
+        should_reject = false
       end
+      if env.session.string? "token"
+        should_reject = !validate_token_admin(env)
+      end
+      env.response.status_code = 403 if should_reject
     end
 
     call_next env
