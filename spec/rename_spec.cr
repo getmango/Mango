@@ -40,11 +40,6 @@ describe Rule do
     rule.render({"a" => "a", "b" => "b"}).should eq "a"
   end
 
-  it "allows `|` outside of patterns" do
-    rule = Rule.new "hello|world"
-    rule.render({} of String => String).should eq "hello|world"
-  end
-
   it "raises on escaped characters" do
     expect_raises Exception do
       Rule.new "hello/world"
@@ -69,8 +64,13 @@ describe Rule do
     rule.render({} of String => String).should eq "testing"
   end
 
-  it "escapes slash" do
-    rule = Rule.new "{id}"
-    rule.render({"id" => "/hello/world"}).should eq "_hello_world"
+  it "escapes illegal characters" do
+    rule = Rule.new "{a}"
+    rule.render({"a" => "/?<>:*|\"^"}).should eq "_________"
+  end
+
+  it "strips trailing spaces and dots" do
+    rule = Rule.new "hello. world. .."
+    rule.render({} of String => String).should eq "hello. world"
   end
 end
