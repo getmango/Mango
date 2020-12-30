@@ -1,12 +1,10 @@
-require "./router"
-
-class ReaderRouter < Router
+struct ReaderRouter
   def initialize
     get "/reader/:title/:entry" do |env|
       begin
         username = get_username env
 
-        title = (@context.library.get_title env.params.url["title"]).not_nil!
+        title = (Library.default.get_title env.params.url["title"]).not_nil!
         entry = (title.get_entry env.params.url["entry"]).not_nil!
 
         next layout "reader-error" if entry.err_msg
@@ -19,7 +17,7 @@ class ReaderRouter < Router
 
         redirect env, "/reader/#{title.id}/#{entry.id}/#{page}"
       rescue e
-        @context.error e
+        Logger.error e
         env.response.status_code = 404
       end
     end
@@ -30,7 +28,7 @@ class ReaderRouter < Router
 
         username = get_username env
 
-        title = (@context.library.get_title env.params.url["title"]).not_nil!
+        title = (Library.default.get_title env.params.url["title"]).not_nil!
         entry = (title.get_entry env.params.url["entry"]).not_nil!
         page = env.params.url["page"].to_i
         raise "" if page > entry.pages || page <= 0
@@ -45,7 +43,7 @@ class ReaderRouter < Router
 
         render "src/views/reader.html.ecr"
       rescue e
-        @context.error e
+        Logger.error e
         env.response.status_code = 404
       end
     end

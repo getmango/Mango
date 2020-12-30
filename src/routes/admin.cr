@@ -1,13 +1,11 @@
-require "./router"
-
-class AdminRouter < Router
+struct AdminRouter
   def initialize
     get "/admin" do |env|
       layout "admin"
     end
 
     get "/admin/user" do |env|
-      users = @context.storage.list_users
+      users = Storage.default.list_users
       username = get_username env
       layout "user"
     end
@@ -32,11 +30,11 @@ class AdminRouter < Router
       #   would not contain `admin`
       admin = !env.params.body["admin"]?.nil?
 
-      @context.storage.new_user username, password, admin
+      Storage.default.new_user username, password, admin
 
       redirect env, "/admin/user"
     rescue e
-      @context.error e
+      Logger.error e
       redirect_url = URI.new \
         path: "/admin/user/edit",
         query: hash_to_query({"error" => e.message})
@@ -51,12 +49,12 @@ class AdminRouter < Router
       admin = !env.params.body["admin"]?.nil?
       original_username = env.params.url["original_username"]
 
-      @context.storage.update_user \
+      Storage.default.update_user \
         original_username, username, password, admin
 
       redirect env, "/admin/user"
     rescue e
-      @context.error e
+      Logger.error e
       redirect_url = URI.new \
         path: "/admin/user/edit",
         query: hash_to_query({"username" => original_username, \

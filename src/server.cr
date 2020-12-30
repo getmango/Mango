@@ -5,29 +5,7 @@ require "./handlers/*"
 require "./util/*"
 require "./routes/*"
 
-class Context
-  property library : Library
-  property storage : Storage
-  property queue : Queue
-
-  use_default
-
-  def initialize
-    @storage = Storage.default
-    @library = Library.default
-    @queue = Queue.default
-  end
-
-  {% for lvl in Logger::LEVELS %}
-      def {{lvl.id}}(msg)
-          Logger.{{lvl.id}} msg
-      end
-  {% end %}
-end
-
 class Server
-  @context : Context = Context.default
-
   def initialize
     error 403 do |env|
       message = "HTTP 403: You are not authorized to visit #{env.request.path}"
@@ -53,11 +31,11 @@ class Server
 
     Kemal.config.logging = false
     add_handler LogHandler.new
-    add_handler AuthHandler.new @context.storage
+    add_handler AuthHandler.new
     add_handler UploadHandler.new Config.current.upload_path
     {% if flag?(:release) %}
       # when building for relase, embed the static files in binary
-      @context.debug "We are in release mode. Using embedded static files."
+      Logger.debug "We are in release mode. Using embedded static files."
       serve_static false
       add_handler StaticHandler.new
     {% end %}
@@ -71,7 +49,7 @@ class Server
   end
 
   def start
-    @context.debug "Starting Kemal server"
+    Logger.debug "Starting Kemal server"
     {% if flag?(:release) %}
       Kemal.config.env = "production"
     {% end %}

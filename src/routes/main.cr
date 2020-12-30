@@ -1,6 +1,4 @@
-require "./router"
-
-class MainRouter < Router
+struct MainRouter
   def initialize
     get "/login" do |env|
       base_url = Config.current.base_url
@@ -11,7 +9,7 @@ class MainRouter < Router
       begin
         env.session.delete_string "token"
       rescue e
-        @context.error "Error when attempting to log out: #{e}"
+        Logger.error "Error when attempting to log out: #{e}"
       ensure
         redirect env, "/login"
       end
@@ -21,7 +19,7 @@ class MainRouter < Router
       begin
         username = env.params.body["username"]
         password = env.params.body["password"]
-        token = @context.storage.verify_user(username, password).not_nil!
+        token = Storage.default.verify_user(username, password).not_nil!
 
         env.session.string "token", token
 
@@ -41,22 +39,22 @@ class MainRouter < Router
       begin
         username = get_username env
 
-        sort_opt = SortOptions.from_info_json @context.library.dir, username
+        sort_opt = SortOptions.from_info_json Library.default.dir, username
         get_sort_opt
 
-        titles = @context.library.sorted_titles username, sort_opt
+        titles = Library.default.sorted_titles username, sort_opt
         percentage = titles.map &.load_percentage username
 
         layout "library"
       rescue e
-        @context.error e
+        Logger.error e
         env.response.status_code = 500
       end
     end
 
     get "/book/:title" do |env|
       begin
-        title = (@context.library.get_title env.params.url["title"]).not_nil!
+        title = (Library.default.get_title env.params.url["title"]).not_nil!
         username = get_username env
 
         sort_opt = SortOptions.from_info_json title.dir, username
@@ -68,7 +66,7 @@ class MainRouter < Router
         title_percentage = title.titles.map &.load_percentage username
         layout "title"
       rescue e
-        @context.error e
+        Logger.error e
         env.response.status_code = 500
       end
     end
@@ -92,7 +90,7 @@ class MainRouter < Router
 
         layout "plugin-download"
       rescue e
-        @context.error e
+        Logger.error e
         env.response.status_code = 500
       end
     end
@@ -100,16 +98,16 @@ class MainRouter < Router
     get "/" do |env|
       begin
         username = get_username env
-        continue_reading = @context
-          .library.get_continue_reading_entries username
-        recently_added = @context.library.get_recently_added_entries username
-        start_reading = @context.library.get_start_reading_titles username
-        titles = @context.library.titles
+        continue_reading = Library.default
+          .get_continue_reading_entries username
+        recently_added = Library.default.get_recently_added_entries username
+        start_reading = Library.default.get_start_reading_titles username
+        titles = Library.default.titles
         new_user = !titles.any? { |t| t.load_percentage(username) > 0 }
         empty_library = titles.size == 0
         layout "home"
       rescue e
-        @context.error e
+        Logger.error e
         env.response.status_code = 500
       end
     end
@@ -126,7 +124,7 @@ class MainRouter < Router
 
         raise "Tag #{tag} not found" if title_ids.empty?
 
-        titles = title_ids.map { |id| @context.library.get_title id }
+        titles = title_ids.map { |id| Library.default.get_title id }
           .select Title
 
         titles = sort_titles titles, sort_opt, username
@@ -134,7 +132,7 @@ class MainRouter < Router
 
         layout "tag"
       rescue e
-        @context.error e
+        Logger.error e
         env.response.status_code = 404
       end
     end

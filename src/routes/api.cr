@@ -1,9 +1,8 @@
-require "./router"
 require "../mangadex/*"
 require "../upload"
 require "koa"
 
-class APIRouter < Router
+struct APIRouter
   @@api_json : String?
 
   API_VERSION = "0.1.0"
@@ -178,7 +177,7 @@ class APIRouter < Router
         eid = env.params.url["eid"]
         page = env.params.url["page"].to_i
 
-        title = @context.library.get_title tid
+        title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
         entry = title.get_entry eid
         raise "Entry ID `#{eid}` of `#{title.title}` not found" if entry.nil?
@@ -188,7 +187,7 @@ class APIRouter < Router
 
         send_img env, img
       rescue e
-        @context.error e
+        Logger.error e
         env.response.status_code = 500
         e.message
       end
@@ -204,7 +203,7 @@ class APIRouter < Router
         tid = env.params.url["tid"]
         eid = env.params.url["eid"]
 
-        title = @context.library.get_title tid
+        title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
         entry = title.get_entry eid
         raise "Entry ID `#{eid}` of `#{title.title}` not found" if entry.nil?
@@ -215,7 +214,7 @@ class APIRouter < Router
 
         send_img env, img
       rescue e
-        @context.error e
+        Logger.error e
         env.response.status_code = 500
         e.message
       end
@@ -228,12 +227,12 @@ class APIRouter < Router
     get "/api/book/:tid" do |env|
       begin
         tid = env.params.url["tid"]
-        title = @context.library.get_title tid
+        title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
 
         send_json env, title.to_json
       rescue e
-        @context.error e
+        Logger.error e
         env.response.status_code = 404
         e.message
       end
@@ -242,7 +241,7 @@ class APIRouter < Router
     Koa.describe "Returns the entire library with all titles and entries"
     Koa.response 200, ref: "$library"
     get "/api/library" do |env|
-      send_json env, @context.library.to_json
+      send_json env, Library.default.to_json
     end
 
     Koa.describe "Triggers a library scan"
@@ -250,11 +249,11 @@ class APIRouter < Router
     Koa.response 200, ref: "$scanResult"
     post "/api/admin/scan" do |env|
       start = Time.utc
-      @context.library.scan
+      Library.default.scan
       ms = (Time.utc - start).total_milliseconds
       send_json env, {
         "milliseconds" => ms,
-        "titles"       => @context.library.titles.size,
+        "titles"       => Library.default.titles.size,
       }.to_json
     end
 
@@ -281,9 +280,9 @@ class APIRouter < Router
     delete "/api/admin/user/delete/:username" do |env|
       begin
         username = env.params.url["username"]
-        @context.storage.delete_user username
+        Storage.default.delete_user username
       rescue e
-        @context.error e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -308,7 +307,7 @@ class APIRouter < Router
     put "/api/progress/:tid/:page" do |env|
       begin
         username = get_username env
-        title = (@context.library.get_title env.params.url["tid"]).not_nil!
+        title = (Library.default.get_title env.params.url["tid"]).not_nil!
         page = env.params.url["page"].to_i
         entry_id = env.params.query["eid"]?
 
@@ -322,7 +321,7 @@ class APIRouter < Router
           title.read_all username
         end
       rescue e
-        @context.error e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -340,7 +339,7 @@ class APIRouter < Router
     put "/api/bulk_progress/:action/:tid" do |env|
       begin
         username = get_username env
-        title = (@context.library.get_title env.params.url["tid"]).not_nil!
+        title = (Library.default.get_title env.params.url["tid"]).not_nil!
         action = env.params.url["action"]
         ids = env.params.json["ids"].as(Array).map &.as_s
 
@@ -349,7 +348,7 @@ class APIRouter < Router
         end
         title.bulk_progress action, ids, username
       rescue e
-        @context.error e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -369,7 +368,7 @@ class APIRouter < Router
     Koa.response 200, ref: "$result"
     put "/api/admin/display_name/:tid/:name" do |env|
       begin
-        title = (@context.library.get_title env.params.url["tid"])
+        title = (Library.default.get_title env.params.url["tid"])
           .not_nil!
         name = env.params.url["name"]
         entry = env.params.query["eid"]?
@@ -380,7 +379,7 @@ class APIRouter < Router
           title.set_display_name eobj.not_nil!.title, name
         end
       rescue e
-        @context.error e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -403,7 +402,7 @@ class APIRouter < Router
         manga = api.get_manga id
         send_json env, manga.to_info_json
       rescue e
-        @context.error e
+        Logger.error e
         send_json env, {"error" => e.message}.to_json
       end
     end
@@ -427,13 +426,13 @@ class APIRouter < Router
             Time.unix chapter["time"].as_s.to_i
           )
         }
-        inserted_count = @context.queue.push jobs
+        inserted_count = Queue.default.push jobs
         send_json env, {
           "success": inserted_count,
           "fail":    jobs.size - inserted_count,
         }.to_json
       rescue e
-        @context.error e
+        Logger.error e
         send_json env, {"error" => e.message}.to_json
       end
     end
@@ -443,8 +442,8 @@ class APIRouter < Router
       interval = (interval_raw.to_i? if interval_raw) || 5
       loop do
         socket.send({
-          "jobs"   => @context.queue.get_all,
-          "paused" => @context.queue.paused?,
+          "jobs"   => Queue.default.get_all,
+          "paused" => Queue.default.paused?,
         }.to_json)
         sleep interval.seconds
       end
@@ -457,10 +456,10 @@ class APIRouter < Router
     Koa.response 200, ref: "$jobs"
     get "/api/admin/mangadex/queue" do |env|
       begin
-        jobs = @context.queue.get_all
+        jobs = Queue.default.get_all
         send_json env, {
           "jobs"    => jobs,
-          "paused"  => @context.queue.paused?,
+          "paused"  => Queue.default.paused?,
           "success" => true,
         }.to_json
       rescue e
@@ -491,20 +490,20 @@ class APIRouter < Router
         case action
         when "delete"
           if id.nil?
-            @context.queue.delete_status Queue::JobStatus::Completed
+            Queue.default.delete_status Queue::JobStatus::Completed
           else
-            @context.queue.delete id
+            Queue.default.delete id
           end
         when "retry"
           if id.nil?
-            @context.queue.reset
+            Queue.default.reset
           else
-            @context.queue.reset id
+            Queue.default.reset id
           end
         when "pause"
-          @context.queue.pause
+          Queue.default.pause
         when "resume"
-          @context.queue.resume
+          Queue.default.resume
         else
           raise "Unknown queue action #{action}"
         end
@@ -550,7 +549,7 @@ class APIRouter < Router
           when "cover"
             title_id = env.params.query["tid"]
             entry_id = env.params.query["eid"]?
-            title = @context.library.get_title(title_id).not_nil!
+            title = Library.default.get_title(title_id).not_nil!
 
             unless SUPPORTED_IMG_TYPES.includes? \
                      MIME.from_filename? filename
@@ -634,7 +633,7 @@ class APIRouter < Router
             Time.utc
           )
         }
-        inserted_count = @context.queue.push jobs
+        inserted_count = Queue.default.push jobs
         send_json env, {
           "success": inserted_count,
           "fail":    jobs.size - inserted_count,
@@ -656,7 +655,7 @@ class APIRouter < Router
         tid = env.params.url["tid"]
         eid = env.params.url["eid"]
 
-        title = @context.library.get_title tid
+        title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
         entry = title.get_entry eid
         raise "Entry ID `#{eid}` of `#{title.title}` not found" if entry.nil?
@@ -681,12 +680,12 @@ class APIRouter < Router
     Koa.response 404, "Entry not found"
     get "/api/download/:tid/:eid" do |env|
       begin
-        title = (@context.library.get_title env.params.url["tid"]).not_nil!
+        title = (Library.default.get_title env.params.url["tid"]).not_nil!
         entry = (title.get_entry env.params.url["eid"]).not_nil!
 
         send_attachment env, entry.zip_path
       rescue e
-        @context.error e
+        Logger.error e
         env.response.status_code = 404
       end
     end
@@ -696,7 +695,7 @@ class APIRouter < Router
     Koa.response 200, ref: "$tagsResult"
     get "/api/tags/:tid" do |env|
       begin
-        title = (@context.library.get_title env.params.url["tid"]).not_nil!
+        title = (Library.default.get_title env.params.url["tid"]).not_nil!
         tags = title.tags
 
         send_json env, {
@@ -704,7 +703,7 @@ class APIRouter < Router
           "tags"    => tags,
         }.to_json
       rescue e
-        @context.error e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -718,7 +717,7 @@ class APIRouter < Router
     Koa.tag "admin"
     put "/api/admin/tags/:tid/:tag" do |env|
       begin
-        title = (@context.library.get_title env.params.url["tid"]).not_nil!
+        title = (Library.default.get_title env.params.url["tid"]).not_nil!
         tag = env.params.url["tag"]
 
         title.add_tag tag
@@ -727,7 +726,7 @@ class APIRouter < Router
           "error"   => nil,
         }.to_json
       rescue e
-        @context.error e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -741,7 +740,7 @@ class APIRouter < Router
     Koa.tag "admin"
     delete "/api/admin/tags/:tid/:tag" do |env|
       begin
-        title = (@context.library.get_title env.params.url["tid"]).not_nil!
+        title = (Library.default.get_title env.params.url["tid"]).not_nil!
         tag = env.params.url["tag"]
 
         title.delete_tag tag
@@ -750,7 +749,7 @@ class APIRouter < Router
           "error"   => nil,
         }.to_json
       rescue e
-        @context.error e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,

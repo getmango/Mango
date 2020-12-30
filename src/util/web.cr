@@ -8,17 +8,17 @@ macro layout(name)
     #   this is why we check the default username first before checking the
     #   token.
     if Config.current.disable_login
-      is_admin = @context.storage.
+      is_admin = Storage.default.
         username_is_admin Config.current.default_username
     end
     if token = env.session.string? "token"
-      is_admin = @context.storage.verify_admin token
+      is_admin = Storage.default.verify_admin token
     end
     page = {{name}}
     render "src/views/#{{{name}}}.html.ecr", "src/views/layout.html.ecr"
   rescue e
     message = e.to_s
-    @context.error message
+    Logger.error message
     render "src/views/message.html.ecr", "src/views/layout.html.ecr"
   end
 end
@@ -30,7 +30,7 @@ end
 macro get_username(env)
   begin
     token = env.session.string "token"
-    (@context.storage.verify_token token).not_nil!
+    (Storage.default.verify_token token).not_nil!
   rescue e
     if Config.current.disable_login
       Config.current.default_username

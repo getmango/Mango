@@ -11,9 +11,6 @@ class AuthHandler < Kemal::Handler
                  "You have to login with proper credentials"
   HEADER_LOGIN_REQUIRED = "Basic realm=\"Login Required\""
 
-  def initialize(@storage : Storage)
-  end
-
   def require_basic_auth(env)
     env.response.status_code = 401
     env.response.headers["WWW-Authenticate"] = HEADER_LOGIN_REQUIRED
@@ -23,12 +20,12 @@ class AuthHandler < Kemal::Handler
 
   def validate_token(env)
     token = env.session.string? "token"
-    !token.nil? && @storage.verify_token token
+    !token.nil? && Storage.default.verify_token token
   end
 
   def validate_token_admin(env)
     token = env.session.string? "token"
-    !token.nil? && @storage.verify_admin token
+    !token.nil? && Storage.default.verify_admin token
   end
 
   def validate_auth_header(env)
@@ -49,7 +46,7 @@ class AuthHandler < Kemal::Handler
   def verify_user(value)
     username, password = Base64.decode_string(value[BASIC.size + 1..-1])
       .split(":")
-    @storage.verify_user username, password
+    Storage.default.verify_user username, password
   end
 
   def handle_opds_auth(env)

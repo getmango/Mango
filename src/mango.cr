@@ -53,6 +53,11 @@ class CLI < Clim
       ARGV.clear
 
       Config.load(opts.config).set_current
+
+      # Initialize main components
+      Storage.default
+      Queue.default
+      Library.default
       MangaDex::Downloader.default
       Plugin::Downloader.default
 
