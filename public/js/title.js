@@ -252,3 +252,33 @@ const bulkProgress = (action, el) => {
 			deselectAll();
 		});
 };
+
+const tagsComponent = () => {
+	return {
+		tags: tags,
+		newTag: '',
+		inputShown: false,
+		add() {
+			this.tags.push(this.newTag);
+			this.newTag = '';
+		},
+		keydown(event) {
+			if (event.key === 'Enter')
+				this.add()
+		},
+		rm(event) {
+			const tag = event.currentTarget.id.split('-')[0];
+			const idx = this.tags.indexOf(tag);
+			if (idx < 0) return;
+			this.tags.splice(idx, 1);
+		},
+		toggleInput(nextTick) {
+			this.inputShown = !this.inputShown;
+			if (this.inputShown) {
+				nextTick(() => {
+					$('#tag-input').get(0).focus();
+				});
+			}
+		}
+	};
+};
