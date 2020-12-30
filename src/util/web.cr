@@ -4,12 +4,15 @@ macro layout(name)
   base_url = Config.current.base_url
   begin
     is_admin = false
-    if token = env.session.string? "token"
-      is_admin = @context.storage.verify_admin token
-    end
+    # The token (if exists) takes precedence over the default user option.
+    #   this is why we check the default username first before checking the
+    #   token.
     if Config.current.disable_login
       is_admin = @context.storage.
         username_is_admin Config.current.default_username
+    end
+    if token = env.session.string? "token"
+      is_admin = @context.storage.verify_admin token
     end
     page = {{name}}
     render "src/views/#{{{name}}}.html.ecr", "src/views/layout.html.ecr"
