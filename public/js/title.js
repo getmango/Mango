@@ -259,8 +259,11 @@ const tagsComponent = () => {
 		newTag: '',
 		inputShown: false,
 		add() {
-			this.tags.push(this.newTag);
-			this.newTag = '';
+			const tag = this.newTag;
+			this.request(tag, 'PUT', () => {
+				this.tags.push(tag);
+				this.newTag = '';
+			});
 		},
 		keydown(event) {
 			if (event.key === 'Enter')
@@ -268,9 +271,11 @@ const tagsComponent = () => {
 		},
 		rm(event) {
 			const tag = event.currentTarget.id.split('-')[0];
-			const idx = this.tags.indexOf(tag);
-			if (idx < 0) return;
-			this.tags.splice(idx, 1);
+			this.request(tag, 'DELETE', () => {
+				const idx = this.tags.indexOf(tag);
+				if (idx < 0) return;
+				this.tags.splice(idx, 1);
+			});
 		},
 		toggleInput(nextTick) {
 			this.inputShown = !this.inputShown;
@@ -279,6 +284,25 @@ const tagsComponent = () => {
 					$('#tag-input').get(0).focus();
 				});
 			}
+		},
+		request(tag, method, cb) {
+			const tid = $('.upload-field').attr('data-title-id');
+			const url = `${base_url}api/tags/${tid}/${encodeURIComponent(tag)}`;
+			$.ajax({
+					url: url,
+					method: method,
+					dataType: 'json'
+				})
+				.done(data => {
+					if (data.success)
+						cb();
+					else {
+						alert('danger', data.error);
+					}
+				})
+				.fail((jqXHR, status) => {
+					alert('danger', `Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+				});
 		}
 	};
 };

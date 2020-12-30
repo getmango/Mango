@@ -685,6 +685,50 @@ class APIRouter < Router
       end
     end
 
+    Koa.describe "Adds a new tag to a title"
+    Koa.path "tid", desc: "A title ID"
+    Koa.response 200, ref: "$result"
+    put "/api/tags/:tid/:tag" do |env|
+      begin
+        title = (@context.library.get_title env.params.url["tid"]).not_nil!
+        tag = env.params.url["tag"]
+
+        title.add_tag tag
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+        }.to_json
+      rescue e
+        @context.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Deletes a tag from a title"
+    Koa.path "tid", desc: "A title ID"
+    Koa.response 200, ref: "$result"
+    delete "/api/tags/:tid/:tag" do |env|
+      begin
+        title = (@context.library.get_title env.params.url["tid"]).not_nil!
+        tag = env.params.url["tag"]
+
+        title.delete_tag tag
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+        }.to_json
+      rescue e
+        @context.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
     doc = Koa.generate
     @@api_json = doc.to_json if doc
 
