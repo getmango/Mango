@@ -259,7 +259,7 @@ const tagsComponent = () => {
 		newTag: '',
 		inputShown: false,
 		add() {
-			const tag = this.newTag;
+			const tag = this.newTag.trim();
 			this.request(tag, 'PUT', () => {
 				this.tags.push(tag);
 				this.newTag = '';
