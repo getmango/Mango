@@ -1,5 +1,5 @@
 class Library
-  property dir : String, title_ids : Array(String),
+  getter dir : String, title_ids : Array(String),
     title_hash : Hash(String, Title)
 
   use_default
@@ -106,7 +106,7 @@ class Library
       .select { |fn| !fn.starts_with? "." }
       .map { |fn| File.join @dir, fn }
       .select { |path| File.directory? path }
-      .map { |path| Title.new path, "", storage, self }
+      .map { |path| Title.new path, "" }
       .select { |title| !(title.entries.empty? && title.titles.empty?) }
       .sort { |a, b| a.title <=> b.title }
       .tap { |_| @title_ids.clear }

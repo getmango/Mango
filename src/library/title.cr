@@ -1,13 +1,14 @@
 require "../archive"
 
 class Title
-  property dir : String, parent_id : String, title_ids : Array(String),
+  getter dir : String, parent_id : String, title_ids : Array(String),
     entries : Array(Entry), title : String, id : String,
-    encoded_title : String, mtime : Time,
-    entry_display_name_cache : Hash(String, String)?
+    encoded_title : String, mtime : Time
 
-  def initialize(@dir : String, @parent_id, storage,
-                 @library : Library)
+  @entry_display_name_cache : Hash(String, String)?
+
+  def initialize(@dir : String, @parent_id)
+    storage = Storage.default
     id = storage.get_id @dir, true
     if id.nil?
       id = random_str
@@ -28,26 +29,26 @@ class Title
       next if fn.starts_with? "."
       path = File.join dir, fn
       if File.directory? path
-        title = Title.new path, @id, storage, library
+        title = Title.new path, @id
         next if title.entries.size == 0 && title.titles.size == 0
-        @library.title_hash[title.id] = title
+        Library.default.title_hash[title.id] = title
         @title_ids << title.id
         next
       end
       if [".zip", ".cbz", ".rar", ".cbr"].includes? File.extname path
-        entry = Entry.new path, self, storage
+        entry = Entry.new path, self
         @entries << entry if entry.pages > 0 || entry.err_msg
       end
     end
 
     mtimes = [@mtime]
-    mtimes += @title_ids.map { |e| @library.title_hash[e].mtime }
+    mtimes += @title_ids.map { |e| Library.default.title_hash[e].mtime }
     mtimes += @entries.map { |e| e.mtime }
     @mtime = mtimes.max
 
     @title_ids.sort! do |a, b|
-      compare_numerically @library.title_hash[a].title,
-        @library.title_hash[b].title
+      compare_numerically Library.default.title_hash[a].title,
+        Library.default.title_hash[b].title
     end
     sorter = ChapterSorter.new @entries.map { |e| e.title }
     @entries.sort! do |a, b|
@@ -83,7 +84,7 @@ class Title
   end
 
   def titles
-    @title_ids.map { |tid| @library.get_title! tid }
+    @title_ids.map { |tid| Library.default.get_title! tid }
   end
 
   # Get all entries, including entries in nested titles
@@ -101,7 +102,7 @@ class Title
     ary = [] of Title
     tid = @parent_id
     while !tid.empty?
-      title = @library.get_title! tid
+      title = Library.default.get_title! tid
       ary << title
       tid = title.parent_id
     end

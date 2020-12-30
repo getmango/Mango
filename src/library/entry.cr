@@ -1,11 +1,12 @@
 require "image_size"
 
 class Entry
-  property zip_path : String, book : Title, title : String,
+  getter zip_path : String, book : Title, title : String,
     size : String, pages : Int32, id : String, encoded_path : String,
     encoded_title : String, mtime : Time, err_msg : String?
 
-  def initialize(@zip_path, @book, storage)
+  def initialize(@zip_path, @book)
+    storage = Storage.default
     @encoded_path = URI.encode @zip_path
     @title = File.basename @zip_path, File.extname @zip_path
     @encoded_title = URI.encode @title
