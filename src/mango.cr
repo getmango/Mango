@@ -3,9 +3,10 @@ require "./queue"
 require "./server"
 require "./main_fiber"
 require "./mangadex/*"
+require "./plugin/*"
 require "option_parser"
 require "clim"
-require "./plugin/*"
+require "tallboy"
 
 MANGO_VERSION = "0.17.1"
 
@@ -110,18 +111,13 @@ class CLI < Clim
               password.not_nil!, opts.admin
           when "list"
             users = storage.list_users
-            name_length = users.map(&.[0].size).max? || 0
-            l_cell_width = ["username".size, name_length].max
-            r_cell_width = "admin access".size
-            header = " #{"username".ljust l_cell_width} | admin access "
-            puts "-" * header.size
-            puts header
-            puts "-" * header.size
-            users.each do |name, admin|
-              puts " #{name.ljust l_cell_width} | " \
-                   "#{admin.to_s.ljust r_cell_width} "
+            table = Tallboy.table do
+              header ["username", "admin access"]
+              users.each do |name, admin|
+                row [name, admin]
+              end
             end
-            puts "-" * header.size
+            puts table
           when nil
             puts opts.help_string
           else

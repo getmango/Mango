@@ -68,3 +68,7 @@ shards:
     git: https://github.com/crystal-lang/crystal-sqlite3.git
     version: 0.16.0
 
+  tallboy:
+    git: https://github.com/epoch/tallboy.git
+    version: 0.9.3
+

@@ -39,3 +39,5 @@ dependencies:
    github: hkalexling/image_size.cr
   koa:
     github: hkalexling/koa
+  tallboy:
+    github: epoch/tallboy
