@@ -256,11 +256,13 @@ const bulkProgress = (action, el) => {
 const tagsComponent = () => {
 	return {
 		loading: true,
+		isAdmin: false,
 		tags: [],
 		newTag: '',
 		inputShown: false,
 		tid: $('.upload-field').attr('data-title-id'),
-		load() {
+		load(admin) {
+			this.isAdmin = admin;
 			const url = `${base_url}api/tags/${this.tid}`;
 			this.request(url, 'GET', (data) => {
 				this.tags = data.tags;
@@ -269,7 +271,7 @@ const tagsComponent = () => {
 		},
 		add() {
 			const tag = this.newTag.trim();
-			const url = `${base_url}api/tags/${this.tid}/${encodeURIComponent(tag)}`;
+			const url = `${base_url}api/admin/tags/${this.tid}/${encodeURIComponent(tag)}`;
 			this.request(url, 'PUT', () => {
 				this.tags.push(tag);
 				this.newTag = '';
@@ -281,7 +283,7 @@ const tagsComponent = () => {
 		},
 		rm(event) {
 			const tag = event.currentTarget.id.split('-')[0];
-			const url = `${base_url}api/tags/${this.tid}/${encodeURIComponent(tag)}`;
+			const url = `${base_url}api/admin/tags/${this.tid}/${encodeURIComponent(tag)}`;
 			this.request(url, 'DELETE', () => {
 				const idx = this.tags.indexOf(tag);
 				if (idx < 0) return;
@@ -295,9 +297,6 @@ const tagsComponent = () => {
 					$('#tag-input').get(0).focus();
 				});
 			}
-		},
-		buildURL(tid, tag) {
-
 		},
 		request(url, method, cb) {
 			$.ajax({

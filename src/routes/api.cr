@@ -715,7 +715,8 @@ class APIRouter < Router
     Koa.describe "Adds a new tag to a title"
     Koa.path "tid", desc: "A title ID"
     Koa.response 200, ref: "$result"
-    put "/api/tags/:tid/:tag" do |env|
+    Koa.tag "admin"
+    put "/api/admin/tags/:tid/:tag" do |env|
       begin
         title = (@context.library.get_title env.params.url["tid"]).not_nil!
         tag = env.params.url["tag"]
@@ -737,7 +738,8 @@ class APIRouter < Router
     Koa.describe "Deletes a tag from a title"
     Koa.path "tid", desc: "A title ID"
     Koa.response 200, ref: "$result"
-    delete "/api/tags/:tid/:tag" do |env|
+    Koa.tag "admin"
+    delete "/api/admin/tags/:tid/:tag" do |env|
       begin
         title = (@context.library.get_title env.params.url["tid"]).not_nil!
         tag = env.params.url["tag"]
