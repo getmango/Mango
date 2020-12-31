@@ -21,9 +21,7 @@
 
 <% content_for "script" do %>
   <script>
-    UIkit.modal('#modal').show().then(function() {
-      styleModal();
-    });
+    UIkit.modal('#modal').show();
     UIkit.util.on('#modal', 'hide', function() {
       location.href = "<%= base_url %>book/<%= entry.book.id %>";
     });
