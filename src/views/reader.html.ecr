@@ -4,19 +4,8 @@
   <% page = "Reader" %>
   <%= render_component "head" %>
 
-  <body style="position:relative;">
-    <div class="uk-section uk-section-default uk-section-small reader-bg"
-         id="root" 
-         :style="mode === 'continuous' ? '' : 'padding:0'"
-         x-data="{
-                  loading: true, 
-                  mode: 'continuous', // can be 'continuous', 'height' or 'width'
-                  msg: 'Loading the web reader. Please wait...',
-                  alertClass: 'uk-alert-primary',
-                  items: [],
-                  curItem: {},
-                  flipAnimation: null
-                  }">
+  <body style="position:relative;" x-data="readerComponent()" x-init="init($nextTick)" @resize.window="resized()">
+    <div class="uk-section uk-section-default uk-section-small reader-bg" :style="mode === 'continuous' ? '' : 'padding:0'">
 
       <div @keydown.window.debounce="keyHandler($event)"></div>
 
@@ -40,7 +29,7 @@
               :width="item.width"
               :height="item.height"
               :id="item.id"
-              :onclick="`showControl('${item.id}')`"
+              @click="showControl($event)"
               />
           </template>
           <%- if next_entry_url -%>
@@ -56,11 +45,11 @@
                                'uk-align-center': true, 
                                'uk-animation-slide-left': flipAnimation === 'left', 
                                'uk-animation-slide-right': flipAnimation === 'right'
-                               }" :data-src="curItem.url" :width="curItem.width" :height="curItem.height" :id="curItem.id" :onclick="`showControl('${curItem.id}')`" :style="`
-                                                         width:${mode === 'width' ? '100vw' : 'auto'}; 
-                                                         height:${mode === 'height' ? '100vh' : 'auto'}; 
-                                                         margin-bottom:0;
-                                                         `" />
+                               }" :data-src="curItem.url" :width="curItem.width" :height="curItem.height" :id="curItem.id" @click="showControl($event)" :style="`
+                                                                                                                                                                 width:${mode === 'width' ? '100vw' : 'auto'}; 
+                                                                                                                                                                 height:${mode === 'height' ? '100vh' : 'auto'}; 
+                                                                                                                                                                 margin-bottom:0;
+                                                                                                                                                                 `" />
 
           <div style="position:absolute;z-index:1; top:0;left:0; width:30%;height:100%;" @click="flipPage(false)"></div>
           <div style="position:absolute;z-index:1; top:0;right:0; width:30%;height:100%;" @click="flipPage(true)"></div>
@@ -83,7 +72,7 @@
           <div class="uk-margin">
             <label class="uk-form-label" for="page-select">Jump to page</label>
             <div class="uk-form-controls">
-              <select id="page-select" class="uk-select">
+              <select id="page-select" class="uk-select" @change="pageChanged()">
                 <%- (1..entry.pages).each do |p| -%>
                   <option value="<%= p %>"><%= p %></option>
                 <%- end -%>
@@ -93,7 +82,7 @@
           <div class="uk-margin">
             <label class="uk-form-label" for="mode-select">Mode</label>
             <div class="uk-form-controls">
-              <select id="mode-select" class="uk-select">
+              <select id="mode-select" class="uk-select" @change="modeChanged($nextTick)">
                 <option value="continuous">Continuous</option>
                 <option value="paged">Paged</option>
               </select>
