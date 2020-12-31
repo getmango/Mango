@@ -10,12 +10,12 @@ struct ReaderRouter
         next layout "reader-error" if entry.err_msg
 
         # load progress
-        page = [1, entry.load_progress username].max
+        page_idx = [1, entry.load_progress username].max
 
         # start from page 1 if the user has finished reading the entry
-        page = 1 if entry.finished? username
+        page_idx = 1 if entry.finished? username
 
-        redirect env, "/reader/#{title.id}/#{entry.id}/#{page}"
+        redirect env, "/reader/#{title.id}/#{entry.id}/#{page_idx}"
       rescue e
         Logger.error e
         env.response.status_code = 404
@@ -30,8 +30,10 @@ struct ReaderRouter
 
         title = (Library.default.get_title env.params.url["title"]).not_nil!
         entry = (title.get_entry env.params.url["entry"]).not_nil!
-        page = env.params.url["page"].to_i
-        raise "" if page > entry.pages || page <= 0
+        page_idx = env.params.url["page"].to_i
+        if page_idx > entry.pages || page_idx <= 0
+          raise "Page #{page_idx} not found."
+        end
 
         exit_url = "#{base_url}book/#{title.id}"
 

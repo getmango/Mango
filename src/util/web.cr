@@ -19,6 +19,7 @@ macro layout(name)
   rescue e
     message = e.to_s
     Logger.error message
+    page = "Error"
     render "src/views/message.html.ecr", "src/views/layout.html.ecr"
   end
 end

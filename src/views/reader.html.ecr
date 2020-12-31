@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html class="reader-bg">
 
+  <% page = "Reader" %>
   <%= render_component "head" %>
 
   <body style="position:relative;">
@@ -8,14 +9,14 @@
          id="root" 
          :style="mode === 'continuous' ? '' : 'padding:0'"
          x-data="{
-         loading: true, 
-         mode: 'continuous', // can be 'continuous', 'height' or 'width'
-         msg: 'Loading the web reader. Please wait...',
-         alertClass: 'uk-alert-primary',
-         items: [],
-         curItem: {},
-         flipAnimation: null
-         }">
+                  loading: true, 
+                  mode: 'continuous', // can be 'continuous', 'height' or 'width'
+                  msg: 'Loading the web reader. Please wait...',
+                  alertClass: 'uk-alert-primary',
+                  items: [],
+                  curItem: {},
+                  flipAnimation: null
+                  }">
 
       <div @keydown.window.debounce="keyHandler($event)"></div>
 
@@ -29,18 +30,18 @@
       </div>
 
       <div
-               :class="{'uk-container': true, 'uk-container-small': mode === 'continuous', 'uk-container-expand': mode !== 'continuous'}">
+        :class="{'uk-container': true, 'uk-container-small': mode === 'continuous', 'uk-container-expand': mode !== 'continuous'}">
         <div x-show="!loading && mode === 'continuous'" x-cloak>
           <template x-for="item in items">
             <img
-                    uk-img
-                    class="uk-align-center"
-                    :data-src="item.url"
-                    :width="item.width"
-                    :height="item.height"
-                    :id="item.id"
-                    :onclick="`showControl('${item.id}')`"
-                    />
+              uk-img
+              class="uk-align-center"
+              :data-src="item.url"
+              :width="item.width"
+              :height="item.height"
+              :id="item.id"
+              :onclick="`showControl('${item.id}')`"
+              />
           </template>
           <%- if next_entry_url -%>
             <button id="next-btn" class="uk-align-center uk-button uk-button-primary" @click="nextEntry('<%= next_entry_url %>')">Next Entry</button>
@@ -52,14 +53,14 @@
         <div x-cloak x-show="!loading && mode !== 'continuous'" class="uk-flex uk-flex-middle" style="height:100vh">
 
           <img uk-img :class="{
-          'uk-align-center': true, 
-          'uk-animation-slide-left': flipAnimation === 'left', 
-          'uk-animation-slide-right': flipAnimation === 'right'
-          }" :data-src="curItem.url" :width="curItem.width" :height="curItem.height" :id="curItem.id" :onclick="`showControl('${curItem.id}')`" :style="`
-          width:${mode === 'width' ? '100vw' : 'auto'}; 
-          height:${mode === 'height' ? '100vh' : 'auto'}; 
-          margin-bottom:0;
-          `" />
+                               'uk-align-center': true, 
+                               'uk-animation-slide-left': flipAnimation === 'left', 
+                               'uk-animation-slide-right': flipAnimation === 'right'
+                               }" :data-src="curItem.url" :width="curItem.width" :height="curItem.height" :id="curItem.id" :onclick="`showControl('${curItem.id}')`" :style="`
+                                                         width:${mode === 'width' ? '100vw' : 'auto'}; 
+                                                         height:${mode === 'height' ? '100vh' : 'auto'}; 
+                                                         margin-bottom:0;
+                                                         `" />
 
           <div style="position:absolute;z-index:1; top:0;left:0; width:30%;height:100%;" @click="flipPage(false)"></div>
           <div style="position:absolute;z-index:1; top:0;right:0; width:30%;height:100%;" @click="flipPage(true)"></div>
@@ -107,7 +108,7 @@
 
     <script>
       const base_url = "<%= base_url %>";
-      const page = <%= page %>;
+      const page = <%= page_idx %>;
       const tid = "<%= title.id %>";
       const eid = "<%= entry.id %>";
     </script>
