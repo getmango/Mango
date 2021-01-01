@@ -1,4 +1,4 @@
-<div id="root" x-data="{jobs: [], paused: undefined, loading: false, toggling: false}" x-init="load()">
+<div x-data="component()" x-init="init()">
   <div class="uk-margin">
     <button class="uk-button uk-button-default" @click="jobAction('delete')">Delete Completed Tasks</button>
     <button class="uk-button uk-button-default" @click="jobAction('retry')">Retry Failed Tasks</button>
