@@ -1,68 +1,55 @@
-$(() => {
-	const setting = loadThemeSetting();
-	$('#theme-select').val(capitalize(setting));
-	$('#theme-select').change((e) => {
-		const newSetting = $(e.currentTarget).val().toLowerCase();
-		saveThemeSetting(newSetting);
-		setTheme();
-	});
+const component = () => {
+	return {
+		progress: 1.0,
+		generating: false,
+		scanning: false,
+		scanTitles: 0,
+		scanMs: -1,
+		themeSetting: '',
 
-	getProgress();
-	setInterval(getProgress, 5000);
-});
+		init() {
+			this.getProgress();
+			setInterval(() => {
+				this.getProgress();
+			}, 5000);
 
-/**
- * Capitalize String
- *
- * @function capitalize
- * @param {string} str - The string to be capitalized
- * @return {string} The capitalized string
- */
-const capitalize = (str) => {
-	return str.charAt(0).toUpperCase() + str.slice(1);
+			const setting = loadThemeSetting();
+			this.themeSetting = setting.charAt(0).toUpperCase() + setting.slice(1);
+		},
+		themeChanged(event) {
+			const newSetting = $(event.currentTarget).val().toLowerCase();
+			saveThemeSetting(newSetting);
+			setTheme();
+		},
+		scan() {
+			if (this.scanning) return;
+			this.scanning = true;
+			this.scanMs = -1;
+			this.scanTitles = 0;
+			$.post(`${base_url}api/admin/scan`)
+				.then(data => {
+					this.scanMs = data.milliseconds;
+					this.scanTitles = data.titles;
+				})
+				.always(() => {
+					this.scanning = false;
+				});
+		},
+		generateThumbnails() {
+			if (this.generating) return;
+			this.generating = true;
+			this.progress = 0.0;
+			$.post(`${base_url}api/admin/generate_thumbnails`)
+				.then(() => {
+					this.getProgress()
+				});
+		},
+		getProgress() {
+			$.get(`${base_url}api/admin/thumbnail_progress`)
+				.then(data => {
+					this.progress = data.progress;
+					this.generating = data.progress > 0;
+				});
+		},
+	};
 };
-
-/**
- * Get the thumbnail generation progress from the API
- *
- * @function getProgress
- */
-const getProgress = () => {
-	$.get(`${base_url}api/admin/thumbnail_progress`)
-		.then(data => {
-			setProp('progress', data.progress);
-			const generating = data.progress > 0
-			setProp('generating', generating);
-		});
-};
-
-/**
- * Trigger the thumbnail generation
- *
- * @function generateThumbnails
- */
-const generateThumbnails = () => {
-	setProp('generating', true);
-	setProp('progress', 0.0);
-	$.post(`${base_url}api/admin/generate_thumbnails`)
-		.then(getProgress);
-};
-
-/**
- * Trigger the scan
- *
- * @function scan
- */
-const scan = () => {
-	setProp('scanning', true);
-	setProp('scanMs', -1);
-	setProp('scanTitles', 0);
-	$.post(`${base_url}api/admin/scan`)
-		.then(data => {
-			setProp('scanMs', data.milliseconds);
-			setProp('scanTitles', data.titles);
-		})
-		.always(() => {
-			setProp('scanning', false);
-		});
-}

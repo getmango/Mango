@@ -31,14 +31,6 @@
     cursor: pointer;
 }
 
-.uk-list li:not(.nopointer) {
-    cursor: pointer;
-}
-
-#scan-status {
-    cursor: auto;
-}
-
 .reader-bg {
     background-color: black;
 }

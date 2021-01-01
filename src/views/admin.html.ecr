@@ -1,21 +1,25 @@
-<ul class="uk-list uk-list-large uk-list-divider" id="root" x-data="{progress : 1.0, generating : false, scanTitles: 0, scanMs: -1, scanning : false}">
-  <li @click="location.href = '<%= base_url %>admin/user'">User Managerment</li>
-  <li :class="{'nopointer' : scanning}" @click="scan()">
-    <span :style="`${scanning ? 'color:grey' : ''}`">Scan Library Files</span>
-    <div class="uk-align-right">
-      <div uk-spinner x-show="scanning"></div>
-      <span x-show="!scanning && scanMs > 0" x-text="`Scan ${scanTitles} titles in ${scanMs}ms`"></span>
-    </div>
+<ul class="uk-list uk-list-large uk-list-divider" x-data="component()" x-init="init()">
+  <li><a class="uk-link-reset" href="<%= base_url %>admin/user">User Management</a></li>
+  <li>
+    <a class="uk-link-reset" @click="scan()">
+      <span :style="`${scanning ? 'color:grey' : ''}`">Scan Library Files</span>
+      <div class="uk-align-right">
+        <div uk-spinner x-show="scanning"></div>
+        <span x-show="!scanning && scanMs > 0" x-text="`Scan ${scanTitles} titles in ${scanMs}ms`"></span>
+      </div>
+    </a>
   </li>
-  <li :class="{'nopointer' : generating}" @click="generateThumbnails()">
-    <span :style="`${generating ? 'color:grey' : ''}`">Generate Thumbnails</span>
-    <div class="uk-align-right">
-      <span x-show="generating && progress > 0" x-text="`${(progress * 100).toFixed(2)}%`"></span>
-    </div>
+  <li>
+    <a class="uk-link-reset" @click="generateThumbnails()">
+      <span :style="`${generating ? 'color:grey' : ''}`">Generate Thumbnails</span>
+      <div class="uk-align-right">
+        <span x-show="generating && progress > 0" x-text="`${(progress * 100).toFixed(2)}%`"></span>
+      </div>
+    </a>
   </li>
-  <li class="nopointer">
+  <li>
     <span>Theme</span>
-    <select id="theme-select" class="uk-select uk-align-right uk-width-1-3@m uk-width-1-2">
+    <select id="theme-select" class="uk-select uk-align-right uk-width-1-3@m uk-width-1-2" :val="themeSetting" @change="themeChanged($event)">
       <option>Dark</option>
       <option>Light</option>
       <option>System</option>
