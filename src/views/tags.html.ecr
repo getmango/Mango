@@ -1,8 +1,8 @@
 <h2 class=uk-title>Tags</h2>
 <p class="uk-text-meta"><%= tags.size %> <%= tags.size > 1 ? "tags" : "tag" %> found</p>
 
-<% tags.zip(encoded_tags, counts).each do |tag, encoded, count| %>
+<% tags.each  do |tag| %>
   <span class="uk-label uk-label-primary" style="padding:2px 5px; margin:0 5px 5px 5px; text-transform:none;">
-    <a class="uk-link-reset" href="<%= base_url %>tags/<%= encoded %>"><%= tag %> (<%= count %> <%= count > 1 ? "titles" : "title" %>)</a>
+    <a class="uk-link-reset" href="<%= base_url %>tags/<%= tag[:encoded_tag] %>"><%= tag[:tag] %> (<%= tag[:count] %> <%= tag[:count] > 1 ? "titles" : "title" %>)</a>
   </span>
 <% end %>

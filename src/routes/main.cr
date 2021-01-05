@@ -138,12 +138,16 @@ struct MainRouter
     end
 
     get "/tags" do |env|
-      tags = Storage.default.list_tags
-      encoded_tags = tags.map do |t|
-        URI.encode_www_form t, space_to_plus: false
+      tags = Storage.default.list_tags.map do |tag|
+        {
+          tag:         tag,
+          encoded_tag: URI.encode_www_form(tag, space_to_plus: false),
+          count:       Storage.default.get_tag_titles(tag).size,
+        }
       end
-      counts = tags.map do |t|
-        Storage.default.get_tag_titles(t).size
+      # Sort by :count reversly, and then sort by :tag
+      tags.sort! do |a, b|
+        (b[:count] <=> a[:count]).or(a[:tag] <=> b[:tag])
       end
 
       layout "tags"
