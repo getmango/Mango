@@ -87,6 +87,7 @@ log_level: info
 upload_path: ~/mango/uploads
 plugin_path: ~/mango/plugins
 download_timeout_seconds: 30
+page_margin: 30
 mangadex:
   base_url: https://mangadex.org
   api_url: https://mangadex.org/api

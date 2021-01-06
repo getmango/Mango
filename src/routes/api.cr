@@ -664,6 +664,7 @@ struct APIRouter
         send_json env, {
           "success"    => true,
           "dimensions" => sizes,
+          "margin"     => Config.current.page_margin,
         }.to_json
       rescue e
         send_json env, {
