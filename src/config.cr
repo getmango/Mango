@@ -20,6 +20,7 @@ class Config
   property plugin_path : String = File.expand_path "~/mango/plugins",
     home: true
   property download_timeout_seconds : Int32 = 30
+  property page_margin : Int32 = 30
   property mangadex = Hash(String, String | Int32).new
 
   @[YAML::Field(ignore: true)]
