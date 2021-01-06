@@ -25,7 +25,8 @@ const readerComponent = () => {
 							id: i + 1,
 							url: `${base_url}api/page/${tid}/${eid}/${i+1}`,
 							width: d.width,
-							height: d.height
+							height: d.height,
+							style: `margin-top: ${d.margin}px; margin-bottom: ${d.margin}px;`
 						};
 					});
 

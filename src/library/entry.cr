@@ -117,6 +117,7 @@ class Entry
           sizes << {
             "width"  => size.width,
             "height" => size.height,
+            "margin" => Config.current.page_margin,
           }
         rescue e
           Logger.warn "Failed to read page #{i} of entry #{zip_path}. #{e}"
