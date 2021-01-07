@@ -152,6 +152,7 @@ struct APIRouter
     Koa.object "dimensionResult", {
       "success"    => "boolean",
       "dimensions" => "$dimensionAry?",
+      "margin"     => "number",
       "error"      => "string?",
     }
 
