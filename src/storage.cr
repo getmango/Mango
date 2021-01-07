@@ -308,7 +308,7 @@ class Storage
     tags = [] of String
     MainFiber.run do
       get_db do |db|
-        db.query "select tag from tags where id = (?)", id do |rs|
+        db.query "select tag from tags where id = (?) order by tag", id do |rs|
           rs.each do
             tags << rs.read String
           end
