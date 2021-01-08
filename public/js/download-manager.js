@@ -43,12 +43,14 @@ const component = () => {
 					this.loading = false;
 				});
 		},
-		jobAction(action, id) {
+		jobAction(action, event) {
 			let url = `${base_url}api/admin/mangadex/queue/${action}`;
-			if (id !== undefined)
-				url += '?' + $.param({
+			if (event) {
+				const id = event.currentTarget.closest('tr').id.split('-')[1];
+				url = `${url}?${$.param({
 					id: id
-				});
+				})}`;
+			}
 			console.log(url);
 			$.ajax({
 					type: 'POST',
