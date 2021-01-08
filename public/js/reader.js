@@ -257,8 +257,23 @@ const readerComponent = () => {
 		 * @param {string} nextUrl - URL of the next entry
 		 */
 		nextEntry(nextUrl) {
-			this.saveProgress(items.length, () => {
+			this.saveProgress(this.items.length, () => {
 				this.redirect(nextUrl);
+			});
+		},
+		/**
+		 * Exits the reader, and optionally sets the reading progress tp 100%
+		 *
+		 * @param {string} exitUrl - The Exit URL
+		 * @param {boolean} [markCompleted] - Whether we should mark the
+		 *		reading progress to 100%
+		 */
+		exitReader(exitUrl, markCompleted = false) {
+			if (!markCompleted) {
+				return this.redirect(exitUrl);
+			}
+			this.saveProgress(this.items.length, () => {
+				this.redirect(exitUrl);
 			});
 		}
 	};
