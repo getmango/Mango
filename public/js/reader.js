@@ -101,8 +101,9 @@ const readerComponent = () => {
 		 */
 		flipPage(isNext) {
 			const idx = parseInt(this.curItem.id);
-			const delta = isNext ? 1 : -1;
-			const newIdx = idx + delta;
+			const newIdx = idx + (isNext ? 1 : -1);
+
+			if (newIdx <= 0 || newIdx > this.items.length) return;
 
 			this.toPage(newIdx);
 
