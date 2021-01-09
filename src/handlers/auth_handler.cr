@@ -75,7 +75,8 @@ class AuthHandler < Kemal::Handler
       #   this is why we check the default username first before checking the
       #   token.
       should_reject = true
-      if Storage.default.username_is_admin Config.current.default_username
+      if Config.current.disable_login &&
+         Storage.default.username_is_admin Config.current.default_username
         should_reject = false
       end
       if env.session.string? "token"
