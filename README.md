@@ -88,18 +88,21 @@ upload_path: ~/mango/uploads
 plugin_path: ~/mango/plugins
 download_timeout_seconds: 30
 page_margin: 30
+disable_login: false
+default_username: ""
 mangadex:
   base_url: https://mangadex.org
   api_url: https://mangadex.org/api
   download_wait_seconds: 5
   download_retries: 4
-  download_queue_db_path: /home/alex_ling/mango/queue.db
+  download_queue_db_path: ~/mango/queue.db
   chapter_rename_rule: '[Vol.{volume} ][Ch.{chapter} ]{title|id}'
   manga_rename_rule: '{title}'
 ```
 
 - `scan_interval_minutes`, `thumbnail_generation_interval_hours` and `db_optimization_interval_hours` can be any non-negative integer. Setting them to `0` disables the periodic tasks
 - `log_level` can be `debug`, `info`, `warn`, `error`, `fatal` or `off`. Setting it to `off` disables the logging
+- You can disable authentication by setting `disable_login` to true. Note that `default_username` must be set to an existing username for this to work.
 
 ### Library Structure
 
