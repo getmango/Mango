@@ -257,6 +257,48 @@ class Plugin
     end
     sbx.put_prop_string -2, "get"
 
+    sbx.push_proc LibDUK::VARARGS do |ptr|
+      env = Duktape::Sandbox.new ptr
+      url = env.require_string 0
+      body = env.require_string 1
+
+      headers = HTTP::Headers.new
+
+      if env.get_top == 3
+        env.enum 2, LibDUK::Enum::OwnPropertiesOnly
+        while env.next -1, true
+          key = env.require_string -2
+          val = env.require_string -1
+          headers.add key, val
+          env.pop_2
+        end
+      end
+
+      res = HTTP::Client.post url, headers, body
+
+      env.push_object
+
+      env.push_int res.status_code
+      env.put_prop_string -2, "status_code"
+
+      env.push_string res.body
+      env.put_prop_string -2, "body"
+
+      env.push_object
+      res.headers.each do |k, v|
+        if v.size == 1
+          env.push_string v[0]
+        else
+          env.push_string v.join ","
+        end
+        env.put_prop_string -2, k
+      end
+      env.put_prop_string -2, "headers"
+
+      env.call_success
+    end
+    sbx.put_prop_string -2, "post"
+
     sbx.push_proc 2 do |ptr|
       env = Duktape::Sandbox.new ptr
       html = env.require_string 0
