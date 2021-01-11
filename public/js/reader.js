@@ -241,7 +241,7 @@ const readerComponent = () => {
 		 */
 		setupScroller() {
 			if (this.mode !== 'continuous') return;
-			$('#root img').each((idx, el) => {
+			$('img').each((idx, el) => {
 				$(el).on('inview', (event, inView) => {
 					if (inView) {
 						const current = $(event.currentTarget).attr('id');
