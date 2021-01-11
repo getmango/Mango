@@ -7,6 +7,7 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@babel/preset-env": "^7.11.5",
+		"all-contributors-cli": "^6.19.0",
 		"gulp": "^4.0.2",
 		"gulp-babel": "^8.0.0",
 		"gulp-babel-minify": "^0.5.1",

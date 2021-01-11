@@ -157,5 +157,25 @@ Mobile UI:
 ## Contributors
 
 Please check the [development guideline](https://github.com/hkalexling/Mango/wiki/Development) if you are interested in code contributions.
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/hkalexling/"><img src="https://avatars1.githubusercontent.com/u/7845831?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Alex Ling</b></sub></a><br /><a href="https://github.com/hkalexling/Mango/commits?author=hkalexling" title="Code">💻</a> <a href="https://github.com/hkalexling/Mango/commits?author=hkalexling" title="Documentation">📖</a> <a href="#infra-hkalexling" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+    <td align="center"><a href="https://github.com/jaredlt"><img src="https://avatars1.githubusercontent.com/u/8590311?v=4?s=100" width="100px;" alt=""/><br /><sub><b>jaredlt</b></sub></a><br /><a href="https://github.com/hkalexling/Mango/commits?author=jaredlt" title="Code">💻</a> <a href="#ideas-jaredlt" title="Ideas, Planning, & Feedback">🤔</a> <a href="#design-jaredlt" title="Design">🎨</a></td>
+    <td align="center"><a href="https://windisco.com/"><img src="https://avatars1.githubusercontent.com/u/4946624?v=4?s=100" width="100px;" alt=""/><br /><sub><b>ココロ</b></sub></a><br /><a href="#infra-shincurry" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+    <td align="center"><a href="https://catgirlsin.space/"><img src="https://avatars0.githubusercontent.com/u/13433513?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Valentijn</b></sub></a><br /><a href="#infra-noirscape" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+    <td align="center"><a href="https://github.com/flying-sausages"><img src="https://avatars1.githubusercontent.com/u/23618693?v=4?s=100" width="100px;" alt=""/><br /><sub><b>flying-sausages</b></sub></a><br /><a href="https://github.com/hkalexling/Mango/commits?author=flying-sausages" title="Documentation">📖</a> <a href="#ideas-flying-sausages" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/XavierSchiller"><img src="https://avatars1.githubusercontent.com/u/22575255?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Xavier</b></sub></a><br /><a href="#infra-XavierSchiller" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+    <td align="center"><a href="https://github.com/WROIATE"><img src="https://avatars3.githubusercontent.com/u/44677306?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jarao</b></sub></a><br /><a href="#infra-WROIATE" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/Leeingnyo"><img src="https://avatars0.githubusercontent.com/u/6760150?v=4?s=100" width="100px;" alt=""/><br /><sub><b>이인용</b></sub></a><br /><a href="https://github.com/hkalexling/Mango/commits?author=Leeingnyo" title="Code">💻</a></td>
+  </tr>
+</table>
 
-[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/0)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/0)[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/1)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/1)[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/2)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/2)[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/3)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/3)[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/4)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/4)[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/5)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/5)[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/6)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/6)[![](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/images/7)](https://sourcerer.io/fame/hkalexling/hkalexling/Mango/links/7)
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->

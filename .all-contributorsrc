@@ -1,0 +1,92 @@
+{
+  "projectName": "Mango",
+  "projectOwner": "hkalexling",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitConvention": "none",
+  "contributors": [
+    {
+      "login": "hkalexling",
+      "name": "Alex Ling",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/7845831?v=4",
+      "profile": "https://github.com/hkalexling/",
+      "contributions": [
+        "code",
+        "doc",
+        "infra"
+      ]
+    },
+    {
+      "login": "jaredlt",
+      "name": "jaredlt",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/8590311?v=4",
+      "profile": "https://github.com/jaredlt",
+      "contributions": [
+        "code",
+		"ideas",
+		"design"
+      ]
+    },
+    {
+      "login": "shincurry",
+      "name": "ココロ",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/4946624?v=4",
+      "profile": "https://windisco.com/",
+      "contributions": [
+        "infra"
+      ]
+    },
+    {
+      "login": "noirscape",
+      "name": "Valentijn",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/13433513?v=4",
+      "profile": "https://catgirlsin.space/",
+      "contributions": [
+        "infra"
+      ]
+    },
+    {
+      "login": "flying-sausages",
+      "name": "flying-sausages",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/23618693?v=4",
+      "profile": "https://github.com/flying-sausages",
+      "contributions": [
+        "doc",
+		"ideas"
+      ]
+    },
+    {
+      "login": "XavierSchiller",
+      "name": "Xavier",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/22575255?v=4",
+      "profile": "https://github.com/XavierSchiller",
+      "contributions": [
+        "infra"
+      ]
+    },
+    {
+      "login": "WROIATE",
+      "name": "Jarao",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/44677306?v=4",
+      "profile": "https://github.com/WROIATE",
+      "contributions": [
+        "infra"
+      ]
+    },
+    {
+      "login": "Leeingnyo",
+      "name": "이인용",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6760150?v=4",
+      "profile": "https://github.com/Leeingnyo",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7
+}
