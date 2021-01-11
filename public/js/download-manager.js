@@ -6,7 +6,7 @@ const component = () => {
 		toggling: false,
 
 		init() {
-			const ws = new WebSocket(`ws://${location.host}/api/admin/mangadex/queue`);
+			const ws = new WebSocket(`ws://${location.host}${base_url}api/admin/mangadex/queue`);
 			ws.onmessage = event => {
 				const data = JSON.parse(event.data);
 				this.jobs = data.jobs;
