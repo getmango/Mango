@@ -28,8 +28,8 @@
       "profile": "https://github.com/jaredlt",
       "contributions": [
         "code",
-		"ideas",
-		"design"
+        "ideas",
+        "design"
       ]
     },
     {
@@ -57,7 +57,7 @@
       "profile": "https://github.com/flying-sausages",
       "contributions": [
         "doc",
-		"ideas"
+        "ideas"
       ]
     },
     {
@@ -86,7 +86,17 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "h45h74x",
+      "name": "Simon",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/27204033?v=4",
+      "profile": "http://h45h74x.eu.org",
+      "contributions": [
+        "code"
+      ]
     }
   ],
-  "contributorsPerLine": 7
+  "contributorsPerLine": 7,
+  "skipCi": true
 }
