@@ -4,21 +4,30 @@ const component = () => {
 		paused: undefined,
 		loading: false,
 		toggling: false,
+		ws: undefined,
 
-		init() {
-			const ws = new WebSocket(`ws://${location.host}${base_url}api/admin/mangadex/queue`);
-			ws.onmessage = event => {
+		wsConnect(secure = true) {
+			const url = `${secure ? 'wss' : 'ws'}://${location.host}${base_url}api/admin/mangadex/queue`;
+			console.log(`Connecting to ${url}`);
+			this.ws = new WebSocket(url);
+			this.ws.onmessage = event => {
 				const data = JSON.parse(event.data);
 				this.jobs = data.jobs;
 				this.paused = data.paused;
 			};
-			ws.onerror = err => {
-				alert('danger', `Socket connection failed. Error: ${err}`);
+			this.ws.onclose = () => {
+				if (this.ws.failed)
+					return this.wsConnect(false);
+				alert('danger', 'Socket connection closed');
 			};
-			ws.onclose = err => {
+			this.ws.onerror = () => {
+				if (secure)
+					return this.ws.failed = true;
 				alert('danger', 'Socket connection failed');
 			};
-
+		},
+		init() {
+			this.wsConnect();
 			this.load();
 		},
 		load() {
