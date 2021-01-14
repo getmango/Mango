@@ -713,6 +713,24 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Returns all tags"
+    Koa.response 200, ref: "$tagsResult"
+    get "/api/tags" do |env|
+      begin
+        tags = Storage.default.list_tags
+        send_json env, {
+          "success" => true,
+          "tags"    => tags,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
     Koa.describe "Adds a new tag to a title"
     Koa.path "tid", desc: "A title ID"
     Koa.response 200, ref: "$result"

@@ -34,7 +34,10 @@
 </ul>
 <p class="uk-text-meta"><%= title.content_label %> found</p>
 
-<%= render_component "tags" %>
+<div class="uk-margin" x-data="tagsComponent()" x-cloak x-init="load(<%= is_admin %>)" x-show="!loading">
+  <select class="tag-select" multiple="multiple" style="width:100%">
+  </select>
+</div>
 
 <div class="uk-grid-small" uk-grid>
   <div class="uk-margin-bottom uk-width-3-4@s">
@@ -121,6 +124,9 @@
 
 <% content_for "script" do %>
   <%= render_component "dots-scripts" %>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+  <link href="/css/tags.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
   <script src="<%= base_url %>js/alert.js"></script>
   <script src="<%= base_url %>js/title.js"></script>
   <script src="<%= base_url %>js/search.js"></script>
