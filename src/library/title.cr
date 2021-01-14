@@ -3,7 +3,7 @@ require "../archive"
 class Title
   getter dir : String, parent_id : String, title_ids : Array(String),
     entries : Array(Entry), title : String, id : String,
-    encoded_title : String, mtime : Time
+    encoded_title : String, mtime : Time, signature : UInt64 = 0
 
   @entry_display_name_cache : Hash(String, String)?
 
@@ -25,6 +25,8 @@ class Title
     @entries = [] of Entry
     @mtime = File.info(dir).modification_time
 
+    signatures = [] of UInt64
+
     Dir.entries(dir).each do |fn|
       next if fn.starts_with? "."
       path = File.join dir, fn
@@ -33,13 +35,17 @@ class Title
         next if title.entries.size == 0 && title.titles.size == 0
         Library.default.title_hash[title.id] = title
         @title_ids << title.id
+        signatures << title.signature
         next
       end
       if [".zip", ".cbz", ".rar", ".cbr"].includes? File.extname path
         entry = Entry.new path, self
         @entries << entry if entry.pages > 0 || entry.err_msg
+        signatures << File.size entry.zip_path
       end
     end
+
+    @signature = Digest::CRC32.checksum(signatures.sort.join "").to_u64
 
     mtimes = [@mtime]
     mtimes += @title_ids.map { |e| Library.default.title_hash[e].mtime }
@@ -61,6 +67,7 @@ class Title
       {% for str in ["dir", "title", "id"] %}
         json.field {{str}}, @{{str.id}}
       {% end %}
+      json.field "signature" { json.number @signature }
       json.field "display_name", display_name
       json.field "cover_url", cover_url
       json.field "mtime" { json.number @mtime.to_unix }
