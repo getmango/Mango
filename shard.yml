@@ -41,3 +41,5 @@ dependencies:
     github: hkalexling/koa
   tallboy:
     github: epoch/tallboy
+  mg:
+   github: hkalexling/mg

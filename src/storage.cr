@@ -3,6 +3,8 @@ require "crypto/bcrypt"
 require "uuid"
 require "base64"
 require "./util/*"
+require "mg"
+require "../migration/*"
 
 def hash_password(pw)
   Crypto::Bcrypt::Password.create(pw).to_s
@@ -35,43 +37,18 @@ class Storage
     MainFiber.run do
       DB.open "sqlite3://#{@path}" do |db|
         begin
-          # v0.18.0
-          db.exec "create table tags (id text, tag text, unique (id, tag))"
-          db.exec "create index tags_id_idx on tags (id)"
-          db.exec "create index tags_tag_idx on tags (tag)"
-
-          # v0.15.0
-          db.exec "create table thumbnails " \
-                  "(id text, data blob, filename text, " \
-                  "mime text, size integer)"
-          db.exec "create unique index tn_index on thumbnails (id)"
-
-          # v0.1.1
-          db.exec "create table ids" \
-                  "(path text, id text, is_title integer)"
-          db.exec "create unique index path_idx on ids (path)"
-          db.exec "create unique index id_idx on ids (id)"
-
-          # v0.1.0
-          db.exec "create table users" \
-                  "(username text, password text, token text, admin integer)"
+          severity = Logger.get_severity
+          Log.setup "mg", severity
+          MG::Migration.new(db).migrate
         rescue e
-          unless e.message.not_nil!.ends_with? "already exists"
-            Logger.fatal "Error when checking tables in DB: #{e}"
-            raise e
-          end
-
-          # If the DB is initialized through CLI but no user is added, we need
-          #   to create the admin user when first starting the app
-          user_count = db.query_one "select count(*) from users", as: Int32
-          init_admin if init_user && user_count == 0
-        else
-          Logger.debug "Creating DB file at #{@path}"
-          db.exec "create unique index username_idx on users (username)"
-          db.exec "create unique index token_idx on users (token)"
-
-          init_admin if init_user
+          Logger.fatal "DB migration failed. #{e}"
+          raise e
+        ensure
+          Logger.reset
         end
+
+        user_count = db.query_one "select count(*) from users", as: Int32
+        init_admin if init_user && user_count == 0
 
         # Verifies that the default username in config is valid
         if Config.current.disable_login

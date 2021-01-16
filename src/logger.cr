@@ -11,20 +11,7 @@ class Logger
   use_default
 
   def initialize
-    level = Config.current.log_level
-    {% begin %}
-      case level.downcase
-      when "off"
-        @@severity = :none
-        {% for lvl, i in LEVELS %}
-        when {{lvl}}
-          @@severity = Log::Severity.new SEVERITY_IDS[{{i}}]
-        {% end %}
-      else
-        raise "Unknown log level #{level}"
-      end
-    {% end %}
-
+    @@severity = Logger.get_severity
     @log = Log.for("")
     @backend = Log::IOBackend.new
 
@@ -47,6 +34,28 @@ class Logger
 
     @backend.formatter = Log::Formatter.new &format_proc
     Log.setup @@severity, @backend
+  end
+
+  def self.get_severity(level = "") : Log::Severity
+    if level.empty?
+      level = Config.current.log_level
+    end
+    {% begin %}
+      case level.downcase
+      when "off"
+        return Log::Severity::None
+        {% for lvl, i in LEVELS %}
+          when {{lvl}}
+          return Log::Severity.new SEVERITY_IDS[{{i}}]
+        {% end %}
+      else
+        raise "Unknown log level #{level}"
+      end
+    {% end %}
+  end
+
+  def self.reset
+    @@default = Logger.new
   end
 
   # Ignores @@severity and always log msg

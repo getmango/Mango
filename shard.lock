@@ -52,6 +52,10 @@ shards:
     git: https://github.com/hkalexling/koa.git
     version: 0.5.0
 
+  mg:
+    git: https://github.com/hkalexling/mg.git
+    version: 0.1.0+git.commit.8d378bf58da442be2e5a27670233d43687d14121
+
   myhtml:
     git: https://github.com/kostya/myhtml.git
     version: 1.5.1
