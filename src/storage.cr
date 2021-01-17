@@ -15,9 +15,10 @@ def verify_password(hash, pw)
 end
 
 class Storage
+  @@insert_ids = [] of IDTuple
+
   @path : String
   @db : DB::Database?
-  @insert_ids = [] of IDTuple
 
   alias IDTuple = NamedTuple(path: String,
     id: String,
@@ -41,9 +42,10 @@ class Storage
           Log.setup "mg", severity
           MG::Migration.new(db).migrate
         rescue e
+          Logger.reset
           Logger.fatal "DB migration failed. #{e}"
           raise e
-        ensure
+        else
           Logger.reset
         end
 
@@ -235,28 +237,38 @@ class Storage
     id = nil
     MainFiber.run do
       get_db do |db|
-        id = db.query_one? "select id from ids where path = (?)", path,
-          as: {String}
+        if is_title
+          id = db.query_one? "select id from titles where path = (?)", path,
+            as: String
+        else
+          id = db.query_one? "select id from ids where path = (?)", path,
+            as: String
+        end
       end
     end
     id
   end
 
   def insert_id(tp : IDTuple)
-    @insert_ids << tp
+    @@insert_ids << tp
   end
 
   def bulk_insert_ids
     MainFiber.run do
       get_db do |db|
-        db.transaction do |tx|
-          @insert_ids.each do |tp|
-            tx.connection.exec "insert into ids values (?, ?, ?)", tp[:path],
-              tp[:id], tp[:is_title] ? 1 : 0
+        db.transaction do |tran|
+          conn = tran.connection
+          @@insert_ids.each do |tp|
+            if tp[:is_title]
+              conn.exec "insert into titles values (?, ?, null)", tp[:id],
+                tp[:path]
+            else
+              conn.exec "insert into ids values (?, ?)", tp[:path], tp[:id]
+            end
           end
         end
       end
-      @insert_ids.clear
+      @@insert_ids.clear
     end
   end
 
