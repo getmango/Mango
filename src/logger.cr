@@ -6,13 +6,14 @@ class Logger
   SEVERITY_IDS = [0, 4, 5, 2, 3]
   COLORS       = [:light_cyan, :light_red, :red, :light_yellow, :light_magenta]
 
+  getter raw_log = Log.for ""
+
   @@severity : Log::Severity = :info
 
   use_default
 
   def initialize
     @@severity = Logger.get_severity
-    @log = Log.for("")
     @backend = Log::IOBackend.new
 
     format_proc = ->(entry : Log::Entry, io : IO) do
@@ -54,10 +55,6 @@ class Logger
     {% end %}
   end
 
-  def self.reset
-    @@default = Logger.new
-  end
-
   # Ignores @@severity and always log msg
   def log(msg)
     @backend.write Log::Entry.new "", Log::Severity::None, msg,
@@ -70,7 +67,7 @@ class Logger
 
   {% for lvl in LEVELS %}
     def {{lvl.id}}(msg)
-      @log.{{lvl.id}} { msg }
+      raw_log.{{lvl.id}} { msg }
     end
     def self.{{lvl.id}}(msg)
       default.not_nil!.{{lvl.id}} msg

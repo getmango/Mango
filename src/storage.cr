@@ -39,14 +39,10 @@ class Storage
       DB.open "sqlite3://#{@path}" do |db|
         begin
           severity = Logger.get_severity
-          Log.setup "mg", severity
-          MG::Migration.new(db).migrate
+          MG::Migration.new(db, log: Logger.default.raw_log).migrate
         rescue e
-          Logger.reset
           Logger.fatal "DB migration failed. #{e}"
           raise e
-        else
-          Logger.reset
         end
 
         user_count = db.query_one "select count(*) from users", as: Int32
