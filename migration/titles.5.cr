@@ -42,10 +42,7 @@ class CreateTitles < MG::Base
   def down : String
     <<-SQL
     -- insert the is_title column
-    ALTER TABLE ids ADD COLUMN is_title INTEGER NOT NULL;
-
-    -- set is_title for all rows to 0
-    UPDATE ids SET column = 0;
+    ALTER TABLE ids ADD COLUMN is_title INTEGER NOT NULL DEFAULT 0;
 
     -- migrate data from titles to ids
     INSERT INTO ids
