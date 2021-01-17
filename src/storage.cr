@@ -38,7 +38,6 @@ class Storage
     MainFiber.run do
       DB.open "sqlite3://#{@path}" do |db|
         begin
-          severity = Logger.get_severity
           MG::Migration.new(db, log: Logger.default.raw_log).migrate
         rescue e
           Logger.fatal "DB migration failed. #{e}"
