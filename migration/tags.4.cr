@@ -4,7 +4,7 @@ class CreateTags < MG::Base
     CREATE TABLE IF NOT EXISTS tags (
       id TEXT NOT NULL,
       tag TEXT NOT NULL,
-      unique (id, tag)
+      UNIQUE (id, tag)
     );
     CREATE INDEX IF NOT EXISTS tags_id_idx ON tags (id);
     CREATE INDEX IF NOT EXISTS tags_tag_idx ON tags (tag);
