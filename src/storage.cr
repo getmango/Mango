@@ -78,9 +78,11 @@ class Storage
   private def get_db(&block : DB::Database ->)
     if @db.nil?
       DB.open "sqlite3://#{@path}" do |db|
+        db.exec "PRAGMA foreign_keys = 1"
         yield db
       end
     else
+      @db.not_nil!.exec "PRAGMA foreign_keys = 1"
       yield @db.not_nil!
     end
   end
@@ -361,6 +363,7 @@ class Storage
     MainFiber.run do
       Logger.info "Starting DB optimization"
       get_db do |db|
+        # Delete dangling entry IDs
         trash_ids = [] of String
         db.query "select path, id from ids" do |rs|
           rs.each do
@@ -369,29 +372,24 @@ class Storage
           end
         end
 
-        # Delete dangling IDs
         db.exec "delete from ids where id in " \
                 "(#{trash_ids.map { |i| "'#{i}'" }.join ","})"
-        Logger.debug "#{trash_ids.size} dangling IDs deleted" \
+        Logger.debug "#{trash_ids.size} dangling entry IDs deleted" \
            if trash_ids.size > 0
 
-        # Delete dangling thumbnails
-        trash_thumbnails_count = db.query_one "select count(*) from " \
-                                              "thumbnails where id not in " \
-                                              "(select id from ids)", as: Int32
-        if trash_thumbnails_count > 0
-          db.exec "delete from thumbnails where id not in (select id from ids)"
-          Logger.info "#{trash_thumbnails_count} dangling thumbnails deleted"
+        # Delete dangling title IDs
+        trash_titles = [] of String
+        db.query "select path, id from titles" do |rs|
+          rs.each do
+            path = rs.read String
+            trash_titles << rs.read String unless Dir.exists? path
+          end
         end
 
-        # Delete dangling tags
-        trash_tags_count = db.query_one "select count(*) from tags " \
-                                        "where id not in " \
-                                        "(select id from ids)", as: Int32
-        if trash_tags_count > 0
-          db.exec "delete from tags where id not in (select id from ids)"
-          Logger.info "#{trash_tags_count} dangling tags deleted"
-        end
+        db.exec "delete from titles where id in " \
+                "(#{trash_titles.map { |i| "'#{i}'" }.join ","})"
+        Logger.debug "#{trash_titles.size} dangling title IDs deleted" \
+           if trash_titles.size > 0
       end
       Logger.info "DB optimization finished"
     end
