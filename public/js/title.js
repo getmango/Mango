@@ -265,7 +265,8 @@ const tagsComponent = () => {
 
 			$('.tag-select').select2({
 				tags: true,
-				placeholder: 'Tag the title',
+				placeholder: this.isAdmin ? 'Tag the title' : 'No tags found',
+				disabled: !this.isAdmin,
 				templateSelection(state) {
 					const a = document.createElement('a');
 					a.setAttribute('href', `${base_url}tags/${encodeURIComponent(state.text)}`);
