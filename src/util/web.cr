@@ -1,5 +1,6 @@
 # Web related helper functions/macros
 
+# This macro defines `is_admin` when used
 macro check_admin_access
   is_admin = false
   # The token (if exists) takes precedence over the default user option.
@@ -28,7 +29,8 @@ macro layout(name)
   end
 end
 
-macro send_error_page
+macro send_error_page(msg)
+  message = {{msg}}
   base_url = Config.current.base_url
   check_admin_access
   page = "Error"

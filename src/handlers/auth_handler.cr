@@ -84,8 +84,8 @@ class AuthHandler < Kemal::Handler
       end
       if should_reject
         env.response.status_code = 403
-        message = "HTTP 403: You are not authorized to visit #{env.request.path}"
-        send_error_page
+        send_error_page "HTTP 403: You are not authorized to visit " \
+                        "#{env.request.path}"
         return
       end
     end
