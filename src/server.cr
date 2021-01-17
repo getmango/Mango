@@ -7,10 +7,6 @@ require "./routes/*"
 
 class Server
   def initialize
-    error 403 do |env|
-      message = "HTTP 403: You are not authorized to visit #{env.request.path}"
-      layout "message"
-    end
     error 404 do |env|
       message = "HTTP 404: Mango cannot find the page #{env.request.path}"
       layout "message"

@@ -1,19 +1,23 @@
 # Web related helper functions/macros
 
+macro check_admin_access
+  is_admin = false
+  # The token (if exists) takes precedence over the default user option.
+  #   this is why we check the default username first before checking the
+  #   token.
+  if Config.current.disable_login
+    is_admin = Storage.default.
+      username_is_admin Config.current.default_username
+  end
+  if token = env.session.string? "token"
+    is_admin = Storage.default.verify_admin token
+  end
+end
+
 macro layout(name)
   base_url = Config.current.base_url
+  check_admin_access
   begin
-    is_admin = false
-    # The token (if exists) takes precedence over the default user option.
-    #   this is why we check the default username first before checking the
-    #   token.
-    if Config.current.disable_login
-      is_admin = Storage.default.
-        username_is_admin Config.current.default_username
-    end
-    if token = env.session.string? "token"
-      is_admin = Storage.default.verify_admin token
-    end
     page = {{name}}
     render "src/views/#{{{name}}}.html.ecr", "src/views/layout.html.ecr"
   rescue e
@@ -22,6 +26,14 @@ macro layout(name)
     page = "Error"
     render "src/views/message.html.ecr", "src/views/layout.html.ecr"
   end
+end
+
+macro send_error_page
+  base_url = Config.current.base_url
+  check_admin_access
+  page = "Error"
+  html = render "src/views/message.html.ecr", "src/views/layout.html.ecr"
+  send_file env, html.to_slice, "text/html"
 end
 
 macro send_img(env, img)
