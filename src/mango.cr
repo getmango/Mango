@@ -8,7 +8,7 @@ require "option_parser"
 require "clim"
 require "tallboy"
 
-MANGO_VERSION = "0.18.3"
+MANGO_VERSION = "0.19.0"
 
 # From http://www.network-science.de/ascii/
 BANNER = %{
@@ -63,7 +63,12 @@ class CLI < Clim
       Plugin::Downloader.default
 
       spawn do
-        Server.new.start
+        begin
+          Server.new.start
+        rescue e
+          Logger.fatal e
+          Process.exit 1
+        end
       end
 
       MainFiber.start_and_block

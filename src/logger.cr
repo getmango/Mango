@@ -6,26 +6,14 @@ class Logger
   SEVERITY_IDS = [0, 4, 5, 2, 3]
   COLORS       = [:light_cyan, :light_red, :red, :light_yellow, :light_magenta]
 
+  getter raw_log = Log.for ""
+
   @@severity : Log::Severity = :info
 
   use_default
 
   def initialize
-    level = Config.current.log_level
-    {% begin %}
-      case level.downcase
-      when "off"
-        @@severity = :none
-        {% for lvl, i in LEVELS %}
-        when {{lvl}}
-          @@severity = Log::Severity.new SEVERITY_IDS[{{i}}]
-        {% end %}
-      else
-        raise "Unknown log level #{level}"
-      end
-    {% end %}
-
-    @log = Log.for("")
+    @@severity = Logger.get_severity
     @backend = Log::IOBackend.new
 
     format_proc = ->(entry : Log::Entry, io : IO) do
@@ -49,6 +37,24 @@ class Logger
     Log.setup @@severity, @backend
   end
 
+  def self.get_severity(level = "") : Log::Severity
+    if level.empty?
+      level = Config.current.log_level
+    end
+    {% begin %}
+      case level.downcase
+      when "off"
+        return Log::Severity::None
+        {% for lvl, i in LEVELS %}
+          when {{lvl}}
+          return Log::Severity.new SEVERITY_IDS[{{i}}]
+        {% end %}
+      else
+        raise "Unknown log level #{level}"
+      end
+    {% end %}
+  end
+
   # Ignores @@severity and always log msg
   def log(msg)
     @backend.write Log::Entry.new "", Log::Severity::None, msg,
@@ -61,7 +67,7 @@ class Logger
 
   {% for lvl in LEVELS %}
     def {{lvl.id}}(msg)
-      @log.{{lvl.id}} { msg }
+      raw_log.{{lvl.id}} { msg }
     end
     def self.{{lvl.id}}(msg)
       default.not_nil!.{{lvl.id}} msg

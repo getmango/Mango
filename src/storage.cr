@@ -3,6 +3,8 @@ require "crypto/bcrypt"
 require "uuid"
 require "base64"
 require "./util/*"
+require "mg"
+require "../migration/*"
 
 def hash_password(pw)
   Crypto::Bcrypt::Password.create(pw).to_s
@@ -13,9 +15,10 @@ def verify_password(hash, pw)
 end
 
 class Storage
+  @@insert_ids = [] of IDTuple
+
   @path : String
   @db : DB::Database?
-  @insert_ids = [] of IDTuple
 
   alias IDTuple = NamedTuple(path: String,
     id: String,
@@ -35,43 +38,14 @@ class Storage
     MainFiber.run do
       DB.open "sqlite3://#{@path}" do |db|
         begin
-          # v0.18.0
-          db.exec "create table tags (id text, tag text, unique (id, tag))"
-          db.exec "create index tags_id_idx on tags (id)"
-          db.exec "create index tags_tag_idx on tags (tag)"
-
-          # v0.15.0
-          db.exec "create table thumbnails " \
-                  "(id text, data blob, filename text, " \
-                  "mime text, size integer)"
-          db.exec "create unique index tn_index on thumbnails (id)"
-
-          # v0.1.1
-          db.exec "create table ids" \
-                  "(path text, id text, is_title integer)"
-          db.exec "create unique index path_idx on ids (path)"
-          db.exec "create unique index id_idx on ids (id)"
-
-          # v0.1.0
-          db.exec "create table users" \
-                  "(username text, password text, token text, admin integer)"
+          MG::Migration.new(db, log: Logger.default.raw_log).migrate
         rescue e
-          unless e.message.not_nil!.ends_with? "already exists"
-            Logger.fatal "Error when checking tables in DB: #{e}"
-            raise e
-          end
-
-          # If the DB is initialized through CLI but no user is added, we need
-          #   to create the admin user when first starting the app
-          user_count = db.query_one "select count(*) from users", as: Int32
-          init_admin if init_user && user_count == 0
-        else
-          Logger.debug "Creating DB file at #{@path}"
-          db.exec "create unique index username_idx on users (username)"
-          db.exec "create unique index token_idx on users (token)"
-
-          init_admin if init_user
+          Logger.fatal "DB migration failed. #{e}"
+          raise e
         end
+
+        user_count = db.query_one "select count(*) from users", as: Int32
+        init_admin if init_user && user_count == 0
 
         # Verifies that the default username in config is valid
         if Config.current.disable_login
@@ -99,9 +73,11 @@ class Storage
   private def get_db(&block : DB::Database ->)
     if @db.nil?
       DB.open "sqlite3://#{@path}" do |db|
+        db.exec "PRAGMA foreign_keys = 1"
         yield db
       end
     else
+      @db.not_nil!.exec "PRAGMA foreign_keys = 1"
       yield @db.not_nil!
     end
   end
@@ -258,28 +234,38 @@ class Storage
     id = nil
     MainFiber.run do
       get_db do |db|
-        id = db.query_one? "select id from ids where path = (?)", path,
-          as: {String}
+        if is_title
+          id = db.query_one? "select id from titles where path = (?)", path,
+            as: String
+        else
+          id = db.query_one? "select id from ids where path = (?)", path,
+            as: String
+        end
       end
     end
     id
   end
 
   def insert_id(tp : IDTuple)
-    @insert_ids << tp
+    @@insert_ids << tp
   end
 
   def bulk_insert_ids
     MainFiber.run do
       get_db do |db|
-        db.transaction do |tx|
-          @insert_ids.each do |tp|
-            tx.connection.exec "insert into ids values (?, ?, ?)", tp[:path],
-              tp[:id], tp[:is_title] ? 1 : 0
+        db.transaction do |tran|
+          conn = tran.connection
+          @@insert_ids.each do |tp|
+            if tp[:is_title]
+              conn.exec "insert into titles values (?, ?, null)", tp[:id],
+                tp[:path]
+            else
+              conn.exec "insert into ids values (?, ?)", tp[:path], tp[:id]
+            end
           end
         end
       end
-      @insert_ids.clear
+      @@insert_ids.clear
     end
   end
 
@@ -372,6 +358,7 @@ class Storage
     MainFiber.run do
       Logger.info "Starting DB optimization"
       get_db do |db|
+        # Delete dangling entry IDs
         trash_ids = [] of String
         db.query "select path, id from ids" do |rs|
           rs.each do
@@ -380,29 +367,24 @@ class Storage
           end
         end
 
-        # Delete dangling IDs
         db.exec "delete from ids where id in " \
                 "(#{trash_ids.map { |i| "'#{i}'" }.join ","})"
-        Logger.debug "#{trash_ids.size} dangling IDs deleted" \
+        Logger.debug "#{trash_ids.size} dangling entry IDs deleted" \
            if trash_ids.size > 0
 
-        # Delete dangling thumbnails
-        trash_thumbnails_count = db.query_one "select count(*) from " \
-                                              "thumbnails where id not in " \
-                                              "(select id from ids)", as: Int32
-        if trash_thumbnails_count > 0
-          db.exec "delete from thumbnails where id not in (select id from ids)"
-          Logger.info "#{trash_thumbnails_count} dangling thumbnails deleted"
+        # Delete dangling title IDs
+        trash_titles = [] of String
+        db.query "select path, id from titles" do |rs|
+          rs.each do
+            path = rs.read String
+            trash_titles << rs.read String unless Dir.exists? path
+          end
         end
 
-        # Delete dangling tags
-        trash_tags_count = db.query_one "select count(*) from tags " \
-                                        "where id not in " \
-                                        "(select id from ids)", as: Int32
-        if trash_tags_count > 0
-          db.exec "delete from tags where id not in (select id from ids)"
-          Logger.info "#{trash_tags_count} dangling tags deleted"
-        end
+        db.exec "delete from titles where id in " \
+                "(#{trash_titles.map { |i| "'#{i}'" }.join ","})"
+        Logger.debug "#{trash_titles.size} dangling title IDs deleted" \
+           if trash_titles.size > 0
       end
       Logger.info "DB optimization finished"
     end

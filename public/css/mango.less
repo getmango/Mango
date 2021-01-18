@@ -1,0 +1,124 @@
+// Item cards
+.item .uk-card {
+    cursor: pointer;
+	.uk-card-media-top {
+		width: 100%;
+		height: 250px;
+		@media (min-width: 600px) {
+			height: 300px;
+		}
+
+		img {
+			height: 100%;
+			width: 100%;
+			object-fit: cover;
+
+			&.grayscale {
+				filter: grayscale(100%);
+			}
+		}
+	}
+	.uk-card-body {
+		padding: 20px;
+		.uk-card-title {
+			max-height: 3em;
+			font-size: 1rem;
+		}
+	}
+}
+
+// jQuery selectable
+#selectable {
+	.ui-selecting {
+		background: #EEE6B9;
+	}
+	.ui-selected {
+		background: #F4E487;
+	}
+	.uk-light & {
+		.ui-selecting {
+			background: #5E5731;
+		}
+		.ui-selected {
+			background: #9D9252;
+		}
+	}
+}
+
+// Edit modal
+#edit-modal {
+	.uk-grid > div {
+		height: 300px;
+	}
+	#cover {
+		height: 100%;
+		width: 100%;
+		object-fit: cover;
+	}
+	#cover-upload {
+		height: 100%;
+		box-sizing: border-box;
+	}
+	.uk-modal-body .uk-inline {
+		width: 100%;
+	}
+}
+
+// Dark theme
+.uk-light {
+	.uk-navbar-dropdown,
+	.uk-modal-header,
+	.uk-modal-body,
+	.uk-modal-footer {
+		background: #222;
+	}
+	.uk-navbar-dropdown,
+	.uk-dropdown {
+		color: #ccc;
+	}
+	.uk-nav-header,
+	.uk-description-list > dt {
+		color: #555;
+	}
+}
+
+// Alpine magic
+[x-cloak] {
+    display: none;
+}
+
+// Batch select bar on title page
+#select-bar-controls {
+	a {
+		transform: scale(1.5, 1.5);
+
+		&:hover {
+			color: orange;
+		}
+	}
+}
+
+// Totop button
+#totop-wrapper {
+    position: absolute;
+    top: 100vh;
+    right: 2em;
+    bottom: 0;
+
+	a {
+		position: fixed;
+		position: sticky;
+		top: calc(100vh - 5em);
+	}
+}
+
+// Misc
+.uk-alert-close {
+    color: black !important;
+}
+.break-word {
+    word-wrap: break-word;
+}
+.uk-search {
+    width: 100%;
+}

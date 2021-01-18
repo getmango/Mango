@@ -82,7 +82,12 @@ class AuthHandler < Kemal::Handler
       if env.session.string? "token"
         should_reject = !validate_token_admin(env)
       end
-      env.response.status_code = 403 if should_reject
+      if should_reject
+        env.response.status_code = 403
+        send_error_page "HTTP 403: You are not authorized to visit " \
+                        "#{env.request.path}"
+        return
+      end
     end
 
     call_next env
