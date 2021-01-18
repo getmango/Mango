@@ -63,7 +63,12 @@ class CLI < Clim
       Plugin::Downloader.default
 
       spawn do
-        Server.new.start
+        begin
+          Server.new.start
+        rescue e
+          Logger.fatal e
+          Process.exit 1
+        end
       end
 
       MainFiber.start_and_block
