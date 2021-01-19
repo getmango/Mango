@@ -13,11 +13,10 @@ class Title
     id = storage.get_title_id dir, signature
     if id.nil?
       id = random_str
-      storage.insert_id({
-        path:            dir,
-        id:              id,
-        title_signature: signature.to_s,
-        entry_signature: nil,
+      storage.insert_title_id({
+        path:      dir,
+        id:        id,
+        signature: signature.to_s,
       })
     end
     @id = id

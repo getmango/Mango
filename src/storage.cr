@@ -15,16 +15,21 @@ def verify_password(hash, pw)
 end
 
 class Storage
-  @@insert_ids = [] of IDTuple
+  @@insert_entry_ids = [] of EntryID
+  @@insert_title_ids = [] of TitleID
 
   @path : String
   @db : DB::Database?
 
-  alias IDTuple = NamedTuple(
+  alias EntryID = NamedTuple(
     path: String,
     id: String,
-    entry_signature: String?,
-    title_signature: String?)
+    signature: String?)
+
+  alias TitleID = NamedTuple(
+    path: String,
+    id: String,
+    signature: String?)
 
   use_default
 
@@ -314,8 +319,12 @@ class Storage
     id
   end
 
-  def insert_id(tp : IDTuple)
-    @@insert_ids << tp
+  def insert_entry_id(tp)
+    @@insert_entry_ids << tp
+  end
+
+  def insert_title_id(tp)
+    @@insert_title_ids << tp
   end
 
   def bulk_insert_ids
@@ -323,20 +332,22 @@ class Storage
       get_db do |db|
         db.transaction do |tran|
           conn = tran.connection
-          @@insert_ids.each do |tp|
+          @@insert_title_ids.each do |tp|
             path = Path.new(tp[:path])
               .relative_to(Config.current.library_path).to_s
-            if tp[:title_signature]
-              conn.exec "insert into titles values (?, ?, ?)", tp[:id],
-                path, tp[:title_signature].to_s
-            else
-              conn.exec "insert into ids values (?, ?, ?)", path, tp[:id],
-                tp[:entry_signature].to_s
-            end
+            conn.exec "insert into titles values (?, ?, ?)", tp[:id],
+              path, tp[:signature].to_s
+          end
+          @@insert_entry_ids.each do |tp|
+            path = Path.new(tp[:path])
+              .relative_to(Config.current.library_path).to_s
+            conn.exec "insert into ids values (?, ?, ?)", path, tp[:id],
+              tp[:signature].to_s
           end
         end
       end
-      @@insert_ids.clear
+      @@insert_entry_ids.clear
+      @@insert_title_ids.clear
     end
   end
 

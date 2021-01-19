@@ -14,11 +14,10 @@ class Entry
     id = storage.get_entry_id @zip_path, File.signature(@zip_path)
     if id.nil?
       id = random_str
-      storage.insert_id({
-        path:            @zip_path,
-        id:              id,
-        title_signature: nil,
-        entry_signature: File.signature(@zip_path).to_s,
+      storage.insert_entry_id({
+        path:      @zip_path,
+        id:        id,
+        signature: File.signature(@zip_path).to_s,
       })
     end
     @id = id
