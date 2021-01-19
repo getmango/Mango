@@ -3,19 +3,21 @@ require "../archive"
 class Title
   getter dir : String, parent_id : String, title_ids : Array(String),
     entries : Array(Entry), title : String, id : String,
-    encoded_title : String, mtime : Time, signature : UInt64 = 0
+    encoded_title : String, mtime : Time, signature : UInt64
 
   @entry_display_name_cache : Hash(String, String)?
 
   def initialize(@dir : String, @parent_id)
     storage = Storage.default
-    id = storage.get_id @dir, true
+    @signature = Dir.signature dir
+    id = storage.get_title_id dir, signature
     if id.nil?
       id = random_str
       storage.insert_id({
-        path:     @dir,
-        id:       id,
-        is_title: true,
+        path:            dir,
+        id:              id,
+        title_signature: signature.to_s,
+        entry_signature: nil,
       })
     end
     @id = id
@@ -25,8 +27,6 @@ class Title
     @entries = [] of Entry
     @mtime = File.info(dir).modification_time
 
-    signatures = [] of UInt64
-
     Dir.entries(dir).each do |fn|
       next if fn.starts_with? "."
       path = File.join dir, fn
@@ -35,17 +35,13 @@ class Title
         next if title.entries.size == 0 && title.titles.size == 0
         Library.default.title_hash[title.id] = title
         @title_ids << title.id
-        signatures << title.signature
         next
       end
       if [".zip", ".cbz", ".rar", ".cbr"].includes? File.extname path
         entry = Entry.new path, self
         @entries << entry if entry.pages > 0 || entry.err_msg
-        signatures << File.size entry.zip_path
       end
     end
-
-    @signature = Digest::CRC32.checksum(signatures.sort.join "").to_u64
 
     mtimes = [@mtime]
     mtimes += @title_ids.map { |e| Library.default.title_hash[e].mtime }

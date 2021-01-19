@@ -11,13 +11,14 @@ class Entry
     @title = File.basename @zip_path, File.extname @zip_path
     @encoded_title = URI.encode @title
     @size = (File.size @zip_path).humanize_bytes
-    id = storage.get_id @zip_path, false
+    id = storage.get_entry_id @zip_path, File.signature(@zip_path)
     if id.nil?
       id = random_str
       storage.insert_id({
-        path:     @zip_path,
-        id:       id,
-        is_title: false,
+        path:            @zip_path,
+        id:              id,
+        title_signature: nil,
+        entry_signature: File.signature(@zip_path).to_s,
       })
     end
     @id = id

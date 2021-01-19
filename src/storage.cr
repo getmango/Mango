@@ -20,9 +20,11 @@ class Storage
   @path : String
   @db : DB::Database?
 
-  alias IDTuple = NamedTuple(path: String,
+  alias IDTuple = NamedTuple(
+    path: String,
     id: String,
-    is_title: Bool)
+    entry_signature: String?,
+    title_signature: String?)
 
   use_default
 
@@ -230,16 +232,82 @@ class Storage
     end
   end
 
-  def get_id(path, is_title)
+  def get_title_id(path, signature)
     id = nil
+    path = Path.new(path).relative_to(Config.current.library_path).to_s
     MainFiber.run do
       get_db do |db|
-        if is_title
-          id = db.query_one? "select id from titles where path = (?)", path,
-            as: String
-        else
-          id = db.query_one? "select id from ids where path = (?)", path,
-            as: String
+        # First attempt to find the matching title in DB using BOTH path
+        #   and signature
+        id = db.query_one? "select id from titles where path = (?) and " \
+                           "signature = (?)", path, signature.to_s, as: String
+
+        should_update = id.nil?
+        # If it fails, try to match using the path only. This could happen
+        #   for example when a new entry is added to the title
+        id ||= db.query_one? "select id from titles where path = (?)", path,
+          as: String
+
+        # If it still fails, we will have to rely on the signature values.
+        #   This could happen when the user moved or renamed the title, or
+        #   a title containing the title
+        unless id
+          # If there are multiple rows with the same signature (this could
+          #   happen simply by bad luck, or when the user copied a title),
+          #   pick the row that has the most similar path to the give path
+          rows = [] of Tuple(String, String)
+          db.query "select id, path from titles where signature = (?)",
+            signature.to_s do |rs|
+            rs.each do
+              rows << {rs.read(String), rs.read(String)}
+            end
+          end
+          row = rows.max_by?(&.[1].components_similarity(path))
+          id = row[0] if row
+        end
+
+        # At this point, `id` would still be nil if there's no row matching
+        #   either the path or the signature
+
+        # If we did identify a matching title, save the path and signature
+        #   values back to the DB
+        if id && should_update
+          db.exec "update titles set path = (?), signature = (?) " \
+                  "where id = (?)", path, signature.to_s, id
+        end
+      end
+    end
+    id
+  end
+
+  # See the comments in `#get_title_id` to see how this method works.
+  def get_entry_id(path, signature)
+    id = nil
+    path = Path.new(path).relative_to(Config.current.library_path).to_s
+    MainFiber.run do
+      get_db do |db|
+        id = db.query_one? "select id from ids where path = (?) and " \
+                           "signature = (?)", path, signature.to_s, as: String
+
+        should_update = id.nil?
+        id ||= db.query_one? "select id from ids where path = (?)", path,
+          as: String
+
+        unless id
+          rows = [] of Tuple(String, String)
+          db.query "select id, path from ids where signature = (?)",
+            signature.to_s do |rs|
+            rs.each do
+              rows << {rs.read(String), rs.read(String)}
+            end
+          end
+          row = rows.max_by?(&.[1].components_similarity(path))
+          id = row[0] if row
+        end
+
+        if id && should_update
+          db.exec "update ids set path = (?), signature = (?) " \
+                  "where id = (?)", path, signature.to_s, id
         end
       end
     end
@@ -256,11 +324,14 @@ class Storage
         db.transaction do |tran|
           conn = tran.connection
           @@insert_ids.each do |tp|
-            if tp[:is_title]
-              conn.exec "insert into titles values (?, ?, null)", tp[:id],
-                tp[:path]
+            path = Path.new(tp[:path])
+              .relative_to(Config.current.library_path).to_s
+            if tp[:title_signature]
+              conn.exec "insert into titles values (?, ?, ?)", tp[:id],
+                path, tp[:title_signature].to_s
             else
-              conn.exec "insert into ids values (?, ?)", tp[:path], tp[:id]
+              conn.exec "insert into ids values (?, ?, ?)", path, tp[:id],
+                tp[:entry_signature].to_s
             end
           end
         end
@@ -363,7 +434,8 @@ class Storage
         db.query "select path, id from ids" do |rs|
           rs.each do
             path = rs.read String
-            trash_ids << rs.read String unless File.exists? path
+            fullpath = Path.new(path).expand(Config.current.library_path).to_s
+            trash_ids << rs.read String unless File.exists? fullpath
           end
         end
 
@@ -377,7 +449,8 @@ class Storage
         db.query "select path, id from titles" do |rs|
           rs.each do
             path = rs.read String
-            trash_titles << rs.read String unless Dir.exists? path
+            fullpath = Path.new(path).expand(Config.current.library_path).to_s
+            trash_titles << rs.read String unless Dir.exists? fullpath
           end
         end
 

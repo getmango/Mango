@@ -92,3 +92,18 @@ def sort_titles(titles : Array(Title), opt : SortOptions, username : String)
 
   ary
 end
+
+class String
+  # Returns the similarity (in [0, 1]) of two paths.
+  # For the two paths, separate them into arrays of components, count the
+  #   number of matching components backwards, and divide the count by the
+  #   number of components of the shorter path.
+  def components_similarity(other : String) : Float64
+    s, l = [self, other]
+      .map { |str| Path.new(str).parts }
+      .sort_by &.size
+
+    match = s.reverse.zip(l.reverse).count { |a, b| a == b }
+    match / s.size
+  end
+end
