@@ -232,7 +232,7 @@ class Library
         e.generate_thumbnail
         # Sleep after each generation to minimize the impact on disk IO
         #   and CPU
-        sleep 0.5.seconds
+        sleep 1.seconds
       end
       @thumbnails_count += 1
     end
