@@ -109,7 +109,7 @@ class Library
     storage.close
 
     Logger.debug "Scan completed"
-    Storage.default.optimize
+    Storage.default.mark_unavailable
   end
 
   def get_continue_reading_entries(username)

@@ -15,18 +15,13 @@ def verify_password(hash, pw)
 end
 
 class Storage
-  @@insert_entry_ids = [] of EntryID
-  @@insert_title_ids = [] of TitleID
+  @@insert_entry_ids = [] of IDTuple
+  @@insert_title_ids = [] of IDTuple
 
   @path : String
   @db : DB::Database?
 
-  alias EntryID = NamedTuple(
-    path: String,
-    id: String,
-    signature: String?)
-
-  alias TitleID = NamedTuple(
+  alias IDTuple = NamedTuple(
     path: String,
     id: String,
     signature: String?)
@@ -245,7 +240,8 @@ class Storage
         # First attempt to find the matching title in DB using BOTH path
         #   and signature
         id = db.query_one? "select id from titles where path = (?) and " \
-                           "signature = (?)", path, signature.to_s, as: String
+                           "signature = (?) and unavailable = 0",
+          path, signature.to_s, as: String
 
         should_update = id.nil?
         # If it fails, try to match using the path only. This could happen
@@ -277,8 +273,8 @@ class Storage
         # If we did identify a matching title, save the path and signature
         #   values back to the DB
         if id && should_update
-          db.exec "update titles set path = (?), signature = (?) " \
-                  "where id = (?)", path, signature.to_s, id
+          db.exec "update titles set path = (?), signature = (?), " \
+                  "unavailable = 0 where id = (?)", path, signature.to_s, id
         end
       end
     end
@@ -292,7 +288,8 @@ class Storage
     MainFiber.run do
       get_db do |db|
         id = db.query_one? "select id from ids where path = (?) and " \
-                           "signature = (?)", path, signature.to_s, as: String
+                           "signature = (?) and unavailable = 0",
+          path, signature.to_s, as: String
 
         should_update = id.nil?
         id ||= db.query_one? "select id from ids where path = (?)", path,
@@ -311,8 +308,8 @@ class Storage
         end
 
         if id && should_update
-          db.exec "update ids set path = (?), signature = (?) " \
-                  "where id = (?)", path, signature.to_s, id
+          db.exec "update ids set path = (?), signature = (?), " \
+                  "unavailable = 0 where id = (?)", path, signature.to_s, id
         end
       end
     end
@@ -335,14 +332,16 @@ class Storage
           @@insert_title_ids.each do |tp|
             path = Path.new(tp[:path])
               .relative_to(Config.current.library_path).to_s
-            conn.exec "insert into titles values (?, ?, ?)", tp[:id],
-              path, tp[:signature].to_s
+            conn.exec "insert into titles (id, path, signature, " \
+                      "unavailable) values (?, ?, ?, 0)",
+              tp[:id], path, tp[:signature].to_s
           end
           @@insert_entry_ids.each do |tp|
             path = Path.new(tp[:path])
               .relative_to(Config.current.library_path).to_s
-            conn.exec "insert into ids values (?, ?, ?)", path, tp[:id],
-              tp[:signature].to_s
+            conn.exec "insert into ids (id, path, signature, " \
+                      "unavailable) values (?, ?, ?, 0)",
+              tp[:id], path, tp[:signature].to_s
           end
         end
       end
@@ -404,7 +403,8 @@ class Storage
     tags = [] of String
     MainFiber.run do
       get_db do |db|
-        db.query "select distinct tag from tags" do |rs|
+        db.query "select distinct tag from tags natural join titles " \
+                 "where unavailable = 0" do |rs|
           rs.each do
             tags << rs.read String
           end
@@ -436,13 +436,12 @@ class Storage
     end
   end
 
-  def optimize
+  def mark_unavailable
     MainFiber.run do
-      Logger.info "Starting DB optimization"
       get_db do |db|
-        # Delete dangling entry IDs
+        # Detect dangling entry IDs
         trash_ids = [] of String
-        db.query "select path, id from ids" do |rs|
+        db.query "select path, id from ids where unavailable = 0" do |rs|
           rs.each do
             path = rs.read String
             fullpath = Path.new(path).expand(Config.current.library_path).to_s
@@ -450,14 +449,15 @@ class Storage
           end
         end
 
-        db.exec "delete from ids where id in " \
+        unless trash_ids.empty?
+          Logger.debug "Marking #{trash_ids.size} entries as unavailable"
+        end
+        db.exec "update ids set unavailable = 1 where id in " \
                 "(#{trash_ids.map { |i| "'#{i}'" }.join ","})"
-        Logger.debug "#{trash_ids.size} dangling entry IDs deleted" \
-           if trash_ids.size > 0
 
-        # Delete dangling title IDs
+        # Detect dangling title IDs
         trash_titles = [] of String
-        db.query "select path, id from titles" do |rs|
+        db.query "select path, id from titles where unavailable  = 0" do |rs|
           rs.each do
             path = rs.read String
             fullpath = Path.new(path).expand(Config.current.library_path).to_s
@@ -465,13 +465,57 @@ class Storage
           end
         end
 
-        db.exec "delete from titles where id in " \
+        unless trash_titles.empty?
+          Logger.debug "Marking #{trash_titles.size} titles as unavailable"
+        end
+        db.exec "update titles set unavailable = 1 where id in " \
                 "(#{trash_titles.map { |i| "'#{i}'" }.join ","})"
-        Logger.debug "#{trash_titles.size} dangling title IDs deleted" \
-           if trash_titles.size > 0
       end
-      Logger.info "DB optimization finished"
     end
+  end
+
+  private def get_missing(tablename)
+    ary = [] of IDTuple
+    MainFiber.run do
+      get_db do |db|
+        db.query "select id, path, signature from #{tablename} " \
+                 "where unavailable = 1" do |rs|
+          rs.each do
+            ary << {
+              id:        rs.read(String),
+              path:      rs.read(String),
+              signature: rs.read(String?),
+            }
+          end
+        end
+      end
+    end
+    ary
+  end
+
+  private def delete_missing(tablename, id)
+    MainFiber.run do
+      get_db do |db|
+        db.exec "delete from #{tablename} where id = (?) and unavailable = 1",
+          id
+      end
+    end
+  end
+
+  def missing_entries
+    get_missing "ids"
+  end
+
+  def missing_titles
+    get_missing "titles"
+  end
+
+  def delete_missing_entry(id)
+    delete_missing "ids", id
+  end
+
+  def delete_missing_title(id)
+    delete_missing "titles", id
   end
 
   def close

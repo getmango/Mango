@@ -1,6 +1,9 @@
 struct AdminRouter
   def initialize
     get "/admin" do |env|
+      storage = Storage.default
+      missing_count = storage.missing_titles.size +
+                      storage.missing_entries.size
       layout "admin"
     end
 
@@ -65,6 +68,10 @@ struct AdminRouter
     get "/admin/downloads" do |env|
       mangadex_base_url = Config.current.mangadex["base_url"]
       layout "download-manager"
+    end
+
+    get "/admin/missing" do |env|
+      layout "missing-items"
     end
   end
 end
