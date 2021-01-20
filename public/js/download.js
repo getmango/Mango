@@ -156,8 +156,8 @@ const search = () => {
 			langs.unshift('All');
 			group_names.unshift('All');
 
-			$('select#lang-select').append(langs.map(e => `<option>${e}</option>`).join(''));
-			$('select#group-select').append(group_names.map(e => `<option>${e}</option>`).join(''));
+			$('select#lang-select').html(langs.map(e => `<option>${e}</option>`).join(''));
+			$('select#group-select').html(group_names.map(e => `<option>${e}</option>`).join(''));
 
 			$('#filter-form').removeAttr('hidden');
 
