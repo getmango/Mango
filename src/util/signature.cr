@@ -1,3 +1,5 @@
+require "./util"
+
 class File
   abstract struct Info
     def inode
@@ -11,7 +13,7 @@ class File
   #   ensures that moving (unless to another device) and renaming the file
   #   preserves the signature, while copying or editing the file changes it.
   def self.signature(filename) : UInt64
-    return 0u64 unless %w(.zip .rar .cbz .cbr).includes? File.extname filename
+    return 0u64 unless is_supported_file filename
     info = File.info filename
     signatures = [
       info.inode,
