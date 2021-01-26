@@ -1,8 +1,8 @@
-IMGS_PER_PAGE             = 5
-ENTRIES_IN_HOME_SECTIONS  = 8
-UPLOAD_URL_PREFIX         = "/uploads"
-STATIC_DIRS               = ["/css", "/js", "/img", "/favicon.ico"]
-INTERESTING_FILE_EXTNAMES = [".zip", ".cbz", ".rar", ".cbr"]
+IMGS_PER_PAGE            = 5
+ENTRIES_IN_HOME_SECTIONS = 8
+UPLOAD_URL_PREFIX        = "/uploads"
+STATIC_DIRS              = ["/css", "/js", "/img", "/favicon.ico"]
+SUPPORTED_FILE_EXTNAMES  = [".zip", ".cbz", ".rar", ".cbr"]
 
 def random_str
   UUID.random.to_s.gsub "-", ""
@@ -32,8 +32,8 @@ def register_mime_types
   end
 end
 
-def is_interesting_file(path)
-  INTERESTING_FILE_EXTNAMES.includes? (File.extname path).downcase
+def is_supported_file(path)
+  SUPPORTED_FILE_EXTNAMES.includes? File.extname(path).downcase
 end
 
 struct Int

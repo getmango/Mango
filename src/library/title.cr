@@ -36,7 +36,7 @@ class Title
         @title_ids << title.id
         next
       end
-      if is_interesting_file path
+      if is_supported_file path
         entry = Entry.new path, self
         @entries << entry if entry.pages > 0 || entry.err_msg
       end
