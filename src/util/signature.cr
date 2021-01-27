@@ -1,3 +1,5 @@
+require "./util"
+
 class File
   abstract struct Info
     def inode
@@ -17,7 +19,7 @@ class File
   #   information as long as the above changes do not happen together with
   #   a file/folder rename, with no library scan in between.
   def self.signature(filename) : UInt64
-    if %w(.zip .rar .cbz .cbr).includes? File.extname filename
+    if is_supported_file filename
       File.info(filename).inode
     else
       0u64

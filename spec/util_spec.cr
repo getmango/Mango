@@ -35,6 +35,23 @@ describe "compare_numerically" do
   end
 end
 
+describe "is_supported_file" do
+  it "returns true when the filename has a supported extension" do
+    filename = "manga.cbz"
+    is_supported_file(filename).should eq true
+  end
+
+  it "returns true when the filename does not have a supported extension" do
+    filename = "info.json"
+    is_supported_file(filename).should eq false
+  end
+
+  it "is case insensitive" do
+    filename = "manga.ZiP"
+    is_supported_file(filename).should eq true
+  end
+end
+
 describe "chapter_sort" do
   it "sorts correctly" do
     ary = ["Vol.1 Ch.01", "Vol.1 Ch.02", "Vol.2 Ch. 2.5", "Ch. 3", "Ch.04"]
