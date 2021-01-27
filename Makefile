@@ -29,7 +29,6 @@ test:
 check:
 	crystal tool format --check
 	./bin/ameba
-	./dev/linewidth.sh
 
 arm32v7:
 	crystal build src/mango.cr --release --progress --error-trace --cross-compile --target='arm-linux-gnueabihf' -o mango-arm32v7
