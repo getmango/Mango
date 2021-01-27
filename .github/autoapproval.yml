@@ -1,0 +1,6 @@
+from_owner:
+  - hkalexling
+required_labels:
+  - autoapprove
+apply_labels:
+  - autoapproved
