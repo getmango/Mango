@@ -2,8 +2,8 @@ require "./util"
 
 class File
   abstract struct Info
-    def inode
-      @stat.st_ino
+    def inode : UInt64
+      @stat.st_ino.to_u64
     end
   end
 
