@@ -6,31 +6,30 @@ class File
   end
 
   # Returns the signature of the file at filename.
-  # When it is not a supported file, returns 0. Otherwise, calculate the
-  #   signature by combining its inode value, file size and mtime. This
-  #   ensures that moving (unless to another device) and renaming the file
-  #   preserves the signature, while copying or editing the file changes it.
+  # When it is not a supported file, returns 0. Otherwise, uses the inode
+  #   number as its signature. On most file systems, the inode number is
+  #   preserved even when the file is renamed, moved or edited.
+  # Some cases that would cause the inode number to change:
+  #   - Reboot/remount on some file systems
+  #   - Replaced with a copied file
+  #   - Moved to a different device
+  # Since we are also using the relative paths to match ids, we won't lose
+  #   information as long as the above changes do not happen together with
+  #   a file/folder rename, with no library scan in between.
   def self.signature(filename) : UInt64
-    return 0u64 unless %w(.zip .rar .cbz .cbr).includes? File.extname filename
-    info = File.info filename
-    signatures = [
-      info.inode,
-      File.size(filename),
-      info.modification_time.to_unix,
-    ]
-    Digest::CRC32.checksum(signatures.sort.join).to_u64
+    if %w(.zip .rar .cbz .cbr).includes? File.extname filename
+      File.info(filename).inode
+    else
+      0u64
+    end
   end
 end
 
 class Dir
-  # Returns the signature of the directory at dirname.
-  # The signature is calculated by combining its mtime and the signatures of
-  #   all directories and files in it. This ensures that moving (unless to
-  #   another device) and renaming the directory preserves the signature,
-  #   while copying or editing its content changes it.
+  # Returns the signature of the directory at dirname. See the comments for
+  #   `File.signature` for more information.
   def self.signature(dirname) : UInt64
-    signatures = [] of (UInt64 | Int64)
-    signatures << File.info(dirname).modification_time.to_unix
+    signatures = [File.info(dirname).inode]
     self.open dirname do |dir|
       dir.entries.each do |fn|
         next if fn.starts_with? "."
