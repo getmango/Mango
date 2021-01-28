@@ -493,11 +493,15 @@ class Storage
     ary
   end
 
-  private def delete_missing(tablename, id)
+  private def delete_missing(tablename, id : String? = nil)
     MainFiber.run do
       get_db do |db|
-        db.exec "delete from #{tablename} where id = (?) and unavailable = 1",
-          id
+        if id
+          db.exec "delete from #{tablename} where id = (?) " \
+                  "and unavailable = 1", id
+        else
+          db.exec "delete from #{tablename} where unavailable = 1"
+        end
       end
     end
   end
@@ -510,11 +514,11 @@ class Storage
     get_missing "titles"
   end
 
-  def delete_missing_entry(id)
+  def delete_missing_entry(id = nil)
     delete_missing "ids", id
   end
 
-  def delete_missing_title(id)
+  def delete_missing_title(id = nil)
     delete_missing "titles", id
   end
 

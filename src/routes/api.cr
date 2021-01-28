@@ -828,7 +828,45 @@ struct APIRouter
       end
     end
 
-    Koa.describe "Deletes a missing title with `tid`"
+    Koa.describe "Deletes all missing titles"
+    Koa.response 200, ref: "$result"
+    Koa.tag "admin"
+    delete "/api/admin/titles/missing" do |env|
+      begin
+        Storage.default.delete_missing_title
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+        }.to_json
+      rescue e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Deletes all missing entries"
+    Koa.response 200, ref: "$result"
+    Koa.tag "admin"
+    delete "/api/admin/entries/missing" do |env|
+      begin
+        Storage.default.delete_missing_entry
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+        }.to_json
+      rescue e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Deletes a missing title identified by `tid`", <<-MD
+    Does nothing if the given `tid` is not found or if the title is not missing.
+    MD
     Koa.response 200, ref: "$result"
     Koa.tag "admin"
     delete "/api/admin/titles/missing/:tid" do |env|
@@ -847,7 +885,9 @@ struct APIRouter
       end
     end
 
-    Koa.describe "Deletes a missing entry with `eid`"
+    Koa.describe "Deletes a missing entry identified by `eid`", <<-MD
+    Does nothing if the given `eid` is not found or if the entry is not missing.
+    MD
     Koa.response 200, ref: "$result"
     Koa.tag "admin"
     delete "/api/admin/entries/missing/:eid" do |env|

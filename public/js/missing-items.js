@@ -24,6 +24,20 @@ const component = () => {
 				this.load();
 			});
 		},
+		rmAll() {
+			UIkit.modal.confirm('Are you sure? All metadata associated with these items, including their tags and thumbnails, will be deleted from the database.', {
+				labels: {
+					ok: 'Yes, delete them',
+					cancel: 'Cancel'
+				}
+			}).then(() => {
+				this.request('DELETE', `${base_url}api/admin/titles/missing`, () => {
+					this.request('DELETE', `${base_url}api/admin/entries/missing`, () => {
+						this.load();
+					});
+				});
+			});
+		},
 		request(method, url, cb) {
 			console.log(url);
 			$.ajax({

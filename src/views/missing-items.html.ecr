@@ -2,6 +2,7 @@
   <p x-show="empty" class="uk-text-lead uk-text-center">No missing items found.</p>
   <div x-show="!empty">
     <p>The following items were present in your library, but now we can't find them anymore. If you deleted them mistakenly, try to recover the files or folders, put them back to where they were, and rescan the library. Otherwise, you can safely delete them and the associated metadata using the buttons below to free up database space.</p>
+    <button class="uk-button uk-button-danger" @click="rmAll()">Delete All</button>
     <table class="uk-table uk-table-striped uk-overflow-auto">
       <thead>
         <tr>
