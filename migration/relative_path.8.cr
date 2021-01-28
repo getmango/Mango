@@ -1,7 +1,9 @@
 class RelativePath < MG::Base
   def up : String
     base = Config.current.library_path
-    base = base[...-1] if base.ends_with? "/"
+    # Escape single quotes in case the path contains them, and remove the
+    #   trailing slash (this is a mistake, fixed in DB version 10)
+    base = base.gsub("'", "''").rstrip "/"
 
     <<-SQL
     -- update the path column in ids to relative paths
@@ -16,7 +18,7 @@ class RelativePath < MG::Base
 
   def down : String
     base = Config.current.library_path
-    base = base[...-1] if base.ends_with? "/"
+    base = base.gsub("'", "''").rstrip "/"
 
     <<-SQL
     -- update the path column in ids to absolute paths
