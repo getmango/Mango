@@ -82,7 +82,6 @@ library_path: ~/mango/library
 db_path: ~/mango/mango.db
 scan_interval_minutes: 5
 thumbnail_generation_interval_hours: 24
-db_optimization_interval_hours: 24
 log_level: info
 upload_path: ~/mango/uploads
 plugin_path: ~/mango/plugins
