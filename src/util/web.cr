@@ -3,13 +3,12 @@
 # This macro defines `is_admin` when used
 macro check_admin_access
   is_admin = false
-  # The token (if exists) takes precedence over the default user option.
-  #   this is why we check the default username first before checking the
-  #   token.
-  if Config.current.disable_login
-    is_admin = Storage.default.
-      username_is_admin Config.current.default_username
+  if !Config.current.auth_proxy_header_name.empty? ||
+      Config.current.disable_login
+    is_admin = Storage.default.username_is_admin get_username env
   end
+
+  # The token (if exists) takes precedence over other authentication methods.
   if token = env.session.string? "token"
     is_admin = Storage.default.verify_admin token
   end
@@ -49,6 +48,8 @@ macro get_username(env)
   rescue e
     if Config.current.disable_login
       Config.current.default_username
+    elsif (header = Config.current.auth_proxy_header_name) && !header.empty?
+      env.request.headers[header]
     else
       raise e
     end

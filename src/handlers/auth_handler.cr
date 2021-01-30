@@ -93,8 +93,18 @@ class AuthHandler < Kemal::Handler
     call_next env
   end
 
+  def handle_auth_proxy(env)
+    username = env.request.headers[Config.current.auth_proxy_header_name]?
+    unless username && Storage.default.username_exists username
+      return redirect env, "/login"
+    end
+    call_next env
+  end
+
   def call(env)
-    if request_path_startswith env, ["/opds"]
+    if !Config.current.auth_proxy_header_name.empty?
+      handle_auth_proxy env
+    elsif request_path_startswith env, ["/opds"]
       handle_opds_auth env
     else
       handle_auth env

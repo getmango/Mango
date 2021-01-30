@@ -22,6 +22,7 @@ class Config
   property page_margin : Int32 = 30
   property disable_login = false
   property default_username = ""
+  property auth_proxy_header_name = ""
   property mangadex = Hash(String, String | Int32).new
 
   @[YAML::Field(ignore: true)]
