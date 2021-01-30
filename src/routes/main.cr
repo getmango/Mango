@@ -154,6 +154,7 @@ struct MainRouter
     end
 
     get "/api" do |env|
+      base_url = Config.current.base_url
       render "src/views/api.html.ecr"
     end
   end
