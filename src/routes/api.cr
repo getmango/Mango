@@ -414,8 +414,7 @@ struct APIRouter
     get "/api/admin/mangadex/manga/:id" do |env|
       begin
         id = env.params.url["id"]
-        api = MangaDex::API.default
-        manga = api.get_manga id
+        manga = MangaDex::Client.from_config.manga id
         send_json env, manga.to_info_json
       rescue e
         Logger.error e
@@ -434,12 +433,12 @@ struct APIRouter
         chapters = env.params.json["chapters"].as(Array).map { |c| c.as_h }
         jobs = chapters.map { |chapter|
           Queue::Job.new(
-            chapter["id"].as_s,
-            chapter["manga_id"].as_s,
+            chapter["id"].as_i64.to_s,
+            chapter["mangaId"].as_i64.to_s,
             chapter["full_title"].as_s,
-            chapter["manga_title"].as_s,
+            chapter["mangaTitle"].as_s,
             Queue::JobStatus::Pending,
-            Time.unix chapter["time"].as_s.to_i
+            Time.unix chapter["timestamp"].as_i64
           )
         }
         inserted_count = Queue.default.push jobs

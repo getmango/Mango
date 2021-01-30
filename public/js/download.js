@@ -27,7 +27,7 @@ const download = () => {
 		$('#download-btn').attr('hidden', '');
 		$('#download-spinner').removeAttr('hidden');
 		const ids = selected.map((i, e) => {
-			return $(e).find('td').first().text();
+			return parseInt($(e).find('td').first().text());
 		}).get();
 		const chapters = globalChapters.filter(c => ids.indexOf(c.id) >= 0);
 		console.log(ids);
@@ -114,8 +114,7 @@ const search = () => {
 				return;
 			}
 
-			const cover = baseURL + data.cover_url;
-			$('#cover').attr("src", cover);
+			$('#cover').attr("src", data.mainCover);
 			$('#title').text("Title: " + data.title);
 			$('#artist').text("Artist: " + data.artist);
 			$('#author').text("Author: " + data.author);
@@ -285,7 +284,7 @@ const buildTable = () => {
 						<td>${group_str}</td>
 						<td>${chp.volume}</td>
 						<td>${chp.chapter}</td>
-						<td>${moment.unix(chp.time).fromNow()}</td>
+						<td>${moment.unix(chp.timestamp).fromNow()}</td>
 					</tr>`;
 	}).join('');
 	const tbody = `<tbody id="selectable">${inner}</tbody>`;

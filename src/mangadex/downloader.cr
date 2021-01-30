@@ -1,5 +1,7 @@
-require "./api"
+require "mangadex"
 require "compress/zip"
+require "../rename"
+require "./ext"
 
 module MangaDex
   class PageJob
@@ -21,7 +23,7 @@ module MangaDex
     use_default
 
     def initialize
-      @api = API.default
+      @client = Client.from_config
       super
     end
 
@@ -46,7 +48,7 @@ module MangaDex
       @downloading = true
       @queue.set_status Queue::JobStatus::Downloading, job
       begin
-        chapter = @api.get_chapter(job.id)
+        chapter = @client.chapter job.id
       rescue e
         Logger.error e
         @queue.set_status Queue::JobStatus::Error, job
@@ -73,8 +75,8 @@ module MangaDex
       # Create a buffered channel. It works as an FIFO queue
       channel = Channel(PageJob).new chapter.pages.size
       spawn do
-        chapter.pages.each_with_index do |tuple, i|
-          fn, url = tuple
+        chapter.pages.each_with_index do |url, i|
+          fn = Path.new(URI.parse(url).path).basename
           ext = File.extname fn
           fn = "#{i.to_s.rjust len, '0'}#{ext}"
           page_job = PageJob.new url, fn, writer, @retries
