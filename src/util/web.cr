@@ -1,10 +1,9 @@
 # Web related helper functions/macros
 
-# This macro defines `is_admin` when used
-macro check_admin_access
+def is_admin?(env) : Bool
   is_admin = false
   if !Config.current.auth_proxy_header_name.empty? ||
-      Config.current.disable_login
+     Config.current.disable_login
     is_admin = Storage.default.username_is_admin get_username env
   end
 
@@ -12,11 +11,13 @@ macro check_admin_access
   if token = env.session.string? "token"
     is_admin = Storage.default.verify_admin token
   end
+
+  is_admin
 end
 
 macro layout(name)
   base_url = Config.current.base_url
-  check_admin_access
+  is_admin = is_admin? env
   begin
     page = {{name}}
     render "src/views/#{{{name}}}.html.ecr", "src/views/layout.html.ecr"
@@ -31,7 +32,7 @@ end
 macro send_error_page(msg)
   message = {{msg}}
   base_url = Config.current.base_url
-  check_admin_access
+  is_admin = is_admin? env
   page = "Error"
   html = render "src/views/message.html.ecr", "src/views/layout.html.ecr"
   send_file env, html.to_slice, "text/html"
