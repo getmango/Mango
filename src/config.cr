@@ -100,5 +100,7 @@ class Config
                  "https://api.mangadex.org/v2 to suppress this warning." }
       mangadex["api_url"] = "https://mangadex.org/api/v2"
     end
+    mangadex["api_url"] = mangadex["api_url"].to_s.rstrip "/"
+    mangadex["base_url"] = mangadex["base_url"].to_s.rstrip "/"
   end
 end
