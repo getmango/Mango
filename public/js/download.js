@@ -241,7 +241,7 @@ const buildTable = () => {
 		if (v === 'All') return;
 		if (k === 'group') {
 			chapters = chapters.filter(c => {
-				unescaped_groups = Object.entries(c.groups).map(([g, id]) => unescapeHTML(g));
+				const unescaped_groups = Object.entries(c.groups).map(([g, id]) => unescapeHTML(g));
 				return unescaped_groups.indexOf(v) >= 0;
 			});
 			return;
