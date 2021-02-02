@@ -42,16 +42,6 @@ class Library
         end
       end
     end
-
-    db_interval = Config.current.db_optimization_interval_hours
-    unless db_interval < 1
-      spawn do
-        loop do
-          Storage.default.optimize
-          sleep db_interval.hours
-        end
-      end
-    end
   end
 
   def titles
@@ -119,6 +109,7 @@ class Library
     storage.close
 
     Logger.debug "Scan completed"
+    Storage.default.mark_unavailable
   end
 
   def get_continue_reading_entries(username)
@@ -241,7 +232,7 @@ class Library
         e.generate_thumbnail
         # Sleep after each generation to minimize the impact on disk IO
         #   and CPU
-        sleep 0.5.seconds
+        sleep 1.seconds
       end
       @thumbnails_count += 1
     end

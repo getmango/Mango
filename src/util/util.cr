@@ -2,6 +2,7 @@ IMGS_PER_PAGE            = 5
 ENTRIES_IN_HOME_SECTIONS = 8
 UPLOAD_URL_PREFIX        = "/uploads"
 STATIC_DIRS              = ["/css", "/js", "/img", "/favicon.ico"]
+SUPPORTED_FILE_EXTNAMES  = [".zip", ".cbz", ".rar", ".cbr"]
 
 def random_str
   UUID.random.to_s.gsub "-", ""
@@ -29,6 +30,10 @@ def register_mime_types
   }.each do |k, v|
     MIME.register k, v
   end
+end
+
+def is_supported_file(path)
+  SUPPORTED_FILE_EXTNAMES.includes? File.extname(path).downcase
 end
 
 struct Int
@@ -91,4 +96,19 @@ def sort_titles(titles : Array(Title), opt : SortOptions, username : String)
   ary.reverse! unless opt.not_nil!.ascend
 
   ary
+end
+
+class String
+  # Returns the similarity (in [0, 1]) of two paths.
+  # For the two paths, separate them into arrays of components, count the
+  #   number of matching components backwards, and divide the count by the
+  #   number of components of the shorter path.
+  def components_similarity(other : String) : Float64
+    s, l = [self, other]
+      .map { |str| Path.new(str).parts }
+      .sort_by &.size
+
+    match = s.reverse.zip(l.reverse).count { |a, b| a == b }
+    match / s.size
+  end
 end

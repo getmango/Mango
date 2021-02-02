@@ -1,6 +1,14 @@
 <ul class="uk-list uk-list-large uk-list-divider" x-data="component()" x-init="init()">
   <li><a class="uk-link-reset" href="<%= base_url %>admin/user">User Management</a></li>
   <li>
+    <a class="uk-link-reset" href="<%= base_url %>admin/missing">Missing Items</a>
+    <% if missing_count > 0 %>
+      <div class="uk-align-right">
+        <span class="uk-badge"><%= missing_count %></span>
+      </div>
+    <% end %>
+  </li>
+  <li>
     <a class="uk-link-reset" @click="scan()">
       <span :style="`${scanning ? 'color:grey' : ''}`">Scan Library Files</span>
       <div class="uk-align-right">
@@ -19,7 +27,7 @@
   </li>
   <li>
     <span>Theme</span>
-    <select id="theme-select" class="uk-select uk-align-right uk-width-1-3@m uk-width-1-2" :val="themeSetting" @change="themeChanged($event)">
+    <select id="theme-select" class="uk-select uk-align-right uk-width-1-3@m uk-width-1-2" :value="themeSetting" @change="themeChanged($event)">
       <option>Dark</option>
       <option>Light</option>
       <option>System</option>

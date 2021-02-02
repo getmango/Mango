@@ -166,6 +166,21 @@ struct APIRouter
       "error"   => "string?",
     }
 
+    Koa.object "missing", {
+      "path"      => "string",
+      "id"        => "string",
+      "signature" => "string",
+    }
+
+    Koa.array "missingAry", "$missing"
+
+    Koa.object "missingResult", {
+      "success" => "boolean",
+      "error"   => "string?",
+      "entries" => "$missingAry?",
+      "titles"  => "$missingAry?",
+    }
+
     Koa.describe "Returns a page in a manga entry"
     Koa.path "tid", desc: "Title ID"
     Koa.path "eid", desc: "Entry ID"
@@ -770,6 +785,120 @@ struct APIRouter
         }.to_json
       rescue e
         Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Lists all missing titles"
+    Koa.response 200, ref: "$missingResult"
+    Koa.tag "admin"
+    get "/api/admin/titles/missing" do |env|
+      begin
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+          "titles"  => Storage.default.missing_titles,
+        }.to_json
+      rescue e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Lists all missing entries"
+    Koa.response 200, ref: "$missingResult"
+    Koa.tag "admin"
+    get "/api/admin/entries/missing" do |env|
+      begin
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+          "entries" => Storage.default.missing_entries,
+        }.to_json
+      rescue e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Deletes all missing titles"
+    Koa.response 200, ref: "$result"
+    Koa.tag "admin"
+    delete "/api/admin/titles/missing" do |env|
+      begin
+        Storage.default.delete_missing_title
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+        }.to_json
+      rescue e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Deletes all missing entries"
+    Koa.response 200, ref: "$result"
+    Koa.tag "admin"
+    delete "/api/admin/entries/missing" do |env|
+      begin
+        Storage.default.delete_missing_entry
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+        }.to_json
+      rescue e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Deletes a missing title identified by `tid`", <<-MD
+    Does nothing if the given `tid` is not found or if the title is not missing.
+    MD
+    Koa.response 200, ref: "$result"
+    Koa.tag "admin"
+    delete "/api/admin/titles/missing/:tid" do |env|
+      begin
+        tid = env.params.url["tid"]
+        Storage.default.delete_missing_title tid
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+        }.to_json
+      rescue e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Deletes a missing entry identified by `eid`", <<-MD
+    Does nothing if the given `eid` is not found or if the entry is not missing.
+    MD
+    Koa.response 200, ref: "$result"
+    Koa.tag "admin"
+    delete "/api/admin/entries/missing/:eid" do |env|
+      begin
+        eid = env.params.url["eid"]
+        Storage.default.delete_missing_entry eid
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+        }.to_json
+      rescue e
         send_json env, {
           "success" => false,
           "error"   => e.message,

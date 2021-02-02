@@ -7,3 +7,8 @@ Lint/UnusedArgument:
     - src/routes/*
 Metrics/CyclomaticComplexity:
   Enabled: false
+Layout/LineLength:
+  Enabled: true
+  MaxLength: 80
+  Excluded:
+    - src/routes/api.cr

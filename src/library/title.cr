@@ -3,19 +3,20 @@ require "../archive"
 class Title
   getter dir : String, parent_id : String, title_ids : Array(String),
     entries : Array(Entry), title : String, id : String,
-    encoded_title : String, mtime : Time
+    encoded_title : String, mtime : Time, signature : UInt64
 
   @entry_display_name_cache : Hash(String, String)?
 
   def initialize(@dir : String, @parent_id)
     storage = Storage.default
-    id = storage.get_id @dir, true
+    @signature = Dir.signature dir
+    id = storage.get_title_id dir, signature
     if id.nil?
       id = random_str
-      storage.insert_id({
-        path:     @dir,
-        id:       id,
-        is_title: true,
+      storage.insert_title_id({
+        path:      dir,
+        id:        id,
+        signature: signature.to_s,
       })
     end
     @id = id
@@ -35,7 +36,7 @@ class Title
         @title_ids << title.id
         next
       end
-      if [".zip", ".cbz", ".rar", ".cbr"].includes? File.extname path
+      if is_supported_file path
         entry = Entry.new path, self
         @entries << entry if entry.pages > 0 || entry.err_msg
       end
@@ -61,6 +62,7 @@ class Title
       {% for str in ["dir", "title", "id"] %}
         json.field {{str}}, @{{str.id}}
       {% end %}
+      json.field "signature" { json.number @signature }
       json.field "display_name", display_name
       json.field "cover_url", cover_url
       json.field "mtime" { json.number @mtime.to_unix }

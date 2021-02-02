@@ -13,7 +13,6 @@ class Config
   property db_path : String = File.expand_path "~/mango/mango.db", home: true
   property scan_interval_minutes : Int32 = 5
   property thumbnail_generation_interval_hours : Int32 = 24
-  property db_optimization_interval_hours : Int32 = 24
   property log_level : String = "info"
   property upload_path : String = File.expand_path "~/mango/uploads",
     home: true

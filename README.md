@@ -52,7 +52,7 @@ The official docker images are available on [Dockerhub](https://hub.docker.com/r
 ### CLI
 
 ```
-  Mango - Manga Server and Web Reader. Version 0.19.1
+  Mango - Manga Server and Web Reader. Version 0.20.0
 
   Usage:
 
@@ -82,7 +82,6 @@ library_path: ~/mango/library
 db_path: ~/mango/mango.db
 scan_interval_minutes: 5
 thumbnail_generation_interval_hours: 24
-db_optimization_interval_hours: 24
 log_level: info
 upload_path: ~/mango/uploads
 plugin_path: ~/mango/plugins
