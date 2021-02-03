@@ -52,9 +52,9 @@ class Config
     cfg_path = File.expand_path path, home: true
     if File.exists? cfg_path
       config = self.from_yaml File.read cfg_path
-      config.preprocess
       config.path = path
       config.fill_defaults
+      config.preprocess
       return config
     end
     puts "The config file #{cfg_path} does not exist. " \
