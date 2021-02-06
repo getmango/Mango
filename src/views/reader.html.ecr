@@ -24,7 +24,7 @@
           <template x-for="item in items">
             <img
               uk-img
-              class="uk-align-center"
+              :class="{'uk-align-center': true, 'spine': item.width < 50}"
               :style="item.style"
               :data-src="item.url"
               :width="item.width"
@@ -111,7 +111,7 @@
 
   <style>
 img[data-src][src*='data:image'] { background: white; }
-img { width: 100%; }
+img:not(.spine) { width: 100%; }
 .reader-bg { background: black; }
   </style>
 
