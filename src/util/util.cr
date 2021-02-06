@@ -27,6 +27,7 @@ def register_mime_types
     ".rar" => "application/x-rar-compressed",
     ".cbz" => "application/vnd.comicbook+zip",
     ".cbr" => "application/vnd.comicbook-rar",
+    ".ico" => "image/x-icon",
   }.each do |k, v|
     MIME.register k, v
   end
