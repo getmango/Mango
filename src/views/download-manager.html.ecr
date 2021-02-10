@@ -25,14 +25,14 @@
             <td x-text="job.title"></td>
           </template>
           <template x-if="!job.plugin_id">
-            <td><a :href="`${'<%= mangadex_base_url %>'.replace(/\/$/, '')}/chapter/${job.id}`" x-text="job.title"></td>
+            <td><a :href="`<%= mangadex_base_url %>/chapter/${job.id}`" x-text="job.title"></td>
           </template>
 
           <template x-if="job.plugin_id">
             <td x-text="job.manga_title"></td>
           </template>
           <template x-if="!job.plugin_id">
-            <td><a :href="`${'<%= mangadex_base_url %>'.replace(/\/$/, '')}/manga/${job.manga_id}`" x-text="job.manga_title"></td>
+            <td><a :href="`<%= mangadex_base_url %>/manga/${job.manga_id}`" x-text="job.manga_title"></td>
           </template>
 
           <td x-text="`${job.success_count}/${job.pages}`"></td>

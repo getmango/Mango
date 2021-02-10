@@ -1,7 +1,7 @@
 IMGS_PER_PAGE            = 5
 ENTRIES_IN_HOME_SECTIONS = 8
 UPLOAD_URL_PREFIX        = "/uploads"
-STATIC_DIRS              = ["/css", "/js", "/img", "/favicon.ico"]
+STATIC_DIRS              = %w(/css /js /img /webfonts /favicon.ico /robots.txt)
 SUPPORTED_FILE_EXTNAMES  = [".zip", ".cbz", ".rar", ".cbr"]
 
 def random_str
@@ -23,11 +23,21 @@ end
 
 def register_mime_types
   {
+    # Comic Archives
     ".zip" => "application/zip",
     ".rar" => "application/x-rar-compressed",
     ".cbz" => "application/vnd.comicbook+zip",
     ".cbr" => "application/vnd.comicbook-rar",
+
+    # Favicon
     ".ico" => "image/x-icon",
+
+    # FontAwesome fonts
+    ".woff"  => "font/woff",
+    ".woff2" => "font/woff2",
+    ".eot"   => "application/vnd.ms-fontobject",
+    ".ttf"   => "font/ttf",
+    ".svg"   => "image/svg+xml",
   }.each do |k, v|
     MIME.register k, v
   end
