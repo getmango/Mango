@@ -35,9 +35,6 @@ def register_mime_types
     # FontAwesome fonts
     ".woff"  => "font/woff",
     ".woff2" => "font/woff2",
-    ".eot"   => "application/vnd.ms-fontobject",
-    ".ttf"   => "font/ttf",
-    ".svg"   => "image/svg+xml",
   }.each do |k, v|
     MIME.register k, v
   end
