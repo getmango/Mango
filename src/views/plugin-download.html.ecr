@@ -68,7 +68,7 @@
       var pid = "<%= plugin.not_nil!.info.id %>";
     </script>
   <% end %>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <%= render_component "jquery-ui" %>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.combined.min.js"></script>
   <script src="<%= base_url %>js/alert.js"></script>
   <script src="<%= base_url %>js/plugin-download.js"></script>

@@ -905,6 +905,57 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Logs the current user into their MangaDex account, and " \
+                 "saves the token."
+    Koa.tag "admin"
+    post "/api/admin/mangadex/login" do |env|
+      begin
+        username = env.params.json["username"].as String
+        password = env.params.json["password"].as String
+        mango_username = get_username env
+
+        client = MangaDex::Client.from_config
+        client.auth username, password
+
+        Storage.default.save_md_token mango_username, client.token.not_nil!,
+          client.token_expires
+
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+          "expires" => client.token_expires.to_unix,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Returns the expiration date of the mangadex token if the " \
+                 "current user has logged in to MangaDex"
+    Koa.tag "admin"
+    get "/api/admin/mangadex/expires" do |env|
+      begin
+        username = get_username env
+        _, expires = Storage.default.get_md_token username
+
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+          "expires" => expires.try &.to_unix,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
     doc = Koa.generate
     @@api_json = doc.to_json if doc
 
