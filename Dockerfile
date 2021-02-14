@@ -10,6 +10,6 @@ FROM library/alpine
 
 WORKDIR /
 
-COPY --from=builder /Mango/mango .
+COPY --from=builder /Mango/mango /usr/local/bin/mango
 
-CMD ["./mango"]
+CMD ["/usr/local/bin/mango"]
