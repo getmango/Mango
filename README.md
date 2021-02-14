@@ -172,6 +172,7 @@ Please check the [development guideline](https://github.com/hkalexling/Mango/wik
   <tr>
     <td align="center"><a href="https://github.com/Leeingnyo"><img src="https://avatars0.githubusercontent.com/u/6760150?v=4?s=100" width="100px;" alt=""/><br /><sub><b>이인용</b></sub></a><br /><a href="https://github.com/hkalexling/Mango/commits?author=Leeingnyo" title="Code">💻</a></td>
     <td align="center"><a href="http://h45h74x.eu.org"><img src="https://avatars1.githubusercontent.com/u/27204033?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Simon</b></sub></a><br /><a href="https://github.com/hkalexling/Mango/commits?author=h45h74x" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/davidkna"><img src="https://avatars.githubusercontent.com/u/835177?v=4?s=100" width="100px;" alt=""/><br /><sub><b>David Knaack</b></sub></a><br /><a href="#infra-davidkna" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
   </tr>
 </table>
 
