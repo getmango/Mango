@@ -50,7 +50,7 @@ shards:
 
   koa:
     git: https://github.com/hkalexling/koa.git
-    version: 0.5.0
+    version: 0.7.0
 
   mangadex:
     git: https://github.com/hkalexling/mangadex.git

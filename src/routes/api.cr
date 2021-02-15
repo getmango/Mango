@@ -10,7 +10,7 @@ struct APIRouter
   macro s(fields)
     {
       {% for field in fields %}
-        {{field}} => "string",
+        {{field}} => String,
       {% end %}
     }
   end
@@ -33,160 +33,47 @@ struct APIRouter
     MD
 
     Koa.cookie_auth "cookie", "mango-sessid-#{Config.current.port}"
-    Koa.global_tag "admin", desc: <<-MD
+    Koa.define_tag "admin", desc: <<-MD
       These are the admin endpoints only accessible for users with admin access. A non-admin user will get HTTP 403 when calling the endpoints.
     MD
 
-    Koa.binary "binary", desc: "A binary file"
-    Koa.array "entryAry", "$entry", desc: "An array of entries"
-    Koa.array "titleAry", "$title", desc: "An array of titles"
-    Koa.array "strAry", "string", desc: "An array of strings"
+    Koa.schema "entry", {
+      "pages" => Int32,
+      "mtime" => Int64,
+    }.merge(s %w(zip_path title size id title_id display_name cover_url)),
+      desc: "An entry in a book"
 
-    entry_schema = {
-      "pages" => "integer",
-      "mtime" => "integer",
-    }.merge s %w(zip_path title size id title_id display_name cover_url)
-    Koa.object "entry", entry_schema, desc: "An entry in a book"
-
-    title_schema = {
-      "mtime"   => "integer",
-      "entries" => "$entryAry",
-      "titles"  => "$titleAry",
-      "parents" => "$strAry",
-    }.merge s %w(dir title id display_name cover_url)
-    Koa.object "title", title_schema,
+    Koa.schema "title", {
+      "mtime"   => Int64,
+      "entries" => ["entry"],
+      "titles"  => ["title"],
+      "parents" => [String],
+    }.merge(s %w(dir title id display_name cover_url)),
       desc: "A manga title (a collection of entries and sub-titles)"
 
-    Koa.object "library", {
-      "dir"    => "string",
-      "titles" => "$titleAry",
-    }, desc: "A library containing a list of top-level titles"
-
-    Koa.object "scanResult", {
-      "milliseconds" => "integer",
-      "titles"       => "integer",
+    Koa.schema "result", {
+      "success" => Bool,
+      "error"   => String?,
     }
 
-    Koa.object "progressResult", {
-      "progress" => "number",
-    }
+    Koa.schema("mdChapter", {
+      "group" => {} of String => String,
+    }.merge(s %w(id title volume chapter language full_title time
+      manga_title manga_id)),
+      desc: "A MangaDex chapter")
 
-    Koa.object "result", {
-      "success" => "boolean",
-      "error"   => "string?",
-    }
-
-    mc_schema = {
-      "groups" => "object",
-    }.merge s %w(id title volume chapter language full_title time manga_title manga_id)
-    Koa.object "mangadexChapter", mc_schema, desc: "A MangaDex chapter"
-
-    Koa.array "chapterAry", "$mangadexChapter"
-
-    mm_schema = {
-      "chapers" => "$chapterAry",
-    }.merge s %w(id title description author artist cover_url)
-    Koa.object "mangadexManga", mm_schema, desc: "A MangaDex manga"
-
-    Koa.object "chaptersObj", {
-      "chapters" => "$chapterAry",
-    }
-
-    Koa.object "successFailCount", {
-      "success" => "integer",
-      "fail"    => "integer",
-    }
-
-    job_schema = {
-      "pages"         => "integer",
-      "success_count" => "integer",
-      "fail_count"    => "integer",
-      "time"          => "integer",
-    }.merge s %w(id manga_id title manga_title status_message status)
-    Koa.object "job", job_schema, desc: "A download job in the queue"
-
-    Koa.array "jobAry", "$job"
-
-    Koa.object "jobs", {
-      "success" => "boolean",
-      "paused"  => "boolean",
-      "jobs"    => "$jobAry",
-    }
-
-    Koa.object "binaryUpload", {
-      "file" => "$binary",
-    }
-
-    Koa.object "pluginListBody", {
-      "plugin" => "string",
-      "query"  => "string",
-    }
-
-    Koa.object "pluginChapter", {
-      "id"    => "string",
-      "title" => "string",
-    }
-
-    Koa.array "pluginChapterAry", "$pluginChapter"
-
-    Koa.object "pluginList", {
-      "success"  => "boolean",
-      "chapters" => "$pluginChapterAry?",
-      "title"    => "string?",
-      "error"    => "string?",
-    }
-
-    Koa.object "pluginDownload", {
-      "plugin"   => "string",
-      "title"    => "string",
-      "chapters" => "$pluginChapterAry",
-    }
-
-    Koa.object "dimension", {
-      "width"  => "integer",
-      "height" => "integer",
-    }
-
-    Koa.array "dimensionAry", "$dimension"
-
-    Koa.object "dimensionResult", {
-      "success"    => "boolean",
-      "dimensions" => "$dimensionAry?",
-      "margin"     => "number",
-      "error"      => "string?",
-    }
-
-    Koa.object "ids", {
-      "ids" => "$strAry",
-    }
-
-    Koa.object "tagsResult", {
-      "success" => "boolean",
-      "tags"    => "$strAry?",
-      "error"   => "string?",
-    }
-
-    Koa.object "missing", {
-      "path"      => "string",
-      "id"        => "string",
-      "signature" => "string",
-    }
-
-    Koa.array "missingAry", "$missing"
-
-    Koa.object "missingResult", {
-      "success" => "boolean",
-      "error"   => "string?",
-      "entries" => "$missingAry?",
-      "titles"  => "$missingAry?",
-    }
+    Koa.schema "mdManga", {
+      "chapters" => ["mdChapter"],
+    }.merge(s %w(id title description author artist cover_url)),
+      desc: "A MangaDex manga"
 
     Koa.describe "Returns a page in a manga entry"
     Koa.path "tid", desc: "Title ID"
     Koa.path "eid", desc: "Entry ID"
-    Koa.path "page", type: "integer", desc: "The page number to return (starts from 1)"
-    Koa.response 200, ref: "$binary", media_type: "image/*"
+    Koa.path "page", schema: Int32, desc: "The page number to return (starts from 1)"
+    Koa.response 200, schema: Bytes, media_type: "image/*"
     Koa.response 500, "Page not found or not readable"
+    Koa.tag "reader"
     get "/api/page/:tid/:eid/:page" do |env|
       begin
         tid = env.params.url["tid"]
@@ -212,8 +99,9 @@ struct APIRouter
     Koa.describe "Returns the cover image of a manga entry"
     Koa.path "tid", desc: "Title ID"
     Koa.path "eid", desc: "Entry ID"
-    Koa.response 200, ref: "$binary", media_type: "image/*"
+    Koa.response 200, schema: Bytes, media_type: "image/*"
     Koa.response 500, "Page not found or not readable"
+    Koa.tag "library"
     get "/api/cover/:tid/:eid" do |env|
       begin
         tid = env.params.url["tid"]
@@ -238,8 +126,9 @@ struct APIRouter
 
     Koa.describe "Returns the book with title `tid`"
     Koa.path "tid", desc: "Title ID"
-    Koa.response 200, ref: "$title"
+    Koa.response 200, schema: "title"
     Koa.response 404, "Title not found"
+    Koa.tag "library"
     get "/api/book/:tid" do |env|
       begin
         tid = env.params.url["tid"]
@@ -255,14 +144,21 @@ struct APIRouter
     end
 
     Koa.describe "Returns the entire library with all titles and entries"
-    Koa.response 200, ref: "$library"
+    Koa.response 200, schema: {
+      "dir"    => String,
+      "titles" => ["title"],
+    }
+    Koa.tag "library"
     get "/api/library" do |env|
       send_json env, Library.default.to_json
     end
 
     Koa.describe "Triggers a library scan"
-    Koa.tag "admin"
-    Koa.response 200, ref: "$scanResult"
+    Koa.tags ["admin", "library"]
+    Koa.response 200, schema: {
+      "milliseconds" => Float64,
+      "titles"       => Int32,
+    }
     post "/api/admin/scan" do |env|
       start = Time.utc
       Library.default.scan
@@ -274,8 +170,10 @@ struct APIRouter
     end
 
     Koa.describe "Returns the thumbnail generation progress between 0 and 1"
-    Koa.tag "admin"
-    Koa.response 200, ref: "$progressResult"
+    Koa.tags ["admin", "library"]
+    Koa.response 200, schema: {
+      "progress" => Float64,
+    }
     get "/api/admin/thumbnail_progress" do |env|
       send_json env, {
         "progress" => Library.default.thumbnail_generation_progress,
@@ -283,7 +181,7 @@ struct APIRouter
     end
 
     Koa.describe "Triggers a thumbnail generation"
-    Koa.tag "admin"
+    Koa.tags ["admin", "library"]
     post "/api/admin/generate_thumbnails" do |env|
       spawn do
         Library.default.generate_thumbnails
@@ -291,8 +189,8 @@ struct APIRouter
     end
 
     Koa.describe "Deletes a user with `username`"
-    Koa.tag "admin"
-    Koa.response 200, ref: "$result"
+    Koa.tags ["admin", "users"]
+    Koa.response 200, schema: "result"
     delete "/api/admin/user/delete/:username" do |env|
       begin
         username = env.params.url["username"]
@@ -319,7 +217,8 @@ struct APIRouter
     Koa.path "tid", desc: "Title ID"
     Koa.query "eid", desc: "Entry ID", required: false
     Koa.path "page", desc: "The new page number indicating the progress"
-    Koa.response 200, ref: "$result"
+    Koa.response 200, schema: "result"
+    Koa.tag "progress"
     put "/api/progress/:tid/:page" do |env|
       begin
         username = get_username env
@@ -350,8 +249,11 @@ struct APIRouter
     Koa.describe "Updates the reading progress of multiple entries in a title"
     Koa.path "action", desc: "The action to perform. Can be either `read` or `unread`"
     Koa.path "tid", desc: "Title ID"
-    Koa.body ref: "$ids", desc: "An array of entry IDs"
-    Koa.response 200, ref: "$result"
+    Koa.body schema: {
+      "ids" => [String],
+    }, desc: "An array of entry IDs"
+    Koa.response 200, schema: "result"
+    Koa.tag "progress"
     put "/api/bulk_progress/:action/:tid" do |env|
       begin
         username = get_username env
@@ -377,11 +279,11 @@ struct APIRouter
     Koa.describe "Sets the display name of a title or an entry", <<-MD
       When `eid` is provided, apply the display name to the entry. Otherwise, apply the display name to the title identified by `tid`.
     MD
-    Koa.tag "admin"
+    Koa.tags ["admin", "library"]
     Koa.path "tid", desc: "Title ID"
     Koa.query "eid", desc: "Entry ID", required: false
     Koa.path "name", desc: "The new display name"
-    Koa.response 200, ref: "$result"
+    Koa.response 200, schema: "result"
     put "/api/admin/display_name/:tid/:name" do |env|
       begin
         title = (Library.default.get_title env.params.url["tid"])
@@ -408,9 +310,9 @@ struct APIRouter
     Koa.describe "Returns a MangaDex manga identified by `id`", <<-MD
       On error, returns a JSON that contains the error message in the `error` field.
     MD
-    Koa.tag "admin"
+    Koa.tags ["admin", "mangadex"]
     Koa.path "id", desc: "A MangaDex manga ID"
-    Koa.response 200, ref: "$mangadexManga"
+    Koa.response 200, schema: "mdManga"
     get "/api/admin/mangadex/manga/:id" do |env|
       begin
         id = env.params.url["id"]
@@ -425,9 +327,14 @@ struct APIRouter
     Koa.describe "Adds a list of MangaDex chapters to the download queue", <<-MD
       On error, returns a JSON that contains the error message in the `error` field.
     MD
-    Koa.tag "admin"
-    Koa.body ref: "$chaptersObj"
-    Koa.response 200, ref: "$successFailCount"
+    Koa.tags ["admin", "mangadex", "downloader"]
+    Koa.body schema: {
+      "chapters" => ["mdChapter"],
+    }
+    Koa.response 200, schema: {
+      "success" => Int32,
+      "fail"    => Int32,
+    }
     post "/api/admin/mangadex/download" do |env|
       begin
         chapters = env.params.json["chapters"].as(Array).map { |c| c.as_h }
@@ -467,8 +374,18 @@ struct APIRouter
     Koa.describe "Returns the current download queue", <<-MD
       On error, returns a JSON that contains the error message in the `error` field.
     MD
-    Koa.tag "admin"
-    Koa.response 200, ref: "$jobs"
+    Koa.tags ["admin", "downloader"]
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "paused"  => Bool?,
+      "jobs?"   => [{
+        "pages"         => Int32,
+        "success_count" => Int32,
+        "fail_count"    => Int32,
+        "time"          => Int64,
+      }.merge(s %w(id manga_id title manga_title status_message status))],
+    }
     get "/api/admin/mangadex/queue" do |env|
       begin
         jobs = Queue.default.get_all
@@ -494,10 +411,10 @@ struct APIRouter
 
       When `action` is set to `retry`, the behavior depends on `id`. If `id` is provided, restarts the job identified by the ID. Otherwise, retries all jobs in the `Error` or `MissingPages` status in the queue.
     MD
-    Koa.tag "admin"
+    Koa.tags ["admin", "downloader"]
     Koa.path "action", desc: "The action to perform. It should be one of the followins: `delete`, `retry`, `pause` and `resume`."
     Koa.query "id", required: false, desc: "A job ID"
-    Koa.response 200, ref: "$result"
+    Koa.response 200, schema: "result"
     post "/api/admin/mangadex/queue/:action" do |env|
       begin
         action = env.params.url["action"]
@@ -546,8 +463,10 @@ struct APIRouter
       When `eid` is omitted, the new cover image will be applied to the title. Otherwise, applies the image to the specified entry.
     MD
     Koa.tag "admin"
-    Koa.body type: "multipart/form-data", ref: "$binaryUpload"
-    Koa.response 200, ref: "$result"
+    Koa.body media_type: "multipart/form-data", schema: {
+      "file" => Bytes,
+    }
+    Koa.response 200, schema: "result"
     post "/api/admin/upload/:target" do |env|
       begin
         target = env.params.url["target"]
@@ -603,9 +522,18 @@ struct APIRouter
     end
 
     Koa.describe "Lists the chapters in a title from a plugin"
-    Koa.tag "admin"
-    Koa.body ref: "$pluginListBody"
-    Koa.response 200, ref: "$pluginList"
+    Koa.tags ["admin", "downloader"]
+    Koa.query "plugin", schema: String
+    Koa.query "query", schema: String
+    Koa.response 200, schema: {
+      "success"   => Bool,
+      "error"     => String?,
+      "chapters?" => [{
+        "id"    => String,
+        "title" => String,
+      }],
+      "title" => String?,
+    }
     get "/api/admin/plugin/list" do |env|
       begin
         query = env.params.query["query"].as String
@@ -629,9 +557,19 @@ struct APIRouter
     end
 
     Koa.describe "Adds a list of chapters from a plugin to the download queue"
-    Koa.tag "admin"
-    Koa.body ref: "$pluginDownload"
-    Koa.response 200, ref: "$successFailCount"
+    Koa.tags ["admin", "downloader"]
+    Koa.body schema: {
+      "plugin"   => String,
+      "title"    => String,
+      "chapters" => [{
+        "id"    => String,
+        "title" => String,
+      }],
+    }
+    Koa.response 200, schema: {
+      "success" => Int32,
+      "fail"    => Int32,
+    }
     post "/api/admin/plugin/download" do |env|
       begin
         plugin = Plugin.new env.params.json["plugin"].as String
@@ -664,7 +602,16 @@ struct APIRouter
     Koa.describe "Returns the image dimensions of all pages in an entry"
     Koa.path "tid", desc: "A title ID"
     Koa.path "eid", desc: "An entry ID"
-    Koa.response 200, ref: "$dimensionResult"
+    Koa.tag "reader"
+    Koa.response 200, schema: {
+      "success"     => Bool,
+      "error"       => String?,
+      "dimensions?" => [{
+        "width"  => Int32,
+        "height" => Int32,
+      }],
+      "margin" => Int32?,
+    }
     get "/api/dimensions/:tid/:eid" do |env|
       begin
         tid = env.params.url["tid"]
@@ -692,8 +639,9 @@ struct APIRouter
     Koa.describe "Downloads an entry"
     Koa.path "tid", desc: "A title ID"
     Koa.path "eid", desc: "An entry ID"
-    Koa.response 200, ref: "$binary"
+    Koa.response 200, schema: Bytes
     Koa.response 404, "Entry not found"
+    Koa.tags ["library", "reader"]
     get "/api/download/:tid/:eid" do |env|
       begin
         title = (Library.default.get_title env.params.url["tid"]).not_nil!
@@ -708,7 +656,12 @@ struct APIRouter
 
     Koa.describe "Gets the tags of a title"
     Koa.path "tid", desc: "A title ID"
-    Koa.response 200, ref: "$tagsResult"
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "tags"    => [String?],
+    }
+    Koa.tags ["library", "tags"]
     get "/api/tags/:tid" do |env|
       begin
         title = (Library.default.get_title env.params.url["tid"]).not_nil!
@@ -728,7 +681,12 @@ struct APIRouter
     end
 
     Koa.describe "Returns all tags"
-    Koa.response 200, ref: "$tagsResult"
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "tags"    => [String?],
+    }
+    Koa.tags ["library", "tags"]
     get "/api/tags" do |env|
       begin
         tags = Storage.default.list_tags
@@ -747,8 +705,8 @@ struct APIRouter
 
     Koa.describe "Adds a new tag to a title"
     Koa.path "tid", desc: "A title ID"
-    Koa.response 200, ref: "$result"
-    Koa.tag "admin"
+    Koa.response 200, schema: "result"
+    Koa.tags ["admin", "library", "tags"]
     put "/api/admin/tags/:tid/:tag" do |env|
       begin
         title = (Library.default.get_title env.params.url["tid"]).not_nil!
@@ -770,8 +728,8 @@ struct APIRouter
 
     Koa.describe "Deletes a tag from a title"
     Koa.path "tid", desc: "A title ID"
-    Koa.response 200, ref: "$result"
-    Koa.tag "admin"
+    Koa.response 200, schema: "result"
+    Koa.tags ["admin", "library", "tags"]
     delete "/api/admin/tags/:tid/:tag" do |env|
       begin
         title = (Library.default.get_title env.params.url["tid"]).not_nil!
@@ -792,8 +750,16 @@ struct APIRouter
     end
 
     Koa.describe "Lists all missing titles"
-    Koa.response 200, ref: "$missingResult"
-    Koa.tag "admin"
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "titles?" => [{
+        "path"      => String,
+        "id"        => String,
+        "signature" => String,
+      }],
+    }
+    Koa.tags ["admin", "library"]
     get "/api/admin/titles/missing" do |env|
       begin
         send_json env, {
@@ -810,8 +776,16 @@ struct APIRouter
     end
 
     Koa.describe "Lists all missing entries"
-    Koa.response 200, ref: "$missingResult"
-    Koa.tag "admin"
+    Koa.response 200, schema: {
+      "success"  => Bool,
+      "error"    => String?,
+      "entries?" => [{
+        "path"      => String,
+        "id"        => String,
+        "signature" => String,
+      }],
+    }
+    Koa.tags ["admin", "library"]
     get "/api/admin/entries/missing" do |env|
       begin
         send_json env, {
@@ -828,8 +802,8 @@ struct APIRouter
     end
 
     Koa.describe "Deletes all missing titles"
-    Koa.response 200, ref: "$result"
-    Koa.tag "admin"
+    Koa.response 200, schema: "result"
+    Koa.tags ["admin", "library"]
     delete "/api/admin/titles/missing" do |env|
       begin
         Storage.default.delete_missing_title
@@ -846,8 +820,8 @@ struct APIRouter
     end
 
     Koa.describe "Deletes all missing entries"
-    Koa.response 200, ref: "$result"
-    Koa.tag "admin"
+    Koa.response 200, schema: "result"
+    Koa.tags ["admin", "library"]
     delete "/api/admin/entries/missing" do |env|
       begin
         Storage.default.delete_missing_entry
@@ -866,8 +840,8 @@ struct APIRouter
     Koa.describe "Deletes a missing title identified by `tid`", <<-MD
     Does nothing if the given `tid` is not found or if the title is not missing.
     MD
-    Koa.response 200, ref: "$result"
-    Koa.tag "admin"
+    Koa.response 200, schema: "result"
+    Koa.tags ["admin", "library"]
     delete "/api/admin/titles/missing/:tid" do |env|
       begin
         tid = env.params.url["tid"]
@@ -887,8 +861,8 @@ struct APIRouter
     Koa.describe "Deletes a missing entry identified by `eid`", <<-MD
     Does nothing if the given `eid` is not found or if the entry is not missing.
     MD
-    Koa.response 200, ref: "$result"
-    Koa.tag "admin"
+    Koa.response 200, schema: "result"
+    Koa.tags ["admin", "library"]
     delete "/api/admin/entries/missing/:eid" do |env|
       begin
         eid = env.params.url["eid"]
@@ -905,9 +879,19 @@ struct APIRouter
       end
     end
 
-    Koa.describe "Logs the current user into their MangaDex account, and " \
-                 "saves the token."
-    Koa.tag "admin"
+    Koa.describe "Logs the current user into their MangaDex account", <<-MD
+    If successful, returns the expiration date (as a unix timestamp) of the newly created token.
+    MD
+    Koa.body schema: {
+      "username" => String,
+      "password" => String,
+    }
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "expires" => Int64?,
+    }
+    Koa.tags ["admin", "mangadex", "users"]
     post "/api/admin/mangadex/login" do |env|
       begin
         username = env.params.json["username"].as String
@@ -934,9 +918,13 @@ struct APIRouter
       end
     end
 
-    Koa.describe "Returns the expiration date of the mangadex token if the " \
-                 "current user has logged in to MangaDex"
-    Koa.tag "admin"
+    Koa.describe "Returns the expiration date (as a unix timestamp) of the mangadex token if it exists"
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "expires" => Int64?,
+    }
+    Koa.tags ["admin", "mangadex", "users"]
     get "/api/admin/mangadex/expires" do |env|
       begin
         username = get_username env
