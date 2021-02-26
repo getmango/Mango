@@ -57,14 +57,16 @@ struct APIRouter
     }
 
     Koa.schema("mdChapter", {
+      "id"    => Int64,
       "group" => {} of String => String,
-    }.merge(s %w(id title volume chapter language full_title time
+    }.merge(s %w(title volume chapter language full_title time
       manga_title manga_id)),
       desc: "A MangaDex chapter")
 
     Koa.schema "mdManga", {
+      "id"       => Int64,
       "chapters" => ["mdChapter"],
-    }.merge(s %w(id title description author artist cover_url)),
+    }.merge(s %w(title description author artist cover_url)),
       desc: "A MangaDex manga"
 
     Koa.describe "Returns a page in a manga entry"
@@ -934,6 +936,44 @@ struct APIRouter
           "success" => true,
           "error"   => nil,
           "expires" => expires.try &.to_unix,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Searches MangaDex for manga matching `query`", <<-MD
+    Returns an empty list if the current user hasn't logged in to MangaDex.
+    MD
+    Koa.query "query"
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "manga?"  => [{
+        "id"          => Int64,
+        "title"       => String,
+        "description" => String,
+        "mainCover"   => String,
+      }],
+    }
+    Koa.tags ["admin", "mangadex"]
+    get "/api/admin/mangadex/search" do |env|
+      begin
+        token, expires = Storage.default.get_md_token get_username env
+        client = MangaDex::Client.from_config
+        client.token = token
+        client.token_expires = expires
+
+        query = env.params.query["query"]
+
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+          "manga"   => client.partial_search query,
         }.to_json
       rescue e
         Logger.error e
