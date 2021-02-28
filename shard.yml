@@ -1,5 +1,5 @@
 name: mango
-version: 0.20.0
+version: 0.20.1
 
 authors:
   - Alex Ling <hkalexling@gmail.com>
@@ -43,3 +43,5 @@ dependencies:
     github: epoch/tallboy
   mg:
    github: hkalexling/mg
+  mangadex:
+   github: hkalexling/mangadex

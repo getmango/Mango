@@ -4,26 +4,25 @@ const minify = require('gulp-babel-minify');
 const minifyCss = require('gulp-minify-css');
 const less = require('gulp-less');
 
-// Copy libraries from node_moduels to public/js
-gulp.task('copy-js', () => {
-	return gulp.src([
-			'node_modules/@fortawesome/fontawesome-free/js/fontawesome.min.js',
-			'node_modules/@fortawesome/fontawesome-free/js/solid.min.js',
-			'node_modules/uikit/dist/js/uikit.min.js',
-			'node_modules/uikit/dist/js/uikit-icons.min.js'
-		])
-		.pipe(gulp.dest('public/js'));
-});
-
-// Copy UIKit SVG icons to public/img
-gulp.task('copy-uikit-icons', () => {
+gulp.task('copy-img', () => {
 	return gulp.src('node_modules/uikit/src/images/backgrounds/*.svg')
 		.pipe(gulp.dest('public/img'));
 });
 
+gulp.task('copy-font', () => {
+	return gulp.src('node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff**')
+		.pipe(gulp.dest('public/webfonts'));
+});
+
+// Copy files from node_modules
+gulp.task('node-modules-copy', gulp.parallel('copy-img', 'copy-font'));
+
 // Compile less
 gulp.task('less', () => {
-	return gulp.src('public/css/*.less')
+	return gulp.src([
+			'public/css/mango.less',
+			'public/css/tags.less'
+		])
 		.pipe(less())
 		.pipe(gulp.dest('public/css'));
 });
@@ -54,14 +53,19 @@ gulp.task('minify-css', () => {
 
 // Copy static files (includeing images) to dist
 gulp.task('copy-files', () => {
-	return gulp.src(['public/img/*', 'public/*.*', 'public/js/*.min.js'], {
+	return gulp.src([
+			'public/*.*',
+			'public/img/*',
+			'public/webfonts/*',
+			'public/js/*.min.js'
+		], {
 			base: 'public'
 		})
 		.pipe(gulp.dest('dist'));
 });
 
 // Set up the public folder for development
-gulp.task('dev', gulp.parallel('copy-js', 'copy-uikit-icons', 'less'));
+gulp.task('dev', gulp.parallel('node-modules-copy', 'less'));
 
 // Set up the dist folder for deployment
 gulp.task('deploy', gulp.parallel('babel', 'minify-css', 'copy-files'));

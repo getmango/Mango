@@ -24,7 +24,7 @@
           <template x-for="item in items">
             <img
               uk-img
-              class="uk-align-center"
+              :class="{'uk-align-center': true, 'spine': item.width < 50}"
               :style="item.style"
               :data-src="item.url"
               :width="item.width"
@@ -103,15 +103,14 @@
       const eid = "<%= entry.id %>";
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/protonet-jquery.inview/1.1.2/jquery.inview.min.js"></script>
+    <%= render_component "uikit" %>
     <script src="<%= base_url %>js/alert.js"></script>
-    <script src="<%= base_url %>js/uikit.min.js"></script>
-    <script src="<%= base_url %>js/uikit-icons.min.js"></script>
     <script src="<%= base_url %>js/reader.js"></script>
   </body>
 
   <style>
 img[data-src][src*='data:image'] { background: white; }
-img { width: 100%; }
+img:not(.spine) { width: 100%; }
 .reader-bg { background: black; }
   </style>
 

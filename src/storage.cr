@@ -48,14 +48,6 @@ class Storage
 
         user_count = db.query_one "select count(*) from users", as: Int32
         init_admin if init_user && user_count == 0
-
-        # Verifies that the default username in config is valid
-        if Config.current.disable_login
-          username = Config.current.default_username
-          unless username_exists username
-            raise "Default username #{username} does not exist"
-          end
-        end
       end
       unless @auto_close
         @db = DB.open "sqlite3://#{@path}"

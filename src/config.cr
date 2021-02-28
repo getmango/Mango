@@ -22,12 +22,13 @@ class Config
   property page_margin : Int32 = 30
   property disable_login = false
   property default_username = ""
+  property auth_proxy_header_name = ""
   property mangadex = Hash(String, String | Int32).new
 
   @[YAML::Field(ignore: true)]
   @mangadex_defaults = {
     "base_url"               => "https://mangadex.org",
-    "api_url"                => "https://mangadex.org/api",
+    "api_url"                => "https://mangadex.org/api/v2",
     "download_wait_seconds"  => 5,
     "download_retries"       => 4,
     "download_queue_db_path" => File.expand_path("~/mango/queue.db",
@@ -51,9 +52,9 @@ class Config
     cfg_path = File.expand_path path, home: true
     if File.exists? cfg_path
       config = self.from_yaml File.read cfg_path
-      config.preprocess
       config.path = path
       config.fill_defaults
+      config.preprocess
       return config
     end
     puts "The config file #{cfg_path} does not exist. " \
@@ -91,5 +92,16 @@ class Config
       raise "Login is disabled, but default username is not set. " \
             "Please set a default username"
     end
+    unless mangadex["api_url"] =~ /\/v2/
+      # `Logger.default` is not available yet
+      Log.setup :debug
+      Log.warn { "It looks like you are using the deprecated MangaDex API " \
+                 "v1 in your config file. Please update it to either " \
+                 "https://mangadex.org/api/v2 or " \
+                 "https://api.mangadex.org/v2 to suppress this warning." }
+      mangadex["api_url"] = "https://mangadex.org/api/v2"
+    end
+    mangadex["api_url"] = mangadex["api_url"].to_s.rstrip "/"
+    mangadex["base_url"] = mangadex["base_url"].to_s.rstrip "/"
   end
 end
