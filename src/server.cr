@@ -49,6 +49,9 @@ class Server
     {% if flag?(:release) %}
       Kemal.config.env = "production"
     {% end %}
+    unless Config.current.auth_proxy_header_name.empty?
+      Kemal.config.host_binding = "127.0.0.1"
+    end
     Kemal.config.port = Config.current.port
     Kemal.run
   end
