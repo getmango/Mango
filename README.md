@@ -52,7 +52,7 @@ The official docker images are available on [Dockerhub](https://hub.docker.com/r
 ### CLI
 
 ```
-  Mango - Manga Server and Web Reader. Version 0.20.1
+  Mango - Manga Server and Web Reader. Version 0.20.2
 
   Usage:
 
@@ -75,6 +75,7 @@ The default config file location is `~/.config/mango/config.yml`. It might be di
 
 ```yaml
 ---
+host: 0.0.0.0
 port: 9000
 base_url: /
 session_secret: mango-session-secret
@@ -89,9 +90,10 @@ download_timeout_seconds: 30
 page_margin: 30
 disable_login: false
 default_username: ""
+auth_proxy_header_name: ""
 mangadex:
   base_url: https://mangadex.org
-  api_url: https://mangadex.org/api
+  api_url: https://mangadex.org/api/v2
   download_wait_seconds: 5
   download_retries: 4
   download_queue_db_path: ~/mango/queue.db

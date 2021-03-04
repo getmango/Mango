@@ -5,6 +5,7 @@ class Config
 
   @[YAML::Field(ignore: true)]
   property path : String = ""
+  property host : String = "0.0.0.0"
   property port : Int32 = 9000
   property base_url : String = "/"
   property session_secret : String = "mango-session-secret"

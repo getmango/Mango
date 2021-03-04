@@ -49,6 +49,7 @@ class Server
     {% if flag?(:release) %}
       Kemal.config.env = "production"
     {% end %}
+    Kemal.config.host_binding = Config.current.host
     Kemal.config.port = Config.current.port
     Kemal.run
   end
