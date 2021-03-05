@@ -36,7 +36,7 @@
           <%- if next_entry_url -%>
             <button id="next-btn" class="uk-align-center uk-button uk-button-primary" @click="nextEntry('<%= next_entry_url %>')">Next Entry</button>
           <%- else -%>
-            <button id="next-btn" class="uk-align-center uk-button uk-button-primary" @click="exitReader('<%= exit_url %>', true)">Exit Reader</button>
+            <button id="next-btn" class="uk-align-center uk-button uk-button-primary" @click="exitReader('<%= exit_url %>')">Exit Reader</button>
           <%- end -%>
         </div>
 
@@ -68,12 +68,12 @@
         </div>
         <div class="uk-modal-body">
           <div class="uk-margin">
-            <p id="progress-label"></p>
+            <p x-text="`Progress: ${selectedIndex}/${items.length} (${(selectedIndex/items.length * 100).toFixed(1)}%)`"></p>
           </div>
           <div class="uk-margin">
-            <label class="uk-form-label" for="page-select">Jump to page</label>
+            <label class="uk-form-label" for="page-select">Jump to Page</label>
             <div class="uk-form-controls">
-              <select id="page-select" class="uk-select" @change="pageChanged()">
+              <select id="page-select" class="uk-select" @change="pageChanged()" x-model="selectedIndex">
                 <%- (1..entry.pages).each do |p| -%>
                   <option value="<%= p %>"><%= p %></option>
                 <%- end -%>
@@ -89,9 +89,33 @@
               </select>
             </div>
           </div>
+
+          <hr class="uk-divider-icon">
+
+          <div class="uk-margin">
+            <label class="uk-form-label" for="entry-select">Jump to Entry</label>
+            <div class="uk-form-controls">
+              <select id="entry-select" class="uk-select" @change="entryChanged()">
+                <% entries.each do |e| %>
+                  <option value="<%= e.id %>"
+                  <% if e.id == entry.id %>
+                    selected
+                  <% end %>>
+                  <%= e.title %>
+                  </option>
+                <% end %>
+              </select>
+            </div>
+          </div>
         </div>
         <div class="uk-modal-footer uk-text-right">
-          <button class="uk-button uk-button-danger" type="button" @click="exitReader('<%= exit_url %>')">Exit Reader</button>
+          <% if previous_entry_url %>
+            <a class="uk-button uk-button-default uk-margin-small-right" href="<%= previous_entry_url %>">Previous Entry</a>
+          <% end %>
+          <% if next_entry_url %>
+            <a class="uk-button uk-button-default uk-margin-small-right" href="<%= next_entry_url %>">Next Entry</a>
+          <% end %>
+          <a class="uk-button uk-button-danger" href="<%= exit_url %>">Exit Reader</a>
         </div>
       </div>
     </div>
