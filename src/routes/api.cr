@@ -963,7 +963,13 @@ struct APIRouter
     Koa.tags ["admin", "mangadex"]
     get "/api/admin/mangadex/search" do |env|
       begin
-        token, expires = Storage.default.get_md_token get_username env
+        username = get_username env
+        token, expires = Storage.default.get_md_token username
+
+        unless expires && token
+          raise "No token found for user #{username}"
+        end
+
         client = MangaDex::Client.from_config
         client.token = token
         client.token_expires = expires

@@ -530,9 +530,9 @@ class Storage
     end
   end
 
-  def get_md_token(username) : Tuple(String?, Time)
+  def get_md_token(username) : Tuple(String?, Time?)
     token = nil
-    expires = Time.utc
+    expires = nil
     MainFiber.run do
       get_db do |db|
         db.query_one? "select token, expire from md_account where " \
