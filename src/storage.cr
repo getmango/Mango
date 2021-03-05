@@ -34,7 +34,7 @@ class Storage
     dir = File.dirname @path
     unless Dir.exists? dir
       Logger.info "The DB directory #{dir} does not exist. " \
-                  "Attepmting to create it"
+                  "Attempting to create it"
       Dir.mkdir_p dir
     end
     MainFiber.run do
