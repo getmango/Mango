@@ -1,39 +1,39 @@
 <div x-data="component()" x-init="init()">
-    <h2 class="uk-title">Connect to MangaDex</h2>
-    <div class"uk-grid-small" uk-grid x-show="!loading" x-cloak>
-        <div class="uk-width-1-2@s" x-show="!expires">
-            <p>This step is optional but highly recommended if you are using the MangaDex downloader. Connecting to MangaDex allows you to:</p>
-            <ul>
-                <li>Search MangaDex by search terms in addition to manga IDs</li>
-                <li>Automatically download new chapters when they are available</li>
-            </ul>
-        </div>
-
-        <div class="uk-width-1-2@s" x-show="expires">
-            <p>
-            <span x-show="!expired">You have logged in to MangaDex!</span>
-            <span x-show="expired">You have logged in to MangaDex but the token has expired.</span>
-            The expiration date of your token is <code x-text="moment.unix(expires).format('MMMM Do YYYY, HH:mm:ss')"></code>. 
-            <span x-show="!expired">If the integration is not working, you</span>
-            <span x-show="expired">You</span>
-            can log in again and the token will be updated.
-            </p>
-        </div>
-
-        <div class="uk-width-1-2@s">
-            <div class="uk-margin">
-                <div class="uk-inline uk-width-1-1"><span class="uk-form-icon" uk-icon="icon:user"></span><input class="uk-input uk-form-large" type="text" x-model="username" @keydown.enter.debounce="login()"></div>
-            </div>
-            <div class="uk-margin">
-                <div class="uk-inline uk-width-1-1"><span class="uk-form-icon" uk-icon="icon:lock"></span><input class="uk-input uk-form-large" type="password" x-model="password" @keydown.enter.debounce="login()"></div>
-            </div>
-            <div class="uk-margin"><button class="uk-button uk-button-primary uk-button-large uk-width-1-1" @click="login()" :disabled="loggingIn">Login</button></div>
-        </div>
+  <h2 class="uk-title">Connect to MangaDex</h2>
+  <div class"uk-grid-small" uk-grid x-show="!loading" x-cloak>
+    <div class="uk-width-1-2@s" x-show="!expires">
+      <p>This step is optional but highly recommended if you are using the MangaDex downloader. Connecting to MangaDex allows you to:</p>
+      <ul>
+        <li>Search MangaDex by search terms in addition to manga IDs</li>
+        <li>Automatically download new chapters when they are available (coming soon)</li>
+      </ul>
     </div>
+
+    <div class="uk-width-1-2@s" x-show="expires">
+      <p>
+      <span x-show="!expired">You have logged in to MangaDex!</span>
+      <span x-show="expired">You have logged in to MangaDex but the token has expired.</span>
+      The expiration date of your token is <code x-text="moment.unix(expires).format('MMMM Do YYYY, HH:mm:ss')"></code>. 
+      <span x-show="!expired">If the integration is not working, you</span>
+      <span x-show="expired">You</span>
+      can log in again and the token will be updated.
+      </p>
+    </div>
+
+    <div class="uk-width-1-2@s">
+      <div class="uk-margin">
+        <div class="uk-inline uk-width-1-1"><span class="uk-form-icon" uk-icon="icon:user"></span><input class="uk-input uk-form-large" type="text" x-model="username" @keydown.enter.debounce="login()"></div>
+      </div>
+      <div class="uk-margin">
+        <div class="uk-inline uk-width-1-1"><span class="uk-form-icon" uk-icon="icon:lock"></span><input class="uk-input uk-form-large" type="password" x-model="password" @keydown.enter.debounce="login()"></div>
+      </div>
+      <div class="uk-margin"><button class="uk-button uk-button-primary uk-button-large uk-width-1-1" @click="login()" :disabled="loggingIn">Login to MangaDex</button></div>
+    </div>
+  </div>
 </div>
 
 <% content_for "script" do %>
-    <%= render_component "moment" %>
-    <script src="<%= base_url %>js/alert.js"></script>
-    <script src="<%= base_url %>js/mangadex.js"></script>
+  <%= render_component "moment" %>
+  <script src="<%= base_url %>js/alert.js"></script>
+  <script src="<%= base_url %>js/mangadex.js"></script>
 <% end %>

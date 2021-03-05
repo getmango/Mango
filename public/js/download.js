@@ -144,7 +144,7 @@ const downloadComponent = () => {
 					});
 			} else {
 				if (!this.searchAvailable) {
-					alert('danger', 'Please make sure you are using a valid manga ID or manga URL from Mangadex. If you are trying to search MangaDex with a search term, please log in to MangaDex first by going to "Admin -> Connect to MangaDex"');
+					alert('danger', 'Please make sure you are using a valid manga ID or manga URL from Mangadex. If you are trying to search MangaDex with a search term, please log in to MangaDex first by going to "Admin -> Connect to MangaDex".');
 					return;
 				}
 
