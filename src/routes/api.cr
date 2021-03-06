@@ -612,7 +612,6 @@ struct APIRouter
         "width"  => Int32,
         "height" => Int32,
       }],
-      "margin" => Int32?,
     }
     get "/api/dimensions/:tid/:eid" do |env|
       begin
@@ -628,7 +627,6 @@ struct APIRouter
         send_json env, {
           "success"    => true,
           "dimensions" => sizes,
-          "margin"     => Config.current.page_margin,
         }.to_json
       rescue e
         send_json env, {
