@@ -96,9 +96,8 @@ class Config
       # `Logger.default` is not available yet
       Log.setup :debug
       Log.warn { "It looks like you are using the deprecated MangaDex API " \
-                 "v1 in your config file. Please update it to either " \
-                 "https://mangadex.org/api/v2 or " \
-                 "https://api.mangadex.org/v2 to suppress this warning." }
+                 "v1 in your config file. Please update it to " \
+                 "https://mangadex.org/api/v2 to suppress this warning." }
       mangadex["api_url"] = "https://mangadex.org/api/v2"
     end
     mangadex["api_url"] = mangadex["api_url"].to_s.rstrip "/"
