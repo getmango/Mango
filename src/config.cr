@@ -28,7 +28,7 @@ class Config
   @[YAML::Field(ignore: true)]
   @mangadex_defaults = {
     "base_url"               => "https://mangadex.org",
-    "api_url"                => "https://mangadex.org/api/v2",
+    "api_url"                => "https://api.mangadex.org/v2",
     "download_wait_seconds"  => 5,
     "download_retries"       => 4,
     "download_queue_db_path" => File.expand_path("~/mango/queue.db",
@@ -97,8 +97,8 @@ class Config
       Log.setup :debug
       Log.warn { "It looks like you are using the deprecated MangaDex API " \
                  "v1 in your config file. Please update it to " \
-                 "https://mangadex.org/api/v2 to suppress this warning." }
-      mangadex["api_url"] = "https://mangadex.org/api/v2"
+                 "https://api.mangadex.org/v2 to suppress this warning." }
+      mangadex["api_url"] = "https://api.mangadex.org/v2"
     end
     mangadex["api_url"] = mangadex["api_url"].to_s.rstrip "/"
     mangadex["base_url"] = mangadex["base_url"].to_s.rstrip "/"
