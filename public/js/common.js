@@ -117,14 +117,10 @@ const setTheme = (theme) => {
 	if (theme === 'dark') {
 		$('html').css('background', 'rgb(20, 20, 20)');
 		$('body').addClass('uk-light');
-		$('.uk-card').addClass('uk-card-secondary');
-		$('.uk-card').removeClass('uk-card-default');
 		$('.ui-widget-content').addClass('dark');
 	} else {
 		$('html').css('background', '');
 		$('body').removeClass('uk-light');
-		$('.uk-card').removeClass('uk-card-secondary');
-		$('.uk-card').addClass('uk-card-default');
 		$('.ui-widget-content').removeClass('dark');
 	}
 };

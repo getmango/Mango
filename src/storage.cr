@@ -34,7 +34,7 @@ class Storage
     dir = File.dirname @path
     unless Dir.exists? dir
       Logger.info "The DB directory #{dir} does not exist. " \
-                  "Attepmting to create it"
+                  "Attempting to create it"
       Dir.mkdir_p dir
     end
     MainFiber.run do
@@ -512,6 +512,37 @@ class Storage
 
   def delete_missing_title(id = nil)
     delete_missing "titles", id
+  end
+
+  def save_md_token(username : String, token : String, expire : Time)
+    MainFiber.run do
+      get_db do |db|
+        count = db.query_one "select count(*) from md_account where " \
+                             "username = (?)", username, as: Int64
+        if count == 0
+          db.exec "insert into md_account values (?, ?, ?)", username, token,
+            expire.to_unix
+        else
+          db.exec "update md_account set token = (?), expire = (?) " \
+                  "where username = (?)", token, expire.to_unix, username
+        end
+      end
+    end
+  end
+
+  def get_md_token(username) : Tuple(String?, Time?)
+    token = nil
+    expires = nil
+    MainFiber.run do
+      get_db do |db|
+        db.query_one? "select token, expire from md_account where " \
+                      "username = (?)", username do |res|
+          token = res.read String
+          expires = Time.unix res.read Int64
+        end
+      end
+    end
+    {token, expires}
   end
 
   def close

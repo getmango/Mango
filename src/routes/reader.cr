@@ -30,6 +30,11 @@ struct ReaderRouter
 
         title = (Library.default.get_title env.params.url["title"]).not_nil!
         entry = (title.get_entry env.params.url["entry"]).not_nil!
+
+        sort_opt = SortOptions.from_info_json title.dir, username
+        get_sort_opt
+        entries = title.sorted_entries username, sort_opt
+
         page_idx = env.params.url["page"].to_i
         if page_idx > entry.pages || page_idx <= 0
           raise "Page #{page_idx} not found."
@@ -37,10 +42,12 @@ struct ReaderRouter
 
         exit_url = "#{base_url}book/#{title.id}"
 
-        next_entry_url = nil
-        next_entry = entry.next_entry username
-        unless next_entry.nil?
-          next_entry_url = "#{base_url}reader/#{title.id}/#{next_entry.id}"
+        next_entry_url = entry.next_entry(username).try do |e|
+          "#{base_url}reader/#{title.id}/#{e.id}"
+        end
+
+        previous_entry_url = entry.previous_entry(username).try do |e|
+          "#{base_url}reader/#{title.id}/#{e.id}"
         end
 
         render "src/views/reader.html.ecr"

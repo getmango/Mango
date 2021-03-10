@@ -3,9 +3,12 @@ const downloadComponent = () => {
 		chaptersLimit: 1000,
 		loading: false,
 		addingToDownload: false,
+		searchAvailable: false,
 		searchInput: '',
 		data: {},
 		chapters: [],
+		mangaAry: undefined, // undefined: not searching; []: searched but no result
+		candidateManga: {},
 		langChoice: 'All',
 		groupChoice: 'All',
 		chapterRange: '',
@@ -48,7 +51,21 @@ const downloadComponent = () => {
 				childList: true,
 				subtree: true
 			});
+
+			$.getJSON(`${base_url}api/admin/mangadex/expires`)
+				.done((data) => {
+					if (data.error) {
+						alert('danger', 'Failed to check MangaDex integration status. Error: ' + data.error);
+						return;
+					}
+					if (data.expires && data.expires > Math.floor(Date.now() / 1000))
+						this.searchAvailable = true;
+				})
+				.fail((jqXHR, status) => {
+					alert('danger', `Failed to check MangaDex integration status. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+				})
 		},
+
 		filtersUpdated() {
 			if (!this.data.chapters)
 				this.chapters = [];
@@ -90,10 +107,11 @@ const downloadComponent = () => {
 			console.log('filtered chapters:', _chapters);
 			this.chapters = _chapters;
 		},
+
 		search() {
 			if (this.loading || this.searchInput === '') return;
-			this.loading = true;
 			this.data = {};
+			this.mangaAry = undefined;
 
 			var int_id = -1;
 			try {
@@ -103,29 +121,54 @@ const downloadComponent = () => {
 			} catch (e) {
 				int_id = parseInt(this.searchInput);
 			}
-			if (int_id <= 0 || isNaN(int_id)) {
-				alert('danger', 'Please make sure you are using a valid manga ID or manga URL from Mangadex.');
-				this.loading = false;
-				return;
+
+			if (!isNaN(int_id) && int_id > 0) {
+				// The input is a positive integer. We treat it as an ID.
+				this.loading = true;
+				$.getJSON(`${base_url}api/admin/mangadex/manga/${int_id}`)
+					.done((data) => {
+						if (data.error) {
+							alert('danger', 'Failed to get manga info. Error: ' + data.error);
+							return;
+						}
+
+						this.data = data;
+						this.chapters = data.chapters;
+						this.mangaAry = undefined;
+					})
+					.fail((jqXHR, status) => {
+						alert('danger', `Failed to get manga info. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+					})
+					.always(() => {
+						this.loading = false;
+					});
+			} else {
+				if (!this.searchAvailable) {
+					alert('danger', 'Please make sure you are using a valid manga ID or manga URL from Mangadex. If you are trying to search MangaDex with a search term, please log in to MangaDex first by going to "Admin -> Connect to MangaDex".');
+					return;
+				}
+
+				// Search as a search term
+				this.loading = true;
+				$.getJSON(`${base_url}api/admin/mangadex/search?${$.param({
+					query: this.searchInput
+				})}`)
+					.done((data) => {
+						if (data.error) {
+							alert('danger', `Failed to search MangaDex. Error: ${data.error}`);
+							return;
+						}
+
+						this.mangaAry = data.manga;
+						this.data = {};
+					})
+					.fail((jqXHR, status) => {
+						alert('danger', `Failed to search MangaDex. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+					})
+					.always(() => {
+						this.loading = false;
+					});
 			}
-
-			$.getJSON(`${base_url}api/admin/mangadex/manga/${int_id}`)
-				.done((data) => {
-					if (data.error) {
-						alert('danger', 'Failed to get manga info. Error: ' + data.error);
-						return;
-					}
-
-					this.data = data;
-					this.chapters = data.chapters;
-				})
-				.fail((jqXHR, status) => {
-					alert('danger', `Failed to get manga info. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
-				})
-				.always(() => {
-					this.loading = false;
-				});
-
 		},
 
 		parseRange(str) {
@@ -228,6 +271,17 @@ const downloadComponent = () => {
 						this.addingToDownload = false;
 					});
 			});
+		},
+
+		chooseManga(manga) {
+			this.candidateManga = manga;
+			UIkit.modal($('#modal').get(0)).show();
+		},
+
+		confirmManga(id) {
+			UIkit.modal($('#modal').get(0)).hide();
+			this.searchInput = id;
+			this.search();
 		}
 	};
 };

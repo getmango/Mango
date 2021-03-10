@@ -9,6 +9,7 @@ const readerComponent = () => {
 		flipAnimation: null,
 		longPages: false,
 		lastSavedPage: page,
+		selectedIndex: 0, // 0: not selected; 1: the first page
 
 		/**
 		 * Initialize the component by fetching the page dimensions
@@ -221,10 +222,7 @@ const readerComponent = () => {
 		 */
 		showControl(event) {
 			const idx = event.currentTarget.id;
-			const pageCount = this.items.length;
-			const progressText = `Progress: ${idx}/${pageCount} (${(idx/pageCount * 100).toFixed(1)}%)`;
-			$('#progress-label').text(progressText);
-			$('#page-select').val(idx);
+			this.selectedIndex = idx;
 			UIkit.modal($('#modal-sections')).show();
 		},
 		/**
@@ -263,19 +261,22 @@ const readerComponent = () => {
 			});
 		},
 		/**
-		 * Exits the reader, and optionally sets the reading progress tp 100%
+		 * Exits the reader, and sets the reading progress tp 100%
 		 *
 		 * @param {string} exitUrl - The Exit URL
-		 * @param {boolean} [markCompleted] - Whether we should mark the
-		 *		reading progress to 100%
 		 */
-		exitReader(exitUrl, markCompleted = false) {
-			if (!markCompleted) {
-				return this.redirect(exitUrl);
-			}
+		exitReader(exitUrl) {
 			this.saveProgress(this.items.length, () => {
 				this.redirect(exitUrl);
 			});
+		},
+
+		/**
+		 * Handles the `change` event for the entry selector
+		 */
+		entryChanged() {
+			const id = $('#entry-select').val();
+			this.redirect(`${base_url}reader/${tid}/${id}`);
 		}
 	};
 }

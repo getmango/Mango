@@ -121,7 +121,7 @@ class Library
         # Get the last read time of the entry. If it hasn't been started, get
         #   the last read time of the previous entry
         last_read = e.load_last_read username
-        pe = e.previous_entry
+        pe = e.previous_entry username
         if last_read.nil? && pe
           last_read = pe.load_last_read username
         end

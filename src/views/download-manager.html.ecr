@@ -63,7 +63,7 @@
 </div>
 
 <% content_for "script" do %>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+  <%= render_component "moment" %>
   <script src="<%= base_url %>js/alert.js"></script>
   <script src="<%= base_url %>js/download-manager.js"></script>
 <% end %>

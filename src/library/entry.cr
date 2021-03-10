@@ -134,10 +134,11 @@ class Entry
     entries[idx + 1]
   end
 
-  def previous_entry
-    idx = @book.entries.index self
+  def previous_entry(username)
+    entries = @book.sorted_entries username
+    idx = entries.index self
     return nil if idx.nil? || idx == 0
-    @book.entries[idx - 1]
+    entries[idx - 1]
   end
 
   def date_added
