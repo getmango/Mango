@@ -93,14 +93,23 @@ class Config
       raise "Login is disabled, but default username is not set. " \
             "Please set a default username"
     end
+
+    # `Logger.default` is not available yet
+    Log.setup :debug
     unless mangadex["api_url"] =~ /\/v2/
-      # `Logger.default` is not available yet
-      Log.setup :debug
       Log.warn { "It looks like you are using the deprecated MangaDex API " \
                  "v1 in your config file. Please update it to " \
                  "https://api.mangadex.org/v2 to suppress this warning." }
       mangadex["api_url"] = "https://api.mangadex.org/v2"
     end
+    if mangadex["api_url"] =~ /\/api\/v2/
+      Log.warn { "It looks like you are using the outdated MangaDex API " \
+                 "url (mangadex.org/api/v2) in your config file. Please " \
+                 "update it to https://api.mangadex.org/v2 to suppress this " \
+                 "warning." }
+      mangadex["api_url"] = "https://api.mangadex.org/v2"
+    end
+
     mangadex["api_url"] = mangadex["api_url"].to_s.rstrip "/"
     mangadex["base_url"] = mangadex["base_url"].to_s.rstrip "/"
   end
