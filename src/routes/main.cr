@@ -103,7 +103,7 @@ struct MainRouter
         recently_added = Library.default.get_recently_added_entries username
         start_reading = Library.default.get_start_reading_titles username
         titles = Library.default.titles
-        new_user = !titles.any? { |t| t.load_percentage(username) > 0 }
+        new_user = !titles.any? &.load_percentage(username).> 0
         empty_library = titles.size == 0
         layout "home"
       rescue e

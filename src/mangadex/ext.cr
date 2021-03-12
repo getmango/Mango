@@ -35,7 +35,7 @@ module MangaDex
   struct Chapter
     def rename(rule : Rename::Rule)
       hash = properties_to_hash %w(id title volume chapter lang_code language)
-      hash["groups"] = groups.map(&.name).join ","
+      hash["groups"] = groups.join(",", &.name)
       rule.render hash
     end
 

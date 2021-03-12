@@ -339,7 +339,7 @@ struct APIRouter
     }
     post "/api/admin/mangadex/download" do |env|
       begin
-        chapters = env.params.json["chapters"].as(Array).map { |c| c.as_h }
+        chapters = env.params.json["chapters"].as(Array).map &.as_h
         jobs = chapters.map { |chapter|
           Queue::Job.new(
             chapter["id"].as_i64.to_s,
