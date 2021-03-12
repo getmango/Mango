@@ -157,7 +157,7 @@ class Library
         break if recently_added.size > 12
         last = recently_added.last?
         if last && e[:entry].book.id == last[:entry].book.id &&
-           (e[:date_added] - last_date_added.not_nil!).duration < 1.day
+           (e[:date_added] - last_date_added.not_nil!).abs < 1.day
           # A NamedTuple is immutable, so we have to cast it to a Hash first
           last_hash = last.to_h
           count = last_hash[:grouped_count].as(Int32)
