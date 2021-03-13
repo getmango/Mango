@@ -961,23 +961,95 @@ struct APIRouter
     Koa.tags ["admin", "mangadex"]
     get "/api/admin/mangadex/search" do |env|
       begin
-        username = get_username env
-        token, expires = Storage.default.get_md_token username
-
-        unless expires && token
-          raise "No token found for user #{username}"
-        end
-
-        client = MangaDex::Client.from_config
-        client.token = token
-        client.token_expires = expires
-
         query = env.params.query["query"]
 
         send_json env, {
           "success" => true,
           "error"   => nil,
-          "manga"   => client.partial_search query,
+          "manga"   => get_client(env).partial_search query,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    get "/api/admin/mangadex/subscriptions" do |env|
+      begin
+        send_json env, {
+          "success"       => true,
+          "error"         => nil,
+          "subscriptions" => Storage.default.subscriptions,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    post "/api/admin/mangadex/subscriptions" do |env|
+      begin
+        json = env.params.json["subscription"].as Hash(String, JSON::Any)
+        sub = Subscription.new json["manga"].as_i64, get_username env
+        sub.language = json["language"]?.try &.as_s?
+        sub.group_id = json["groupId"]?.try &.as_i64?
+        sub.min_volume = json["volumeMin"]?.try &.as_i64?
+        sub.max_volume = json["volumeMax"]?.try &.as_i64?
+        sub.min_chapter = json["chapterMin"]?.try &.as_i64?
+        sub.max_chapter = json["chapterMax"]?.try &.as_i64?
+
+        Storage.default.save_subscription sub
+
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    delete "/api/admin/mangadex/subscriptions/:id" do |env|
+      begin
+        id = env.params.url["id"].to_i64
+        Storage.default.delete_subscription id, get_username env
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    post "/api/admin/mangadex/subscriptions/check/:id" do |env|
+      begin
+        id = env.params.url["id"].to_i64
+        username = get_username env
+        sub = Storage.default.get_subscription id, username
+        unless sub
+          raise "Subscription with id #{id} not found under user #{username}"
+        end
+        spawn do
+          sub.check_for_updates
+        end
+        send_json env, {
+          "success" => true,
+          "error"   => nil,
         }.to_json
       rescue e
         Logger.error e

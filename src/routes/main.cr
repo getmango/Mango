@@ -95,6 +95,12 @@ struct MainRouter
       end
     end
 
+    get "/download/subscription" do |env|
+      mangadex_base_url = Config.current.mangadex["base_url"]
+      username = get_username env
+      layout "subscription"
+    end
+
     get "/" do |env|
       begin
         username = get_username env

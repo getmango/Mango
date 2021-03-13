@@ -42,6 +42,25 @@ class Library
         end
       end
     end
+
+    subscription_interval = Config.current
+      .mangadex["subscription_update_interval_hours"].as Int32
+    unless subscription_interval < 1
+      spawn do
+        loop do
+          subscriptions = Storage.default.subscriptions
+          Logger.info "Checking MangaDex for updates on " \
+                      "#{subscriptions.size} subscriptions"
+          added_count = 0
+          subscriptions.each do |sub|
+            added_count += sub.check_for_updates
+          end
+          Logger.info "Subscription update completed. Added #{added_count} " \
+                      "chapters to the download queue"
+          sleep subscription_interval.hours
+        end
+      end
+    end
   end
 
   def titles
