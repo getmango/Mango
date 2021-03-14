@@ -34,8 +34,8 @@ struct Subscription
     @raw_last_checked = Time.utc.to_unix
   end
 
-  def in_range?(value : String, lowerbound : Int64?,
-                upperbound : Int64?) : Bool
+  private def in_range?(value : String, lowerbound : Int64?,
+                        upperbound : Int64?) : Bool
     lb = lowerbound.try &.to_f64
     ub = upperbound.try &.to_f64
 
