@@ -366,7 +366,7 @@ struct APIRouter
       interval = (interval_raw.to_i? if interval_raw) || 5
       loop do
         socket.send({
-          "jobs"   => Queue.default.get_all,
+          "jobs"   => Queue.default.get_all.reverse,
           "paused" => Queue.default.paused?,
         }.to_json)
         sleep interval.seconds
@@ -390,9 +390,8 @@ struct APIRouter
     }
     get "/api/admin/mangadex/queue" do |env|
       begin
-        jobs = Queue.default.get_all
         send_json env, {
-          "jobs"    => jobs,
+          "jobs"    => Queue.default.get_all.reverse,
           "paused"  => Queue.default.paused?,
           "success" => true,
         }.to_json
