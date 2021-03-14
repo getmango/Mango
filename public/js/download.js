@@ -260,9 +260,7 @@ const downloadComponent = () => {
 						}
 						const successCount = parseInt(data.success);
 						const failCount = parseInt(data.fail);
-						UIkit.modal.confirm(`${successCount} of ${successCount + failCount} chapters added to the download queue. Proceed to the download manager?`).then(() => {
-							window.location.href = base_url + 'admin/downloads';
-						});
+						alert('success', `${successCount} of ${successCount + failCount} chapters added to the download queue. You can view and manage your download queue on the <a href="${base_url}admin/downloads">download manager page</a>.`);
 					})
 					.fail((jqXHR, status) => {
 						alert('danger', `Failed to add chapters to the download queue. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
@@ -370,6 +368,7 @@ const downloadComponent = () => {
 							alert('danger', `Failed to subscribe. Error: ${data.error}`);
 							return;
 						}
+						alert('success', `You've successfully subscribed to this manga! You can view and manage your subscriptions on the <a href="${base_url}download/subscription">subscription manager page</a>.`);
 					})
 					.fail((jqXHR, status) => {
 						alert('danger', `Failed to subscribe. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
