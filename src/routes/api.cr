@@ -396,6 +396,7 @@ struct APIRouter
           "success" => true,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -443,6 +444,7 @@ struct APIRouter
 
         send_json env, {"success" => true}.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -515,6 +517,7 @@ struct APIRouter
 
         raise "No part with name `file` found"
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -550,6 +553,7 @@ struct APIRouter
           "title"    => title,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -593,6 +597,7 @@ struct APIRouter
           "fail":    jobs.size - inserted_count,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -628,6 +633,7 @@ struct APIRouter
           "dimensions" => sizes,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -767,6 +773,7 @@ struct APIRouter
           "titles"  => Storage.default.missing_titles,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -793,6 +800,7 @@ struct APIRouter
           "entries" => Storage.default.missing_entries,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -811,6 +819,7 @@ struct APIRouter
           "error"   => nil,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -829,6 +838,7 @@ struct APIRouter
           "error"   => nil,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -850,6 +860,7 @@ struct APIRouter
           "error"   => nil,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -871,6 +882,7 @@ struct APIRouter
           "error"   => nil,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -976,6 +988,25 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Lists all MangaDex subscriptions"
+    Koa.response 200, schema: {
+      "success"        => Bool,
+      "error"          => String?,
+      "subscriptions?" => [{
+        "id"           => Int64,
+        "username"     => String,
+        "manga_id"     => Int64,
+        "language"     => String?,
+        "group_id"     => Int64?,
+        "min_volume"   => Int64?,
+        "max_volume"   => Int64?,
+        "min_chapter"  => Int64?,
+        "max_chapter"  => Int64?,
+        "last_checked" => Int64,
+        "created_at"   => Int64,
+      }],
+    }
+    Koa.tags ["admin", "mangadex", "subscriptions"]
     get "/api/admin/mangadex/subscriptions" do |env|
       begin
         send_json env, {
@@ -992,6 +1023,23 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Creates a new MangaDex subscription"
+    Koa.body schema: {
+      "subscription" => {
+        "manga"      => Int64,
+        "language"   => String?,
+        "groupId"    => Int64?,
+        "volumeMin"  => Int64?,
+        "volumeMax"  => Int64?,
+        "chapterMin" => Int64?,
+        "chapterMax" => Int64?,
+      },
+    }
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+    }
+    Koa.tags ["admin", "mangadex", "subscriptions"]
     post "/api/admin/mangadex/subscriptions" do |env|
       begin
         json = env.params.json["subscription"].as Hash(String, JSON::Any)
@@ -1018,6 +1066,14 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Deletes a MangaDex subscription identified by `id`", <<-MD
+    Does nothing if the subscription was not created by the current user.
+    MD
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+    }
+    Koa.tags ["admin", "mangadex", "subscriptions"]
     delete "/api/admin/mangadex/subscriptions/:id" do |env|
       begin
         id = env.params.url["id"].to_i64
@@ -1035,6 +1091,14 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Triggers an update for a MangaDex subscription identified by `id`", <<-MD
+    Does nothing if the subscription was not created by the current user.
+    MD
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+    }
+    Koa.tags ["admin", "mangadex", "subscriptions"]
     post "/api/admin/mangadex/subscriptions/check/:id" do |env|
       begin
         id = env.params.url["id"].to_i64
