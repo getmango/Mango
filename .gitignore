@@ -7,7 +7,17 @@ node_modules
 yarn.lock
 dist
 mango
-.env
+.env # Port that exposes the HTTP frontend
+PORT=9000
+
+# Path to the mango main directory
+# This directory holds the database and the library files
+MAIN_DIRECTORY_PATH=
+
+# Path to the mango config directory
+# This directory holds the mango configuration path
+CONFIG_DIRECTORY_PATH=
+© 2021 GitHub, Inc.
 *.md
 public/css/uikit.css
 public/img/*.svg
