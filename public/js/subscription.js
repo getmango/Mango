@@ -68,6 +68,15 @@ const component = () => {
 				.fail((jqXHR, status) => {
 					alert('danger', `Failed to check subscription. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
 				});
+		},
+
+		formatRange(min, max) {
+			if (!isNaN(min) && isNaN(max)) return `≥ ${min}`;
+			if (isNaN(min) && !isNaN(max)) return `≤ ${max}`;
+			if (isNaN(min) && isNaN(max)) return 'All';
+
+			if (min === max) return `= ${min}`;
+			return `${min} - ${max}`;
 		}
 	};
 };
