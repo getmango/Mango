@@ -46,6 +46,18 @@ class Entry
     file.close
   end
 
+  def to_slim_json : String
+    JSON.build do |json|
+      json.object do
+        {% for str in ["zip_path", "title", "size", "id"] %}
+        json.field {{str}}, @{{str.id}}
+      {% end %}
+        json.field "title_id", @book.id
+        json.field "pages" { json.number @pages }
+      end
+    end
+  end
+
   def to_json(json : JSON::Builder)
     json.object do
       {% for str in ["zip_path", "title", "size", "id"] %}

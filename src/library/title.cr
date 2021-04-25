@@ -57,6 +57,41 @@ class Title
     end
   end
 
+  def to_slim_json : String
+    JSON.build do |json|
+      json.object do
+        {% for str in ["dir", "title", "id"] %}
+        json.field {{str}}, @{{str.id}}
+      {% end %}
+        json.field "signature" { json.number @signature }
+        json.field "titles" do
+          json.array do
+            self.titles.each do |title|
+              json.raw title.to_slim_json
+            end
+          end
+        end
+        json.field "entries" do
+          json.array do
+            @entries.each do |entry|
+              json.raw entry.to_slim_json
+            end
+          end
+        end
+        json.field "parents" do
+          json.array do
+            self.parents.each do |title|
+              json.object do
+                json.field "title", title.title
+                json.field "id", title.id
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
   def to_json(json : JSON::Builder)
     json.object do
       {% for str in ["dir", "title", "id"] %}

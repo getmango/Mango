@@ -126,8 +126,11 @@ struct APIRouter
       end
     end
 
-    Koa.describe "Returns the book with title `tid`"
+    Koa.describe "Returns the book with title `tid`", <<-MD
+    Supply the `tid` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
+    MD
     Koa.path "tid", desc: "Title ID"
+    Koa.query "slim"
     Koa.response 200, schema: "title"
     Koa.response 404, "Title not found"
     Koa.tag "library"
@@ -137,7 +140,11 @@ struct APIRouter
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
 
-        send_json env, title.to_json
+        if env.params.query["slim"]?
+          send_json env, title.to_slim_json
+        else
+          send_json env, title.to_json
+        end
       rescue e
         Logger.error e
         env.response.status_code = 404
@@ -145,14 +152,21 @@ struct APIRouter
       end
     end
 
-    Koa.describe "Returns the entire library with all titles and entries"
+    Koa.describe "Returns the entire library with all titles and entries", <<-MD
+    Supply the `tid` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
+    MD
+    Koa.query "slim"
     Koa.response 200, schema: {
       "dir"    => String,
       "titles" => ["title"],
     }
     Koa.tag "library"
     get "/api/library" do |env|
-      send_json env, Library.default.to_json
+      if env.params.query["slim"]?
+        send_json env, Library.default.to_slim_json
+      else
+        send_json env, Library.default.to_json
+      end
     end
 
     Koa.describe "Triggers a library scan"

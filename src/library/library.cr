@@ -85,6 +85,21 @@ class Library
     titles + titles.flat_map &.deep_titles
   end
 
+  def to_slim_json : String
+    JSON.build do |json|
+      json.object do
+        json.field "dir", @dir
+        json.field "titles" do
+          json.array do
+            self.titles.each do |title|
+              json.raw title.to_slim_json
+            end
+          end
+        end
+      end
+    end
+  end
+
   def to_json(json : JSON::Builder)
     json.object do
       json.field "dir", @dir
