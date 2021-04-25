@@ -30,7 +30,8 @@ struct MainRouter
         else
           redirect env, "/"
         end
-      rescue
+      rescue e
+        Logger.error e
         redirect env, "/login"
       end
     end
