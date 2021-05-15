@@ -19,7 +19,9 @@ class Plugin
     {% for name in ["id", "title", "placeholder"] %}
       getter {{name.id}} = ""
     {% end %}
-    getter wait_seconds : UInt64 = 0
+    getter wait_seconds = 0u64
+    getter version = 0u64
+    getter settings = {} of String => String?
     getter dir : String
 
     def initialize(@dir)
@@ -37,6 +39,16 @@ class Plugin
           @{{name.id}} = @json[{{name}}].as_s
         {% end %}
         @wait_seconds = @json["wait_seconds"].as_i.to_u64
+        @version = @json["api_verson"]?.try(&.as_i.to_u64) || 1u64
+
+        if @version > 1 && (settings_hash = @json["settings"]?.try &.as_h?)
+          settings_hash.each do |k, v|
+            unless str_value = v.as_s?
+              raise "The settings object can only contain strings or null"
+            end
+            @settings[k] = str_value
+          end
+        end
 
         unless @id.alphanumeric_underscore?
           raise "Plugin ID can only contain alphanumeric characters and " \
@@ -152,23 +164,44 @@ class Plugin
     {% end %}
   end
 
+  def search_manga(query : String)
+    json = eval_json "searchManga('#{query}')"
+    begin
+      check_fields ["id", "title"]
+    rescue
+      raise Error.new e.message
+    end
+    json
+  end
+
   def list_chapters(query : String)
     json = eval_json "listChapters('#{query}')"
     begin
-      check_fields ["title", "chapters"]
-
-      ary = json["chapters"].as_a
-      ary.each do |obj|
-        id = obj["id"]?
-        raise "Field `id` missing from `listChapters` outputs" if id.nil?
-
-        unless id.to_s.alphanumeric_underscore?
-          raise "The `id` field can only contain alphanumeric characters " \
-                "and underscores"
+      if info.version > 1
+        # Since v2, listChapters returns an array
+        json.as_a.each do |obj|
+          {% for field in %w(id title pages manga_title) %}
+          unless obj[{{field}}]?
+            raise "Field `{{field.id}}` is required in the chapter objects"
+          end
+        {% end %}
         end
+      else
+        check_fields ["title", "chapters"]
 
-        title = obj["title"]?
-        raise "Field `title` missing from `listChapters` outputs" if title.nil?
+        ary = json["chapters"].as_a
+        ary.each do |obj|
+          id = obj["id"]?
+          raise "Field `id` missing from `listChapters` outputs" if id.nil?
+
+          unless id.to_s.alphanumeric_underscore?
+            raise "The `id` field can only contain alphanumeric characters " \
+                  "and underscores"
+          end
+
+          title = obj["title"]?
+          raise "Field `title` missing from `listChapters` outputs" if title.nil?
+        end
       end
     rescue e
       raise Error.new e.message
@@ -378,6 +411,20 @@ class Plugin
       env.call_success
     end
     sbx.put_prop_string -2, "storage"
+
+    sbx.push_proc 1 do |ptr|
+      env = Duktape::Sandbox.new ptr
+      key = env.require_string 0
+
+      if value = info.settings[key]?
+        env.push_string value
+      else
+        env.push_undefined
+      end
+
+      env.call_success
+    end
+    sbx.put_prop_string -2, "settings"
 
     sbx.put_prop_string -2, "mango"
   end
