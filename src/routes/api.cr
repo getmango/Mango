@@ -539,6 +539,97 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Returns a list of available plugins"
+    Koa.tags ["admin", "downloader"]
+    Koa.query "plugin", schema: String
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "plugins" => [{
+        "id"    => String,
+        "title" => String,
+      }],
+    }
+    get "/api/admin/plugin" do |env|
+      begin
+        send_json env, {
+          "success" => true,
+          "plugins" => Plugin.list,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Returns the metadata of a plugin"
+    Koa.tags ["admin", "downloader"]
+    Koa.query "plugin", schema: String
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "info"    => {
+        "dir"          => String,
+        "id"           => String,
+        "title"        => String,
+        "placeholder"  => String,
+        "wait_seconds" => Int32,
+        "version"      => Int32,
+        "settings"     => {} of String => String,
+      },
+    }
+    get "/api/admin/plugin/info" do |env|
+      begin
+        plugin = Plugin.new env.params.query["plugin"].as String
+        send_json env, {
+          "success" => true,
+          "info"    => plugin.info,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Searches for manga matching the given query from a plugin", <<-MD
+    Only available for plugins targeting API v2 or above.
+    MD
+    Koa.tags ["admin", "downloader"]
+    Koa.query "plugin", schema: String
+    Koa.query "query", schema: String
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "manga"   => [{
+        "id"    => String,
+        "title" => String,
+      }],
+    }
+    get "/api/admin/plugin/search" do |env|
+      begin
+        query = env.params.query["query"].as String
+        plugin = Plugin.new env.params.query["plugin"].as String
+
+        manga_ary = plugin.search_manga(query).as_a
+        send_json env, {
+          "success" => true,
+          "manga"   => manga_ary,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
     Koa.describe "Lists the chapters in a title from a plugin"
     Koa.tags ["admin", "downloader"]
     Koa.query "plugin", schema: String

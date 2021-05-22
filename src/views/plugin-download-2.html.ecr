@@ -1,0 +1,61 @@
+<div x-data="component()" x-init="init()">
+  <div class="uk-grid-small" uk-grid style="margin-bottom:40px;">
+    <div class="uk-container uk-text-center" x-show="plugins.length === 0">
+      <h2>No Plugins Found</h2>
+      <p>We could't find any plugins in the directory <code><%= Config.current.plugin_path %></code>.</p>
+      <p>You can download official plugins from the <a href="https://github.com/hkalexling/mango-plugins">Mango plugins repository</a>.</p>
+    </div>
+    <div x-show="plugins.length > 0" style="width:100%">
+      <h2 class=uk-title>Download with Plugins</h2>
+
+      <template x-if="info !== undefined">
+        <div>
+          <div class="uk-grid-small" uk-grid>
+            <div class="uk-width-3-4@m uk-child-width-1-1">
+              <div class="uk-margin">
+                <div class="uk-form-controls">
+                  <label class="uk-form-label">&nbsp;</label>
+                  <input class="uk-input" type="text" :placeholder="info.placeholder">
+                </div>
+              </div>
+            </div>
+            <div class="uk-width-expand">
+              <div class="uk-margin">
+                <label class="uk-form-label">Choose a plugin</label>
+                <div class="uk-form-controls">
+                  <select class="uk-select" x-model="pid" @change="pluginChanged()">
+                    <template x-for="p in plugins" :key="p">
+                      <option :value="p.id" x-text="p.title"></option>
+                    </template>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="uk-width-auto">
+              <div class="uk-margin">
+                <label class="uk-form-label">&nbsp;</label>
+                <div class="uk-form-controls" style="padding-top: 10px;">
+                  <span uk-icon="info" uk-toggle="target: #toggle"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <template x-for="entry, idx in Object.entries(info).filter(tp => !['id', 'settings'].includes(tp[0]))" :key="idx">
+            <dl class="uk-description-list" id="toggle" hidden>
+              <dt x-text="entry[0]"></dt>
+              <dd x-text="entry[1]"></dd>
+            </dl>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
+
+<% content_for "script" do %>
+  <%= render_component "moment" %>
+  <%= render_component "jquery-ui" %>
+  <script src="<%= base_url %>js/alert.js"></script>
+  <script src="<%= base_url %>js/plugin-download-2.js"></script>
+<% end %>

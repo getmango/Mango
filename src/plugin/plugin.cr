@@ -16,6 +16,8 @@ class Plugin
   end
 
   struct Info
+    include JSON::Serializable
+
     {% for name in ["id", "title", "placeholder"] %}
       getter {{name.id}} = ""
     {% end %}
@@ -23,6 +25,9 @@ class Plugin
     getter version = 0u64
     getter settings = {} of String => String?
     getter dir : String
+
+    @[JSON::Field(ignore: true)]
+    @json : JSON::Any
 
     def initialize(@dir)
       info_path = File.join @dir, "info.json"
@@ -150,6 +155,12 @@ class Plugin
       sbx.push_string path
       sbx.put_prop_string -2, "storage_path"
 
+      sbx.push_pointer info.dir.as(Void*)
+      path = sbx.require_pointer(-1).as String
+      sbx.pop
+      sbx.push_string path
+      sbx.put_prop_string -2, "info_dir"
+
       def_helper_functions sbx
     end
 
@@ -164,11 +175,36 @@ class Plugin
     {% end %}
   end
 
+  def assert_manga_type(obj : JSON::Any)
+    obj["id"].as_s && obj["title"].as_s
+  rescue e
+    raise Error.new "Missing required fields in the Manga type"
+  end
+
+  def assert_chapter_type(obj : JSON::Any)
+    obj["id"].as_s && obj["title"].as_s && obj["pages"].as_i &&
+      obj["manga_title"].as_s
+  rescue e
+    raise Error.new "Missing required fields in the Chapter type"
+  end
+
+  def assert_page_type(obj : JSON::Any)
+    obj["url"].as_s && obj["filename"].as_s
+  rescue e
+    raise Error.new "Missing required fields in the Page type"
+  end
+
   def search_manga(query : String)
+    if info.version == 1
+      raise Error.new "Manga searching is only available for plugins targeting API " \
+                      "v2 or above"
+    end
     json = eval_json "searchManga('#{query}')"
     begin
-      check_fields ["id", "title"]
-    rescue
+      json.as_a.each do |obj|
+        assert_manga_type obj
+      end
+    rescue e
       raise Error.new e.message
     end
     json
@@ -180,11 +216,7 @@ class Plugin
       if info.version > 1
         # Since v2, listChapters returns an array
         json.as_a.each do |obj|
-          {% for field in %w(id title pages manga_title) %}
-          unless obj[{{field}}]?
-            raise "Field `{{field.id}}` is required in the chapter objects"
-          end
-        {% end %}
+          assert_chapter_type obj
         end
       else
         check_fields ["title", "chapters"]
@@ -200,7 +232,9 @@ class Plugin
           end
 
           title = obj["title"]?
-          raise "Field `title` missing from `listChapters` outputs" if title.nil?
+          if title.nil?
+            raise "Field `title` missing from `listChapters` outputs"
+          end
         end
       end
     rescue e
@@ -212,10 +246,14 @@ class Plugin
   def select_chapter(id : String)
     json = eval_json "selectChapter('#{id}')"
     begin
-      check_fields ["title", "pages"]
+      if info.version > 1
+        assert_chapter_type json
+      else
+        check_fields ["title", "pages"]
 
-      if json["title"].to_s.empty?
-        raise "The `title` field of the chapter can not be empty"
+        if json["title"].to_s.empty?
+          raise "The `title` field of the chapter can not be empty"
+        end
       end
     rescue e
       raise Error.new e.message
@@ -227,7 +265,19 @@ class Plugin
     json = eval_json "nextPage()"
     return if json.size == 0
     begin
-      check_fields ["filename", "url"]
+      assert_page_type json
+    rescue e
+      raise Error.new e.message
+    end
+    json
+  end
+
+  def new_chapters(manga_id : String, after : Int64)
+    json = eval_json "newChapters('#{manga_id}', #{after})"
+    begin
+      json.as_a.each do |obj|
+        assert_chapter_type obj
+      end
     rescue e
       raise Error.new e.message
     end
@@ -412,19 +462,26 @@ class Plugin
     end
     sbx.put_prop_string -2, "storage"
 
-    sbx.push_proc 1 do |ptr|
-      env = Duktape::Sandbox.new ptr
-      key = env.require_string 0
+    if info.version > 1
+      sbx.push_proc 1 do |ptr|
+        env = Duktape::Sandbox.new ptr
+        key = env.require_string 0
 
-      if value = info.settings[key]?
-        env.push_string value
-      else
-        env.push_undefined
+        env.get_global_string "info_dir"
+        info_dir = env.require_string -1
+        env.pop
+        info = Info.new info_dir
+
+        if value = info.settings[key]?
+          env.push_string value
+        else
+          env.push_undefined
+        end
+
+        env.call_success
       end
-
-      env.call_success
+      sbx.put_prop_string -2, "settings"
     end
-    sbx.put_prop_string -2, "settings"
 
     sbx.put_prop_string -2, "mango"
   end
