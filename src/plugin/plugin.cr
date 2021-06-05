@@ -44,7 +44,7 @@ class Plugin
           @{{name.id}} = @json[{{name}}].as_s
         {% end %}
         @wait_seconds = @json["wait_seconds"].as_i.to_u64
-        @version = @json["api_verson"]?.try(&.as_i.to_u64) || 1u64
+        @version = @json["api_version"]?.try(&.as_i.to_u64) || 1u64
 
         if @version > 1 && (settings_hash = @json["settings"]?.try &.as_h?)
           settings_hash.each do |k, v|

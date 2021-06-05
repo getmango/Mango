@@ -638,8 +638,8 @@ struct APIRouter
       "success"   => Bool,
       "error"     => String?,
       "chapters?" => [{
-        "id"    => String,
-        "title" => String,
+        "id"     => String,
+        "title?" => String,
       }],
       "title" => String?,
     }
@@ -649,8 +649,14 @@ struct APIRouter
         plugin = Plugin.new env.params.query["plugin"].as String
 
         json = plugin.list_chapters query
-        chapters = json["chapters"]
-        title = json["title"]
+
+        if plugin.info.version == 1
+          chapters = json["chapters"]
+          title = json["title"]
+        else
+          chapters = json
+          title = nil
+        end
 
         send_json env, {
           "success"  => true,

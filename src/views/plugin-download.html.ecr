@@ -1,77 +1,180 @@
-<% if plugins.empty? %>
-  <div class="uk-container uk-text-center">
-    <h2>No Plugins Found</h2>
-    <p>We could't find any plugins in the directory <code><%= Config.current.plugin_path %></code>.</p>
-    <p>You can download official plugins from the <a href="https://github.com/hkalexling/mango-plugins">Mango plugins repository</a>.</p>
-  </div>
+<div x-data="component()" x-init="init()" x-cloak>
+  <div class="uk-grid-small" uk-grid style="margin-bottom:40px;">
+    <div class="uk-container uk-text-center" x-show="plugins.length === 0" style="width:100%">
+      <h2>No Plugins Found</h2>
+      <p>We could't find any plugins in the directory <code><%= Config.current.plugin_path %></code>.</p>
+      <p>You can download official plugins from the <a href="https://github.com/hkalexling/mango-plugins">Mango plugins repository</a>.</p>
+    </div>
 
-<% else %>
-  <h2 class=uk-title>Download with Plugins</h2>
+    <div x-show="plugins.length > 0" style="width:100%">
+      <h2 class=uk-title>Download with Plugins
+        <span x-show="searching" uk-spinner class="uk-margin-left"></span>
+      </h2>
 
-  <div id="controls" class="uk-grid-small" uk-grid hidden>
-    <div class="uk-width-3-4@m uk-child-width-1-1">
-      <div class="uk-margin">
-        <label class="uk-form-label" for="search-input">&nbsp;</label>
-        <div class="uk-form-controls">
-          <input id="search-input" class="uk-input" type="text" placeholder="<%= plugin.not_nil!.info.placeholder %>">
+      <template x-if="info !== undefined">
+        <div>
+          <div class="uk-grid-small" uk-grid>
+            <div class="uk-width-3-4@m uk-child-width-1-1">
+              <div class="uk-margin">
+                <div class="uk-form-controls">
+                  <label class="uk-form-label">&nbsp;</label>
+                  <input class="uk-input" type="text" :placeholder="info.placeholder" x-model="query" @keydown.enter="search()">
+                </div>
+              </div>
+            </div>
+            <div class="uk-width-expand">
+              <div class="uk-margin">
+                <label class="uk-form-label">Choose a plugin</label>
+                <div class="uk-form-controls">
+                  <select class="uk-select" x-model="pid" @change="pluginChanged()">
+                    <template x-for="p in plugins" :key="p">
+                      <option :value="p.id" x-text="p.title"></option>
+                    </template>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="uk-width-auto">
+              <div class="uk-margin">
+                <label class="uk-form-label">&nbsp;</label>
+                <div class="uk-form-controls" style="padding-top: 10px;">
+                  <span uk-icon="info" uk-toggle="target: #toggle"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <template x-for="entry, idx in Object.entries(info).filter(tp => !['id', 'settings'].includes(tp[0]))" :key="idx">
+            <dl class="uk-description-list" id="toggle" hidden>
+              <dt x-text="entry[0]"></dt>
+              <dd x-text="entry[1]"></dd>
+            </dl>
+          </template>
+        </div>
+      </template>
+
+      <template x-if="manga">
+        <div class="uk-margin">
+          <p x-show="manga.length === 0">No matching manga found.</p>
+          <p x-show="manga.length > 0">
+          <span x-text="`${manga.length} manga found`"></span>
+          <span :uk-icon="listManga ? 'chevron-down' : 'chevron-right'" @click="listManga = !listManga"></span>
+          </p>
+
+          <div class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid x-show="listManga">
+            <template x-for="m in manga" :key="m.id">
+              <div class="item" :data-id="m.id" @click="mangaSelected($event)">
+                <div class="uk-card uk-card-default">
+                  <div class="uk-card-media-top uk-inline">
+                    <img uk-img :data-src="m.cover_url">
+                  </div>
+                  <div class="uk-card-body">
+                    <h3 class="uk-card-title break-word uk-margin-remove-bottom free-height" x-text="m.title"></h3>
+                    <p class="uk-text-meta" x-text="`ID: ${m.id}`"></p>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+
+      <div class="uk-margin-large-top" x-show="chapters !== undefined">
+        <h3 x-text="mangaTitle"></h3>
+        <p x-text="`${chapters ? chapters.length : 0} chapters found`"></p>
+
+        <div class="uk-margin">
+          <div x-show="chapters && chapters.length > 0 && chapters.length <= chaptersLimit">
+            <button class="uk-button uk-button-default" @click="selectAll()">Select All</button>
+            <button class="uk-button uk-button-default" @click="clearSelection()">Clear Selections</button>
+            <button class="uk-button uk-button-primary" @click="download()">Download Selected</button>
+            <button class="uk-icon-button uk-margin-small-left" uk-icon="settings" @click="showFilters = !showFilters"></button>
+          </div>
+          <div uk-spinner class="uk-margin-left" x-show="adding"></div>
+        </div>
+
+        <form x-show="showFilters || (chapters && chapters.length > chaptersLimit)" class="uk-form-stacked uk-margin-bottom" id="filter-form">
+          <template x-for="field in filters">
+            <div class="uk-margin">
+              <label class="uk-form-label">
+                <span x-text="field.key"></span>
+                <template x-if="field.type === 'number'">
+                  <span class="uk-text-meta" x-text="`(between ${Math.min(...field.values)} and ${Math.max(...field.values)})`"></span>
+                </template>
+              </label>
+
+              <div x-show="field.type === 'number'" class="uk-grid-small" uk-grid>
+                <div class="uk-width-1-2@s">
+                  <input class="uk-input" placeholder="minimum value" :data-filter-key="field.key" data-filter-type="number-min">
+                </div>
+                <div class="uk-width-1-2@s">
+                  <input class="uk-input" placeholder="maximum value" :data-filter-key="field.key" data-filter-type="number-max">
+                </div>
+              </div>
+
+              <div x-show="field.type === 'date'" class="uk-grid-small" uk-grid>
+                <div class="uk-width-1-2@s">
+                  <input class="uk-input" placeholder="minimum date, e.g., Jan 1 1970" :data-filter-key="field.key" data-filter-type="date-min">
+                </div>
+                <div class="uk-width-1-2@s">
+                  <input class="uk-input" placeholder="maximum date, e.g., Jan 1 1970" :data-filter-key="field.key" data-filter-type="date-max">
+                </div>
+              </div>
+
+              <input x-show="field.type === 'string'" class="uk-input" placeholder="filter text" :data-filter-key="field.key" data-filter-type="string">
+
+              <select class="uk-select" x-show="field.type === 'array'" :data-filter-key="field.key" data-filter-type="array">
+                <option value="all">All</option>
+                <template x-for="v in field.values" :key="v">
+                  <option x-text="v" :value="v"></option>
+                </template>
+              </select>
+            </div>
+          </template>
+          <button class="uk-button uk-button-primary" @click.prevent="applyFilters()">Apply</button>
+          <button class="uk-button uk-button-default" @click.prevent="clearFilters()">Clear</button>
+        </form>
+
+        <p class="uk-text-meta" x-show="chapters && chapters.length > chaptersLimit" x-text="`The manga has ${chapters ? chapters.length : 0} chapters, but Mango can only list up to ${chaptersLimit}. Please use the filters to narrow down your search.`"></p>
+        <p x-show="chapters && chapters.length === 0" class="uk-text-meta">No chapters found.</p>
+
+        <div x-show="chapters && chapters.length > 0 && chapters.length <= chaptersLimit">
+          <p class="uk-text-meta">Click on a table row to select the chapter. Drag your mouse over multiple rows to select them all. Hold Ctrl to make multiple non-adjacent selections.</p>
+          <div class="uk-overflow-auto">
+            <table class="uk-table uk-table-striped">
+              <thead>
+                <tr>
+                  <template x-for="(k, idx) in chapterKeys" :key="k">
+                    <th :id="`th-${idx}`" @click="thClicked($event)">
+                      <span x-text="k"></span>
+                      <i class="fas fa-sort" x-show="![1, -1].includes(sortOptions[idx])"></i>
+                      <i class="fas fa-sort-up" x-show="sortOptions[idx] === 1"></i>
+                      <i class="fas fa-sort-down" x-show="sortOptions[idx] === -1"></i>
+                    </th>
+                  </template>
+                </tr>
+              </thead>
+              <tbody id="selectable">
+                <template x-if="chapters !== undefined && chapters.length < chaptersLimit">
+                  <template x-for="ch in chapters" :key="ch">
+                    <tr class="ui-widget-content" :id="ch.id">
+                      <template x-for="k in chapterKeys" :key="k">
+                        <td x-text="ch[k]"></td>
+                      </template>
+                    </tr>
+                  </template>
+                </template>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
-    <div class="uk-width-expand">
-      <div class="uk-margin">
-        <label class="uk-form-label" for="plugin-select">Choose a plugin</label>
-        <div class="uk-form-controls">
-          <select id="plugin-select" class="uk-select">
-            <% plugins.each do |p| %>
-              <option value="<%= p[:id] %>"><%= p[:title] %></option>
-            <% end %>
-          </select>
-        </div>
-      </div>
-    </div>
-    <div class="uk-width-auto">
-      <div class="uk-margin">
-        <label class="uk-form-label" for="search-input">&nbsp;</label>
-        <div class="uk-form-controls" style="padding-top: 10px;">
-          <span uk-icon="info" uk-toggle="target: #toggle"></span>
-        </div>
-      </div>
-    </div>
   </div>
-
-  <dl class="uk-description-list" id="toggle" hidden>
-    <% plugin.not_nil!.info.each do |k, v| %>
-      <dt><%= k %></dt>
-      <dd><%= v.to_s %></dd>
-    <% end %>
-  </dl>
-
-  <div id="table" class="uk-margin-large-top" hidden>
-    <h3 id="title-text"></h3>
-
-    <div class="uk-margin">
-      <button class="uk-button uk-button-default" onclick="selectAll()">Select All</button>
-      <button class="uk-button uk-button-default" onclick="unselect()">Clear Selections</button>
-      <button class="uk-button uk-button-primary" id="download-btn" onclick="download()">Download Selected</button>
-      <div id="download-spinner" uk-spinner class="uk-margin-left" hidden></div>
-    </div>
-    <p class="uk-text-meta">Click on a table row to select the chapter. Drag your mouse over multiple rows to select them all. Hold Ctrl to make multiple non-adjacent selections.</p>
-    <div class="uk-overflow-auto">
-      <table class="uk-table uk-table-striped tablesorter">
-      </table>
-    </div>
-  </div>
-<% end %>
-
+</div>
 
 <% content_for "script" do %>
-  <% if plugin %>
-    <script>
-      var pid = "<%= plugin.not_nil!.info.id %>";
-    </script>
-  <% end %>
   <%= render_component "jquery-ui" %>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.combined.min.js"></script>
   <script src="<%= base_url %>js/alert.js"></script>
   <script src="<%= base_url %>js/plugin-download.js"></script>
 <% end %>
