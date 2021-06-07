@@ -5,7 +5,6 @@ require "base64"
 require "./util/*"
 require "mg"
 require "../migration/*"
-require "./subscription"
 
 def hash_password(pw)
   Crypto::Bcrypt::Password.create(pw).to_s
@@ -14,9 +13,6 @@ end
 def verify_password(hash, pw)
   (Crypto::Bcrypt::Password.new hash).verify pw
 end
-
-SUB_ATTR = %w(manga_id language group_id min_volume max_volume min_chapter
-  max_chapter username)
 
 class Storage
   @@insert_entry_ids = [] of IDTuple
@@ -547,70 +543,6 @@ class Storage
       end
     end
     {token, expires}
-  end
-
-  def save_subscription(sub : Subscription)
-    MainFiber.run do
-      get_db do |db|
-        {% begin %}
-          db.exec "insert into subscription (#{SUB_ATTR.join ","}, " \
-            "last_checked, created_at) values " \
-            "(#{Array.new(SUB_ATTR.size + 2, "?").join ","})",
-          {% for type in SUB_ATTR %}
-            sub.{{type.id}},
-          {% end %}
-          sub.last_checked.to_unix, sub.created_at.to_unix
-        {% end %}
-      end
-    end
-  end
-
-  def subscriptions : Array(Subscription)
-    subs = [] of Subscription
-    MainFiber.run do
-      get_db do |db|
-        db.query "select * from subscription" do |rs|
-          subs += Subscription.from_rs rs
-        end
-      end
-    end
-    subs
-  end
-
-  def delete_subscription(id : Int64, username : String)
-    MainFiber.run do
-      get_db do |db|
-        db.exec "delete from subscription where id = (?) and username = (?)",
-          id, username
-      end
-    end
-  end
-
-  def get_subscription(id : Int64, username : String) : Subscription?
-    sub = nil
-    MainFiber.run do
-      get_db do |db|
-        db.query "select * from subscription where id = (?) and " \
-                 "username = (?) limit 1", id, username do |rs|
-          sub = Subscription.from_rs(rs).first?
-        end
-      end
-    end
-    sub
-  end
-
-  def update_subscription_last_checked(id : Int64? = nil)
-    MainFiber.run do
-      get_db do |db|
-        if id
-          db.exec "update subscription set last_checked = (?) where id = (?)",
-            Time.utc.to_unix, id
-        else
-          db.exec "update subscription set last_checked = (?)",
-            Time.utc.to_unix
-        end
-      end
-    end
   end
 
   def close

@@ -54,7 +54,7 @@ shards:
 
   mangadex:
     git: https://github.com/hkalexling/mangadex.git
-    version: 0.11.0+git.commit.f5b0d64fbb138879fb9228b6e9ff34ec97c3e824
+    version: 0.9.0+git.commit.a8e5deb3e6f882f5bc0f4de66e0f6c20aa98a8a6
 
   mg:
     git: https://github.com/hkalexling/mg.git
