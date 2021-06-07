@@ -56,39 +56,5 @@ module MangaDex
       hash["full_title"] = JSON::Any.new full_title
       hash.to_json
     end
-
-    # We don't need to rename the manga title here. It will be renamed in
-    #   src/mangadex/downloader.cr
-    def to_job : Queue::Job
-      Queue::Job.new(
-        id.to_s,
-        manga_id.to_s,
-        full_title,
-        manga_title,
-        Queue::JobStatus::Pending,
-        Time.unix timestamp
-      )
-    end
-  end
-
-  struct User
-    def updates_after(time : Time, &block : Chapter ->)
-      page = 1
-      stopped = false
-      until stopped
-        chapters = followed_updates(page: page).chapters
-        return if chapters.empty?
-        chapters.each do |c|
-          if time > Time.unix c.timestamp
-            stopped = true
-            break
-          end
-          yield c
-        end
-        page += 1
-        # Let's not DDOS MangaDex :)
-        sleep 5.seconds
-      end
-    end
   end
 end
