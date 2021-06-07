@@ -2,6 +2,8 @@ require "duktape/runtime"
 require "myhtml"
 require "xml"
 
+require "./subscriptions"
+
 class Plugin
   class Error < ::Exception
   end
@@ -129,6 +131,22 @@ class Plugin
 
   def info
     @info.not_nil!
+  end
+
+  def subscribe(subscription : Subscription)
+    list = SubscriptionList.new info.dir
+    list << subscription
+    list.save
+  end
+
+  def list_subscriptions
+    SubscriptionList.new(info.dir).ary
+  end
+
+  def unsubscribe(id : String)
+    list = SubscriptionList.new info.dir
+    list.reject &.id.== id
+    list.save
   end
 
   def initialize(id : String)
