@@ -43,7 +43,7 @@ struct Filter
     key = json["key"].as_s
     type = FilterType.from_string json["type"].as_s
     _value = json["value"]
-    value = _value.as_s? || _value.as_i32? || _value.as_i64? ||
+    value = _value.as_s? || _value.as_i? || _value.as_i64? ||
             _value.as_f32? || nil
     self.new key, value, type
   end
@@ -82,6 +82,6 @@ struct SubscriptionList
   end
 
   def save
-    File.write @path, @ary.to_json
+    File.write @path, @ary.to_pretty_json
   end
 end

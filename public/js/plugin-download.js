@@ -15,6 +15,7 @@ const component = () => {
 		appliedFilters: [],
 		chaptersLimit: 500,
 		listManga: false,
+		subscribing: false,
 
 		init() {
 			const tableObserver = new MutationObserver(() => {
@@ -87,6 +88,10 @@ const component = () => {
 					} catch (e) {
 						this.mangaTitle = data.title;
 					}
+
+					data.chapters.forEach(c => {
+						c.array = ['hello', 'world', 'haha', 'wtf'].sort(() => 0.5 - Math.random()).slice(0, 2);
+					});
 
 					this.allChapters = data.chapters;
 					this.chapters = data.chapters;
@@ -268,9 +273,8 @@ const component = () => {
 		fieldType(values) {
 			if (values.every(v => !isNaN(v))) return 'number'; // display input for number range
 			if (values.every(v => !isNaN(this.parseDate(v)))) return 'date'; // display input for date range
-			if (values.every(v => Array.isArray(v))) return 'array'; // display input for contains
+			if (values.every(v => Array.isArray(v))) return 'array'; // display select
 			return 'string'; // display input for string searching.
-			// for the last two, if the number of options is small enough (say < 50), display a multi-select2
 		},
 		get filters() {
 			if (this.allChapters.length < 1) return [];
@@ -294,15 +298,17 @@ const component = () => {
 				};
 			});
 		},
-		applyFilters() {
-			const values = $('#filter-form input, #filter-form select')
+		get filterSettings() {
+			return $('#filter-form input:visible, #filter-form select:visible')
 				.get()
 				.map(i => ({
 					key: i.getAttribute('data-filter-key'),
 					value: i.value.trim(),
 					type: i.getAttribute('data-filter-type')
 				}));
-			this.appliedFilters = values;
+		},
+		applyFilters() {
+			this.appliedFilters = this.filterSettings;
 			this.chapters = this.filteredChapters;
 		},
 		clearFilters() {
@@ -321,6 +327,35 @@ const component = () => {
 			if (!regex.test(str))
 				return NaN;
 			return Date.parse(str);
+		},
+		subscribe() {
+			// TODO:
+			// 		- confirmation
+			// 		- name
+			// 		- use select2
+			this.subscribing = true;
+			fetch(`${base_url}api/admin/plugin/subscribe`, {
+					method: 'POST',
+					body: JSON.stringify({
+						filters: JSON.stringify(this.filterSettings),
+						plugin: this.pid,
+						name: 'Test Name'
+					}),
+					headers: {
+						"Content-Type": "application/json"
+					}
+				})
+				.then(res => res.json())
+				.then(data => {
+					if (!data.success)
+						throw new Error(data.error);
+				})
+				.catch(e => {
+					alert('danger', `Failed to subscribe. Error: ${e}`);
+				})
+				.finally(() => {
+					this.subscribing = false;
+				});
 		}
 	};
 };
