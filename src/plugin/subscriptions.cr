@@ -75,7 +75,7 @@ struct SubscriptionList
   forward_missing_to @ary
 
   def initialize(@dir)
-    @path = Path[@dir, "subscriptions.json"]
+    @path = Path[@dir, "subscriptions.json"].to_s
     if File.exists? @path
       @ary = Array(Subscription).from_json File.read @path
     end

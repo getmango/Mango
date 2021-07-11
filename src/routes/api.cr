@@ -630,6 +630,30 @@ struct APIRouter
       end
     end
 
+    post "/api/admin/plugin/subscribe" do |env|
+      begin
+        plugin_id = env.params.json["plugin"].as String
+        filters = Array(Filter).from_json env.params.json["filters"].to_s
+        name = env.params.json["name"].as String
+
+        sub = Subscription.new plugin_id, name
+        sub.filters = filters
+
+        plugin = Plugin.new plugin_id
+        plugin.subscribe sub
+
+        send_json env, {
+          "success" => true,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
     Koa.describe "Lists the chapters in a title from a plugin"
     Koa.tags ["admin", "downloader"]
     Koa.query "plugin", schema: String
