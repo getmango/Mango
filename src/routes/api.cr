@@ -1,6 +1,7 @@
 require "../mangadex/*"
 require "../upload"
 require "koa"
+require "digest"
 
 struct APIRouter
   @@api_json : String?
@@ -81,6 +82,7 @@ struct APIRouter
         tid = env.params.url["tid"]
         eid = env.params.url["eid"]
         page = env.params.url["page"].to_i
+        prev_e_tag = env.request.headers["If-None-Match"]?
 
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
@@ -90,7 +92,14 @@ struct APIRouter
         raise "Failed to load page #{page} of " \
               "`#{title.title}/#{entry.title}`" if img.nil?
 
-        send_img env, img
+        e_tag = Digest::SHA1.hexdigest img.data
+        if prev_e_tag == e_tag
+          env.response.status_code = 304
+          ""
+        else
+          env.response.headers["ETag"] = e_tag
+          send_img env, img
+        end
       rescue e
         Logger.error e
         env.response.status_code = 500
@@ -102,12 +111,14 @@ struct APIRouter
     Koa.path "tid", desc: "Title ID"
     Koa.path "eid", desc: "Entry ID"
     Koa.response 200, schema: Bytes, media_type: "image/*"
+    Koa.response 304, ""
     Koa.response 500, "Page not found or not readable"
     Koa.tag "library"
     get "/api/cover/:tid/:eid" do |env|
       begin
         tid = env.params.url["tid"]
         eid = env.params.url["eid"]
+        prev_e_tag = env.request.headers["If-None-Match"]?
 
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
@@ -118,7 +129,14 @@ struct APIRouter
         raise "Failed to get cover of `#{title.title}/#{entry.title}`" \
            if img.nil?
 
-        send_img env, img
+        e_tag = Digest::SHA1.hexdigest img.data
+        if prev_e_tag == e_tag
+          env.response.status_code = 304
+          ""
+        else
+          env.response.headers["ETag"] = e_tag
+          send_img env, img
+        end
       rescue e
         Logger.error e
         env.response.status_code = 500
