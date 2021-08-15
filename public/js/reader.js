@@ -11,6 +11,7 @@ const readerComponent = () => {
 		lastSavedPage: page,
 		selectedIndex: 0, // 0: not selected; 1: the first page
 		margin: 30,
+		preloadLookahead: 3,
 
 		/**
 		 * Initialize the component by fetching the page dimensions
@@ -52,6 +53,13 @@ const readerComponent = () => {
 					if (savedMargin) {
 						this.margin = savedMargin;
 					}
+
+					// Preload Images
+					this.preloadLookahead = 3;
+					const limit = Math.min(page + this.preloadLookahead, this.items.length + 1);
+					for (let idx = page + 1; idx <= limit; idx++) {
+						this.preloadImage(this.items[idx - 1].url);
+					}
 				})
 				.catch(e => {
 					const errMsg = `Failed to get the page dimensions. ${e}`;
@@ -59,6 +67,12 @@ const readerComponent = () => {
 					this.alertClass = 'uk-alert-danger';
 					this.msg = errMsg;
 				})
+		},
+		/**
+		 * Preload an image, which is expected to be cached
+		 */
+		preloadImage(url) {
+			(new Image()).src = url;
 		},
 		/**
 		 * Handles the `change` event for the page selector
@@ -110,6 +124,10 @@ const readerComponent = () => {
 			const newIdx = idx + (isNext ? 1 : -1);
 
 			if (newIdx <= 0 || newIdx > this.items.length) return;
+
+			if (newIdx + this.preloadLookahead < this.items.length + 1) {
+				this.preloadImage(this.items[newIdx + this.preloadLookahead - 1].url);
+			}
 
 			this.toPage(newIdx);
 
