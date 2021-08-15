@@ -99,6 +99,7 @@ struct APIRouter
           ""
         else
           env.response.headers["ETag"] = e_tag
+          env.response.headers["Cache-Control"] = "public, max-age=86400"
           send_img env, img
         end
       rescue e
@@ -670,6 +671,7 @@ struct APIRouter
         else
           sizes = entry.page_dimensions
           env.response.headers["ETag"] = e_tag
+          env.response.headers["Cache-Control"] = "public, max-age=86400"
           send_json env, {
             "success"    => true,
             "dimensions" => sizes,
