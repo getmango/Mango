@@ -8,7 +8,7 @@ targets:
   mango:
     main: src/mango.cr
 
-crystal: 0.36.1
+crystal: 1.0.0
 
 license: MIT
 
@@ -21,7 +21,6 @@ dependencies:
     github: crystal-lang/crystal-sqlite3
   baked_file_system:
     github: schovi/baked_file_system
-    version: 0.9.8+git.commit.fb3091b546797fbec3c25dc0e1e2cff60bb9033b
   archive:
     github: hkalexling/archive.cr
   ameba:
@@ -30,7 +29,6 @@ dependencies:
     github: at-grandpa/clim
   duktape:
     github: jessedoyle/duktape.cr
-    version: ~> 0.20.0
   myhtml:
     github: kostya/myhtml
   http_proxy:

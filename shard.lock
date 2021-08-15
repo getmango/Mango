@@ -2,7 +2,7 @@ version: 2.0
 shards:
   ameba:
     git: https://github.com/crystal-ameba/ameba.git
-    version: 0.14.0
+    version: 0.14.3
 
   archive:
     git: https://github.com/hkalexling/archive.cr.git
@@ -10,23 +10,23 @@ shards:
 
   baked_file_system:
     git: https://github.com/schovi/baked_file_system.git
-    version: 0.9.8+git.commit.fb3091b546797fbec3c25dc0e1e2cff60bb9033b
+    version: 0.10.0
 
   clim:
     git: https://github.com/at-grandpa/clim.git
-    version: 0.12.0
+    version: 0.17.1
 
   db:
     git: https://github.com/crystal-lang/crystal-db.git
-    version: 0.9.0
+    version: 0.10.1
 
   duktape:
     git: https://github.com/jessedoyle/duktape.cr.git
-    version: 0.20.0
+    version: 1.0.0
 
   exception_page:
     git: https://github.com/crystal-loot/exception_page.git
-    version: 0.1.4
+    version: 0.1.5
 
   http_proxy:
     git: https://github.com/mamantoha/http_proxy.git
@@ -38,15 +38,15 @@ shards:
 
   kemal:
     git: https://github.com/kemalcr/kemal.git
-    version: 0.27.0
+    version: 1.0.0
 
   kemal-session:
     git: https://github.com/kemalcr/kemal-session.git
-    version: 0.13.0
+    version: 1.0.0
 
   kilt:
     git: https://github.com/jeromegn/kilt.git
-    version: 0.4.0
+    version: 0.4.1
 
   koa:
     git: https://github.com/hkalexling/koa.git
@@ -58,11 +58,11 @@ shards:
 
   mg:
     git: https://github.com/hkalexling/mg.git
-    version: 0.3.0+git.commit.a19417abf03eece80039f89569926cff1ce3a1a3
+    version: 0.5.0+git.commit.697e46e27cde8c3969346e228e372db2455a6264
 
   myhtml:
     git: https://github.com/kostya/myhtml.git
-    version: 1.5.1
+    version: 1.5.8
 
   open_api:
     git: https://github.com/jreinert/open_api.cr.git
@@ -70,11 +70,11 @@ shards:
 
   radix:
     git: https://github.com/luislavena/radix.git
-    version: 0.3.9
+    version: 0.4.1
 
   sqlite3:
     git: https://github.com/crystal-lang/crystal-sqlite3.git
-    version: 0.16.0
+    version: 0.18.0
 
   tallboy:
     git: https://github.com/epoch/tallboy.git
