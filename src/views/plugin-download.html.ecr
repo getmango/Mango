@@ -134,7 +134,7 @@
           <button class="uk-button uk-button-primary" @click.prevent="applyFilters()">Apply</button>
           <button class="uk-button uk-button-default" @click.prevent="clearFilters()">Clear</button>
           <span class="uk-divider-vertical uk-margin-left uk-margin-right"></span>
-          <button class="uk-button uk-button-default" @click.prevent="subscribe()" :disable="subscribing">Subscribe</button>
+          <button class="uk-button uk-button-default" @click.prevent="UIkit.modal($refs.modal).show()" :disable="subscribing">Subscribe</button>
         </form>
 
         <p class="uk-text-meta" x-show="chapters && chapters.length > chaptersLimit" x-text="`The manga has ${chapters ? chapters.length : 0} chapters, but Mango can only list up to ${chaptersLimit}. Please use the filters to narrow down your search.`"></p>
@@ -170,6 +170,41 @@
             </table>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div uk-modal="container:false" x-ref="modal">
+    <div class="uk-modal-dialog">
+      <div class="uk-modal-header">
+        <h2 class="uk-modal-title">Subscription Confirmation</h2>
+      </div>
+      <div class="uk-modal-body">
+        <p>A subscription with the following filters with be created. All <strong>FUTURE</strong> chapters matching the filters will be automatically downloaded.</p>
+        <table class="uk-table uk-table-striped">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Type</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="ft in filterSettings" :key="ft">
+              <tr>
+                <td x-text="ft.key"></td>
+                <td x-text="filterTypeToReadable(ft.type)"></td>
+                <td x-text="ft.value"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        <p>Enter a meaningful name for the subscription to continue:</p>
+        <input class="uk-input" type="text" x-model="subscriptionName">
+      </div>
+      <div class="uk-modal-footer uk-text-right">
+        <button class="uk-button uk-button-default uk-modal-close" type="button">Cancel</button>
+        <button class="uk-button uk-button-primary" type="button" :disabled="subscriptionName.trim().length === 0" @click="subscribe($refs.modal)">Confirm</button>
       </div>
     </div>
   </div>

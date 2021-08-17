@@ -16,6 +16,7 @@ const component = () => {
 		chaptersLimit: 500,
 		listManga: false,
 		subscribing: false,
+		subscriptionName: '',
 
 		init() {
 			const tableObserver = new MutationObserver(() => {
@@ -91,6 +92,7 @@ const component = () => {
 
 					data.chapters.forEach(c => {
 						c.array = ['hello', 'world', 'haha', 'wtf'].sort(() => 0.5 - Math.random()).slice(0, 2);
+						c.date = ['4 Jun, 1989', '1 July, 2021'].sort(() => 0.5 - Math.random())[0];
 					});
 
 					this.allChapters = data.chapters;
@@ -103,14 +105,14 @@ const component = () => {
 					this.searching = false;
 				});
 		},
-		searchManga() {
+		searchManga(query) {
 			this.searching = true;
 			this.allChapters = [];
 			this.chapters = undefined;
 			this.manga = undefined;
 			fetch(`${base_url}api/admin/plugin/search?${new URLSearchParams({
 				plugin: this.pid,
-				query: this.query
+				query: query
 			})}`)
 				.then(res => res.json())
 				.then(data => {
@@ -127,11 +129,14 @@ const component = () => {
 				});
 		},
 		search() {
+			const query = this.query.trim();
+			if (!query) return;
+
 			this.manga = undefined;
 			if (this.info.version === 1) {
-				this.searchChapters(this.query);
+				this.searchChapters(query);
 			} else {
-				this.searchManga();
+				this.searchManga(query);
 			}
 		},
 		selectAll() {
@@ -328,18 +333,17 @@ const component = () => {
 				return NaN;
 			return Date.parse(str);
 		},
-		subscribe() {
+		subscribe(modal) {
 			// TODO:
-			// 		- confirmation
-			// 		- name
 			// 		- use select2
+
 			this.subscribing = true;
 			fetch(`${base_url}api/admin/plugin/subscribe`, {
 					method: 'POST',
 					body: JSON.stringify({
 						filters: JSON.stringify(this.filterSettings),
 						plugin: this.pid,
-						name: 'Test Name'
+						name: this.subscriptionName.trim()
 					}),
 					headers: {
 						"Content-Type": "application/json"
@@ -349,13 +353,29 @@ const component = () => {
 				.then(data => {
 					if (!data.success)
 						throw new Error(data.error);
+					alert('success', 'Subscription created');
 				})
 				.catch(e => {
 					alert('danger', `Failed to subscribe. Error: ${e}`);
 				})
 				.finally(() => {
 					this.subscribing = false;
+					UIkit.modal(modal).hide();
 				});
+		},
+		filterTypeToReadable(type) {
+			switch (type) {
+				case 'number-min':
+					return 'number (minimum value)';
+				case 'number-max':
+					return 'number (maximum value)';
+				case 'date-min':
+					return 'minimum date';
+				case 'date-max':
+					return 'maximum date';
+				default:
+					return type;
+			}
 		}
-	};
+	}
 };
