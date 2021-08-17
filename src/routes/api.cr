@@ -76,6 +76,7 @@ struct APIRouter
     Koa.path "page", schema: Int32, desc: "The page number to return (starts from 1)"
     Koa.response 200, schema: Bytes, media_type: "image/*"
     Koa.response 500, "Page not found or not readable"
+    Koa.response 304, "Page not modified (only available when `If-None-Match` is set)"
     Koa.tag "reader"
     get "/api/page/:tid/:eid/:page" do |env|
       begin
@@ -111,7 +112,7 @@ struct APIRouter
     Koa.path "tid", desc: "Title ID"
     Koa.path "eid", desc: "Entry ID"
     Koa.response 200, schema: Bytes, media_type: "image/*"
-    Koa.response 304, ""
+    Koa.response 304, "Page not modified (only available when `If-None-Match` is set)"
     Koa.response 500, "Page not found or not readable"
     Koa.tag "library"
     get "/api/cover/:tid/:eid" do |env|
@@ -649,7 +650,7 @@ struct APIRouter
         "height" => Int32,
       }],
     }
-    Koa.response 304
+    Koa.response 304, "Not modified (only available when `If-None-Match` is set)"
     get "/api/dimensions/:tid/:eid" do |env|
       begin
         tid = env.params.url["tid"]
