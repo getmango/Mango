@@ -21,7 +21,7 @@
       <div
         :class="{'uk-container': true, 'uk-container-small': mode === 'continuous', 'uk-container-expand': mode !== 'continuous'}">
         <div x-show="!loading && mode === 'continuous'" x-cloak>
-          <template x-for="item in items">
+          <template x-if="!loading && mode === 'continuous'" x-for="item in items">
             <img
               uk-img
               :class="{'uk-align-center': true, 'spine': item.width < 50}"
