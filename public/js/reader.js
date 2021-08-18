@@ -55,7 +55,7 @@ const readerComponent = () => {
 					}
 
 					// Preload Images
-					this.preloadLookahead = 3;
+					this.preloadLookahead = +localStorage.getItem('preloadLookahead') ?? 3;
 					const limit = Math.min(page + this.preloadLookahead, this.items.length + 1);
 					for (let idx = page + 1; idx <= limit; idx++) {
 						this.preloadImage(this.items[idx - 1].url);
@@ -305,6 +305,10 @@ const readerComponent = () => {
 		marginChanged() {
 			localStorage.setItem('margin', this.margin);
 			this.toPage(this.selectedIndex);
+		},
+
+		preloadLookaheadChanged() {
+			localStorage.setItem('preloadLookahead', this.preloadLookahead);
 		}
 	};
 }

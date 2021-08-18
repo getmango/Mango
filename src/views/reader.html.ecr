@@ -98,6 +98,13 @@
             </div>
           </div>
 
+          <div class="uk-margin" x-show="mode !== 'continuous'">
+            <label class="uk-form-label" for="preload-lookahead" x-text="`Preload Image: ${preloadLookahead} page(s)`"></label>
+            <div class="uk-form-controls">
+              <input id="preload-lookahead" class="uk-range" type="range" min="0" max="5" step="1" x-model.number="preloadLookahead" @change="preloadLookaheadChanged()">
+            </div>
+          </div>
+
           <hr class="uk-divider-icon">
 
           <div class="uk-margin">
