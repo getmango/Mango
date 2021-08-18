@@ -6,6 +6,7 @@ const readerComponent = () => {
 		alertClass: 'uk-alert-primary',
 		items: [],
 		curItem: {},
+		enableFlipAnimation: true,
 		flipAnimation: null,
 		longPages: false,
 		lastSavedPage: page,
@@ -60,6 +61,9 @@ const readerComponent = () => {
 					for (let idx = page + 1; idx <= limit; idx++) {
 						this.preloadImage(this.items[idx - 1].url);
 					}
+
+					const savedFlipAnimation = localStorage.getItem('enableFlipAnimation');
+					this.enableFlipAnimation = savedFlipAnimation === null || savedFlipAnimation === 'true';
 				})
 				.catch(e => {
 					const errMsg = `Failed to get the page dimensions. ${e}`;
@@ -131,10 +135,12 @@ const readerComponent = () => {
 
 			this.toPage(newIdx);
 
-			if (isNext)
-				this.flipAnimation = 'right';
-			else
-				this.flipAnimation = 'left';
+			if (this.enableFlipAnimation) {
+				if (isNext)
+					this.flipAnimation = 'right';
+				else
+					this.flipAnimation = 'left';
+			}
 
 			setTimeout(() => {
 				this.flipAnimation = null;
@@ -309,6 +315,10 @@ const readerComponent = () => {
 
 		preloadLookaheadChanged() {
 			localStorage.setItem('preloadLookahead', this.preloadLookahead);
-		}
+		},
+
+		enableFlipAnimationChanged() {
+			localStorage.setItem('enableFlipAnimation', this.enableFlipAnimation);
+		},
 	};
 }

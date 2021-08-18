@@ -101,7 +101,13 @@
             </div>
           </div>
 
-          <div class="uk-margin" x-show="mode !== 'continuous'">
+          <div class="uk-margin uk-form-horizontal" x-show="mode !== 'continuous'">
+            <label class="uk-form-label" for="enable-flip-animation">Enable Flip Animation</label>
+            <div class="uk-form-controls">
+              <input id="enable-flip-animation" class="uk-checkbox" type="checkbox" x-model="enableFlipAnimation" @change="enableFlipAnimationChanged()">
+            </div>
+          </div>
+          <div class="uk-margin uk-form-horizontal" x-show="mode !== 'continuous'">
             <label class="uk-form-label" for="preload-lookahead" x-text="`Preload Image: ${preloadLookahead} page(s)`"></label>
             <div class="uk-form-controls">
               <input id="preload-lookahead" class="uk-range" type="range" min="0" max="5" step="1" x-model.number="preloadLookahead" @change="preloadLookaheadChanged()">
