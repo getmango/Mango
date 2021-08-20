@@ -1,4 +1,3 @@
-require "../mangadex/*"
 require "../upload"
 require "koa"
 
@@ -55,19 +54,6 @@ struct APIRouter
       "success" => Bool,
       "error"   => String?,
     }
-
-    Koa.schema("mdChapter", {
-      "id"    => Int64,
-      "group" => {} of String => String,
-    }.merge(s %w(title volume chapter language full_title time
-      manga_title manga_id)),
-      desc: "A MangaDex chapter")
-
-    Koa.schema "mdManga", {
-      "id"       => Int64,
-      "chapters" => ["mdChapter"],
-    }.merge(s %w(title description author artist cover_url)),
-      desc: "A MangaDex manga"
 
     Koa.describe "Returns a page in a manga entry"
     Koa.path "tid", desc: "Title ID"
@@ -320,58 +306,6 @@ struct APIRouter
         }.to_json
       else
         send_json env, {"success" => true}.to_json
-      end
-    end
-
-    Koa.describe "Returns a MangaDex manga identified by `id`", <<-MD
-      On error, returns a JSON that contains the error message in the `error` field.
-    MD
-    Koa.tags ["admin", "mangadex"]
-    Koa.path "id", desc: "A MangaDex manga ID"
-    Koa.response 200, schema: "mdManga"
-    get "/api/admin/mangadex/manga/:id" do |env|
-      begin
-        id = env.params.url["id"]
-        manga = MangaDex::Client.from_config.manga id
-        send_json env, manga.to_info_json
-      rescue e
-        Logger.error e
-        send_json env, {"error" => e.message}.to_json
-      end
-    end
-
-    Koa.describe "Adds a list of MangaDex chapters to the download queue", <<-MD
-      On error, returns a JSON that contains the error message in the `error` field.
-    MD
-    Koa.tags ["admin", "mangadex", "downloader"]
-    Koa.body schema: {
-      "chapters" => ["mdChapter"],
-    }
-    Koa.response 200, schema: {
-      "success" => Int32,
-      "fail"    => Int32,
-    }
-    post "/api/admin/mangadex/download" do |env|
-      begin
-        chapters = env.params.json["chapters"].as(Array).map &.as_h
-        jobs = chapters.map { |chapter|
-          Queue::Job.new(
-            chapter["id"].as_i64.to_s,
-            chapter["mangaId"].as_i64.to_s,
-            chapter["full_title"].as_s,
-            chapter["mangaTitle"].as_s,
-            Queue::JobStatus::Pending,
-            Time.unix chapter["timestamp"].as_i64
-          )
-        }
-        inserted_count = Queue.default.push jobs
-        send_json env, {
-          "success": inserted_count,
-          "fail":    jobs.size - inserted_count,
-        }.to_json
-      rescue e
-        Logger.error e
-        send_json env, {"error" => e.message}.to_json
       end
     end
 
@@ -894,115 +828,6 @@ struct APIRouter
         send_json env, {
           "success" => true,
           "error"   => nil,
-        }.to_json
-      rescue e
-        Logger.error e
-        send_json env, {
-          "success" => false,
-          "error"   => e.message,
-        }.to_json
-      end
-    end
-
-    Koa.describe "Logs the current user into their MangaDex account", <<-MD
-    If successful, returns the expiration date (as a unix timestamp) of the newly created token.
-    MD
-    Koa.body schema: {
-      "username" => String,
-      "password" => String,
-    }
-    Koa.response 200, schema: {
-      "success" => Bool,
-      "error"   => String?,
-      "expires" => Int64?,
-    }
-    Koa.tags ["admin", "mangadex", "users"]
-    post "/api/admin/mangadex/login" do |env|
-      begin
-        username = env.params.json["username"].as String
-        password = env.params.json["password"].as String
-        mango_username = get_username env
-
-        client = MangaDex::Client.from_config
-        client.auth username, password
-
-        Storage.default.save_md_token mango_username, client.token.not_nil!,
-          client.token_expires
-
-        send_json env, {
-          "success" => true,
-          "error"   => nil,
-          "expires" => client.token_expires.to_unix,
-        }.to_json
-      rescue e
-        Logger.error e
-        send_json env, {
-          "success" => false,
-          "error"   => e.message,
-        }.to_json
-      end
-    end
-
-    Koa.describe "Returns the expiration date (as a unix timestamp) of the mangadex token if it exists"
-    Koa.response 200, schema: {
-      "success" => Bool,
-      "error"   => String?,
-      "expires" => Int64?,
-    }
-    Koa.tags ["admin", "mangadex", "users"]
-    get "/api/admin/mangadex/expires" do |env|
-      begin
-        username = get_username env
-        _, expires = Storage.default.get_md_token username
-
-        send_json env, {
-          "success" => true,
-          "error"   => nil,
-          "expires" => expires.try &.to_unix,
-        }.to_json
-      rescue e
-        Logger.error e
-        send_json env, {
-          "success" => false,
-          "error"   => e.message,
-        }.to_json
-      end
-    end
-
-    Koa.describe "Searches MangaDex for manga matching `query`", <<-MD
-    Returns an empty list if the current user hasn't logged in to MangaDex.
-    MD
-    Koa.query "query"
-    Koa.response 200, schema: {
-      "success" => Bool,
-      "error"   => String?,
-      "manga?"  => [{
-        "id"          => Int64,
-        "title"       => String,
-        "description" => String,
-        "mainCover"   => String,
-      }],
-    }
-    Koa.tags ["admin", "mangadex"]
-    get "/api/admin/mangadex/search" do |env|
-      begin
-        username = get_username env
-        token, expires = Storage.default.get_md_token username
-
-        unless expires && token
-          raise "No token found for user #{username}"
-        end
-
-        client = MangaDex::Client.from_config
-        client.token = token
-        client.token_expires = expires
-
-        query = env.params.query["query"]
-
-        send_json env, {
-          "success" => true,
-          "error"   => nil,
-          "manga"   => client.partial_search query,
         }.to_json
       rescue e
         Logger.error e

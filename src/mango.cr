@@ -2,7 +2,6 @@ require "./config"
 require "./queue"
 require "./server"
 require "./main_fiber"
-require "./mangadex/*"
 require "./plugin/*"
 require "option_parser"
 require "clim"
@@ -59,7 +58,6 @@ class CLI < Clim
       Storage.default
       Queue.default
       Library.default
-      MangaDex::Downloader.default
       Plugin::Downloader.default
 
       spawn do

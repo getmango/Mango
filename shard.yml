@@ -43,5 +43,3 @@ dependencies:
     github: epoch/tallboy
   mg:
    github: hkalexling/mg
-  mangadex:
-   github: hkalexling/mangadex
