@@ -72,11 +72,6 @@ struct MainRouter
       end
     end
 
-    get "/download" do |env|
-      mangadex_base_url = Config.current.mangadex["base_url"]
-      layout "download"
-    end
-
     get "/download/plugins" do |env|
       begin
         id = env.params.query["plugin"]?
@@ -94,12 +89,6 @@ struct MainRouter
         Logger.error e
         env.response.status_code = 500
       end
-    end
-
-    get "/download/subscription" do |env|
-      mangadex_base_url = Config.current.mangadex["base_url"]
-      username = get_username env
-      layout "subscription"
     end
 
     get "/" do |env|

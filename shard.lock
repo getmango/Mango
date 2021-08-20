@@ -52,10 +52,6 @@ shards:
     git: https://github.com/hkalexling/koa.git
     version: 0.7.0
 
-  mangadex:
-    git: https://github.com/hkalexling/mangadex.git
-    version: 0.11.0+git.commit.f5b0d64fbb138879fb9228b6e9ff34ec97c3e824
-
   mg:
     git: https://github.com/hkalexling/mg.git
     version: 0.5.0+git.commit.697e46e27cde8c3969346e228e372db2455a6264

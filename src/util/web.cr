@@ -107,25 +107,6 @@ macro get_sort_opt
   end
 end
 
-# Returns an authorized client
-def get_client(username : String) : MangaDex::Client
-  token, expires = Storage.default.get_md_token username
-
-  unless expires && token
-    raise "No token found for user #{username}"
-  end
-
-  client = MangaDex::Client.from_config
-  client.token = token
-  client.token_expires = expires
-
-  client
-end
-
-def get_client(env) : MangaDex::Client
-  get_client get_username env
-end
-
 module HTTP
   class Client
     private def self.exec(uri : URI, tls : TLSContext = nil)
