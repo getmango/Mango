@@ -1,5 +1,6 @@
 require "../upload"
 require "koa"
+require "digest"
 
 struct APIRouter
   @@api_json : String?
@@ -61,12 +62,14 @@ struct APIRouter
     Koa.path "page", schema: Int32, desc: "The page number to return (starts from 1)"
     Koa.response 200, schema: Bytes, media_type: "image/*"
     Koa.response 500, "Page not found or not readable"
+    Koa.response 304, "Page not modified (only available when `If-None-Match` is set)"
     Koa.tag "reader"
     get "/api/page/:tid/:eid/:page" do |env|
       begin
         tid = env.params.url["tid"]
         eid = env.params.url["eid"]
         page = env.params.url["page"].to_i
+        prev_e_tag = env.request.headers["If-None-Match"]?
 
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
@@ -76,7 +79,15 @@ struct APIRouter
         raise "Failed to load page #{page} of " \
               "`#{title.title}/#{entry.title}`" if img.nil?
 
-        send_img env, img
+        e_tag = Digest::SHA1.hexdigest img.data
+        if prev_e_tag == e_tag
+          env.response.status_code = 304
+          ""
+        else
+          env.response.headers["ETag"] = e_tag
+          env.response.headers["Cache-Control"] = "public, max-age=86400"
+          send_img env, img
+        end
       rescue e
         Logger.error e
         env.response.status_code = 500
@@ -88,12 +99,14 @@ struct APIRouter
     Koa.path "tid", desc: "Title ID"
     Koa.path "eid", desc: "Entry ID"
     Koa.response 200, schema: Bytes, media_type: "image/*"
+    Koa.response 304, "Page not modified (only available when `If-None-Match` is set)"
     Koa.response 500, "Page not found or not readable"
     Koa.tag "library"
     get "/api/cover/:tid/:eid" do |env|
       begin
         tid = env.params.url["tid"]
         eid = env.params.url["eid"]
+        prev_e_tag = env.request.headers["If-None-Match"]?
 
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
@@ -104,7 +117,14 @@ struct APIRouter
         raise "Failed to get cover of `#{title.title}/#{entry.title}`" \
            if img.nil?
 
-        send_img env, img
+        e_tag = Digest::SHA1.hexdigest img.data
+        if prev_e_tag == e_tag
+          env.response.status_code = 304
+          ""
+        else
+          env.response.headers["ETag"] = e_tag
+          send_img env, img
+        end
       rescue e
         Logger.error e
         env.response.status_code = 500
@@ -565,21 +585,32 @@ struct APIRouter
         "height" => Int32,
       }],
     }
+    Koa.response 304, "Not modified (only available when `If-None-Match` is set)"
     get "/api/dimensions/:tid/:eid" do |env|
       begin
         tid = env.params.url["tid"]
         eid = env.params.url["eid"]
+        prev_e_tag = env.request.headers["If-None-Match"]?
 
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
         entry = title.get_entry eid
         raise "Entry ID `#{eid}` of `#{title.title}` not found" if entry.nil?
 
-        sizes = entry.page_dimensions
-        send_json env, {
-          "success"    => true,
-          "dimensions" => sizes,
-        }.to_json
+        file_hash = Digest::SHA1.hexdigest (entry.zip_path + entry.mtime.to_s)
+        e_tag = "W/#{file_hash}"
+        if e_tag == prev_e_tag
+          env.response.status_code = 304
+          ""
+        else
+          sizes = entry.page_dimensions
+          env.response.headers["ETag"] = e_tag
+          env.response.headers["Cache-Control"] = "public, max-age=86400"
+          send_json env, {
+            "success"    => true,
+            "dimensions" => sizes,
+          }.to_json
+        end
       rescue e
         Logger.error e
         send_json env, {
