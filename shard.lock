@@ -6,7 +6,7 @@ shards:
 
   archive:
     git: https://github.com/hkalexling/archive.cr.git
-    version: 0.4.0
+    version: 0.5.0
 
   baked_file_system:
     git: https://github.com/schovi/baked_file_system.git
@@ -34,7 +34,7 @@ shards:
 
   image_size:
     git: https://github.com/hkalexling/image_size.cr.git
-    version: 0.4.0
+    version: 0.5.0
 
   kemal:
     git: https://github.com/kemalcr/kemal.git
@@ -50,7 +50,7 @@ shards:
 
   koa:
     git: https://github.com/hkalexling/koa.git
-    version: 0.7.0
+    version: 0.8.0
 
   mg:
     git: https://github.com/hkalexling/mg.git
@@ -61,8 +61,8 @@ shards:
     version: 1.5.8
 
   open_api:
-    git: https://github.com/jreinert/open_api.cr.git
-    version: 1.2.1+git.commit.95e4df2ca10b1fe88b8b35c62a18b06a10267b6c
+    git: https://github.com/hkalexling/open_api.cr.git
+    version: 1.2.1+git.commit.1d3c55dd5534c6b0af18964d031858a08515553a
 
   radix:
     git: https://github.com/luislavena/radix.git
@@ -74,5 +74,5 @@ shards:
 
   tallboy:
     git: https://github.com/epoch/tallboy.git
-    version: 0.9.3
+    version: 0.9.3+git.commit.9be1510bb0391c95e92f1b288f3afb429a73caa6
 
