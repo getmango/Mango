@@ -34,7 +34,11 @@ class Logger
     end
 
     @backend.formatter = Log::Formatter.new &format_proc
-    Log.setup @@severity, @backend
+
+    Log.setup do |c|
+      c.bind "*", @@severity, @backend
+      c.bind "db.*", :error, @backend
+    end
   end
 
   def self.get_severity(level = "") : Log::Severity
