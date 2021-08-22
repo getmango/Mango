@@ -7,7 +7,7 @@ require "option_parser"
 require "clim"
 require "tallboy"
 
-MANGO_VERSION = "0.22.0"
+MANGO_VERSION = "0.23.0"
 
 # From http://www.network-science.de/ascii/
 BANNER = %{
