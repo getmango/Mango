@@ -35,12 +35,15 @@ class SortOptions
   end
 
   def self.from_info_json(dir, username)
+    cached_opt = InfoCache.get_sort_opt dir, username
+    return cached_opt if cached_opt
     opt = SortOptions.new
     TitleInfo.new dir do |info|
       if info.sort_by.has_key? username
         opt = SortOptions.from_tuple info.sort_by[username]
       end
     end
+    InfoCache.set_sort_opt dir, username, opt
     opt
   end
 

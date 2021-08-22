@@ -60,6 +60,10 @@ class Title
     @entries.sort! do |a, b|
       sorter.compare a.title, b.title
     end
+
+    InfoCache.move_cover_url @id
+    InfoCache.move_progress_cache @id
+    InfoCache.move_sort_opt @dir
   end
 
   def to_slim_json : String
@@ -230,6 +234,9 @@ class Title
   end
 
   def cover_url
+    cached_cover_url = InfoCache.get_cover_url @id
+    return cached_cover_url if cached_cover_url
+
     url = "#{Config.current.base_url}img/icon.png"
     readable_entries = @entries.select &.err_msg.nil?
     if readable_entries.size > 0
@@ -241,10 +248,12 @@ class Title
         url = File.join Config.current.base_url, info_url
       end
     end
+    InfoCache.set_cover_url @id, url
     url
   end
 
   def set_cover_url(url : String)
+    InfoCache.invalidate_cover_url @id
     TitleInfo.new @dir do |info|
       info.cover_url = url
       info.save
@@ -252,6 +261,8 @@ class Title
   end
 
   def set_cover_url(entry_name : String, url : String)
+    selected_entry = @entries.find { |entry| entry.display_name == entry_name }
+    InfoCache.invalidate_cover_url selected_entry.id if selected_entry
     TitleInfo.new @dir do |info|
       info.entry_cover_url[entry_name] = url
       info.save
@@ -273,8 +284,13 @@ class Title
   end
 
   def deep_read_page_count(username) : Int32
-    load_progress_for_all_entries(username).sum +
-      titles.flat_map(&.deep_read_page_count username).sum
+    # CACHE HERE
+    cached_sum = InfoCache.get_progress_cache @id, username, @entries
+    return cached_sum unless cached_sum.nil?
+    sum = load_progress_for_all_entries(username).sum +
+          titles.flat_map(&.deep_read_page_count username).sum
+    InfoCache.set_progress_cache @id, username, @entries, sum
+    sum
   end
 
   def deep_total_page_count : Int32
@@ -422,6 +438,11 @@ class Title
   end
 
   def bulk_progress(action, ids : Array(String), username)
+    InfoCache.invalidate_progress_cache @id, username
+    parents.each do |parent|
+      InfoCache.invalidate_progress_cache parent.id, username
+    end
+
     selected_entries = ids
       .map { |id|
         @entries.find &.id.==(id)

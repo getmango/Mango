@@ -44,6 +44,8 @@ class Entry
         MIME.from_filename? e.filename
     end
     file.close
+
+    InfoCache.move_cover_url @id
   end
 
   def to_slim_json : String
@@ -81,6 +83,8 @@ class Entry
 
   def cover_url
     return "#{Config.current.base_url}img/icon.png" if @err_msg
+    cached_cover_url = InfoCache.get_cover_url @id
+    return cached_cover_url if cached_cover_url
 
     unless @book.entry_cover_url_cache
       TitleInfo.new @book.dir do |info|
@@ -96,6 +100,7 @@ class Entry
         url = File.join Config.current.base_url, info_url
       end
     end
+    InfoCache.set_cover_url @id, url
     url
   end
 
@@ -178,6 +183,11 @@ class Entry
   # For backward backward compatibility with v0.1.0, we save entry titles
   #   instead of IDs in info.json
   def save_progress(username, page)
+    InfoCache.invalidate_progress_cache @book.id, username
+    @book.parents.each do |parent|
+      InfoCache.invalidate_progress_cache parent.id, username
+    end
+
     TitleInfo.new @book.dir do |info|
       if info.progress[username]?.nil?
         info.progress[username] = {@title => page}
