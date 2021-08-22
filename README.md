@@ -87,7 +87,6 @@ log_level: info
 upload_path: ~/mango/uploads
 plugin_path: ~/mango/plugins
 download_timeout_seconds: 30
-page_margin: 30
 disable_login: false
 default_username: ""
 auth_proxy_header_name: ""
