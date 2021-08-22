@@ -187,6 +187,11 @@ class Entry
     @book.parents.each do |parent|
       InfoCache.invalidate_progress_cache parent.id, username
     end
+    [false, true].each do |ascend|
+      sorted_entries_cache_key = SortedEntriesCache.gen_key @book.id, username,
+        @book.entries, SortOptions.new(SortMethod::Progress, ascend)
+      SortedEntriesCache.invalidate sorted_entries_cache_key
+    end
 
     TitleInfo.new @book.dir do |info|
       if info.progress[username]?.nil?

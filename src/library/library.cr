@@ -61,6 +61,10 @@ class Library
     titles + titles.flat_map &.deep_titles
   end
 
+  def deep_entries
+    titles.flat_map &.deep_entries
+  end
+
   def to_slim_json : String
     JSON.build do |json|
       json.object do
