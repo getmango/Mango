@@ -49,17 +49,17 @@
           </td>
 
           <td x-text="`${job.plugin_id || ''}`"></td>
-
           <td>
-            <a @click="jobAction('delete', $event)" uk-icon="trash"></a>
+            <a @click="jobAction('delete', $event)" uk-icon="trash" uk-tooltip="Delete"></a>
             <template x-if="job.status_message.length > 0">
-              <a @click="jobAction('retry', $event)" uk-icon="refresh"></a>
+              <a @click="jobAction('retry', $event)" uk-icon="refresh" uk-tooltip="Retry"></a>
             </template>
           </td>
         </tr>
       </template>
     </tbody>
   </table>
+</div>
 </div>
 
 <% content_for "script" do %>

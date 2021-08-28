@@ -72,7 +72,7 @@ def redirect(env, path)
 end
 
 def hash_to_query(hash)
-  hash.map { |k, v| "#{k}=#{v}" }.join("&")
+  hash.join "&" { |k, v| "#{k}=#{v}" }
 end
 
 def request_path_startswith(env, ary)

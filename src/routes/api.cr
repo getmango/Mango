@@ -1,6 +1,6 @@
-require "../mangadex/*"
 require "../upload"
 require "koa"
+require "digest"
 
 struct APIRouter
   @@api_json : String?
@@ -56,31 +56,20 @@ struct APIRouter
       "error"   => String?,
     }
 
-    Koa.schema("mdChapter", {
-      "id"    => Int64,
-      "group" => {} of String => String,
-    }.merge(s %w(title volume chapter language full_title time
-      manga_title manga_id)),
-      desc: "A MangaDex chapter")
-
-    Koa.schema "mdManga", {
-      "id"       => Int64,
-      "chapters" => ["mdChapter"],
-    }.merge(s %w(title description author artist cover_url)),
-      desc: "A MangaDex manga"
-
     Koa.describe "Returns a page in a manga entry"
     Koa.path "tid", desc: "Title ID"
     Koa.path "eid", desc: "Entry ID"
     Koa.path "page", schema: Int32, desc: "The page number to return (starts from 1)"
     Koa.response 200, schema: Bytes, media_type: "image/*"
     Koa.response 500, "Page not found or not readable"
+    Koa.response 304, "Page not modified (only available when `If-None-Match` is set)"
     Koa.tag "reader"
     get "/api/page/:tid/:eid/:page" do |env|
       begin
         tid = env.params.url["tid"]
         eid = env.params.url["eid"]
         page = env.params.url["page"].to_i
+        prev_e_tag = env.request.headers["If-None-Match"]?
 
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
@@ -90,7 +79,15 @@ struct APIRouter
         raise "Failed to load page #{page} of " \
               "`#{title.title}/#{entry.title}`" if img.nil?
 
-        send_img env, img
+        e_tag = Digest::SHA1.hexdigest img.data
+        if prev_e_tag == e_tag
+          env.response.status_code = 304
+          ""
+        else
+          env.response.headers["ETag"] = e_tag
+          env.response.headers["Cache-Control"] = "public, max-age=86400"
+          send_img env, img
+        end
       rescue e
         Logger.error e
         env.response.status_code = 500
@@ -102,12 +99,14 @@ struct APIRouter
     Koa.path "tid", desc: "Title ID"
     Koa.path "eid", desc: "Entry ID"
     Koa.response 200, schema: Bytes, media_type: "image/*"
+    Koa.response 304, "Page not modified (only available when `If-None-Match` is set)"
     Koa.response 500, "Page not found or not readable"
     Koa.tag "library"
     get "/api/cover/:tid/:eid" do |env|
       begin
         tid = env.params.url["tid"]
         eid = env.params.url["eid"]
+        prev_e_tag = env.request.headers["If-None-Match"]?
 
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
@@ -118,7 +117,14 @@ struct APIRouter
         raise "Failed to get cover of `#{title.title}/#{entry.title}`" \
            if img.nil?
 
-        send_img env, img
+        e_tag = Digest::SHA1.hexdigest img.data
+        if prev_e_tag == e_tag
+          env.response.status_code = 304
+          ""
+        else
+          env.response.headers["ETag"] = e_tag
+          send_img env, img
+        end
       rescue e
         Logger.error e
         env.response.status_code = 500
@@ -126,8 +132,11 @@ struct APIRouter
       end
     end
 
-    Koa.describe "Returns the book with title `tid`"
+    Koa.describe "Returns the book with title `tid`", <<-MD
+    Supply the `tid` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
+    MD
     Koa.path "tid", desc: "Title ID"
+    Koa.query "slim"
     Koa.response 200, schema: "title"
     Koa.response 404, "Title not found"
     Koa.tag "library"
@@ -137,7 +146,11 @@ struct APIRouter
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
 
-        send_json env, title.to_json
+        if env.params.query["slim"]?
+          send_json env, title.to_slim_json
+        else
+          send_json env, title.to_json
+        end
       rescue e
         Logger.error e
         env.response.status_code = 404
@@ -145,14 +158,21 @@ struct APIRouter
       end
     end
 
-    Koa.describe "Returns the entire library with all titles and entries"
+    Koa.describe "Returns the entire library with all titles and entries", <<-MD
+    Supply the `tid` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
+    MD
+    Koa.query "slim"
     Koa.response 200, schema: {
       "dir"    => String,
       "titles" => ["title"],
     }
     Koa.tag "library"
     get "/api/library" do |env|
-      send_json env, Library.default.to_json
+      if env.params.query["slim"]?
+        send_json env, Library.default.to_slim_json
+      else
+        send_json env, Library.default.to_json
+      end
     end
 
     Koa.describe "Triggers a library scan"
@@ -309,64 +329,12 @@ struct APIRouter
       end
     end
 
-    Koa.describe "Returns a MangaDex manga identified by `id`", <<-MD
-      On error, returns a JSON that contains the error message in the `error` field.
-    MD
-    Koa.tags ["admin", "mangadex"]
-    Koa.path "id", desc: "A MangaDex manga ID"
-    Koa.response 200, schema: "mdManga"
-    get "/api/admin/mangadex/manga/:id" do |env|
-      begin
-        id = env.params.url["id"]
-        manga = MangaDex::Client.from_config.manga id
-        send_json env, manga.to_info_json
-      rescue e
-        Logger.error e
-        send_json env, {"error" => e.message}.to_json
-      end
-    end
-
-    Koa.describe "Adds a list of MangaDex chapters to the download queue", <<-MD
-      On error, returns a JSON that contains the error message in the `error` field.
-    MD
-    Koa.tags ["admin", "mangadex", "downloader"]
-    Koa.body schema: {
-      "chapters" => ["mdChapter"],
-    }
-    Koa.response 200, schema: {
-      "success" => Int32,
-      "fail"    => Int32,
-    }
-    post "/api/admin/mangadex/download" do |env|
-      begin
-        chapters = env.params.json["chapters"].as(Array).map { |c| c.as_h }
-        jobs = chapters.map { |chapter|
-          Queue::Job.new(
-            chapter["id"].as_i64.to_s,
-            chapter["mangaId"].as_i64.to_s,
-            chapter["full_title"].as_s,
-            chapter["mangaTitle"].as_s,
-            Queue::JobStatus::Pending,
-            Time.unix chapter["timestamp"].as_i64
-          )
-        }
-        inserted_count = Queue.default.push jobs
-        send_json env, {
-          "success": inserted_count,
-          "fail":    jobs.size - inserted_count,
-        }.to_json
-      rescue e
-        Logger.error e
-        send_json env, {"error" => e.message}.to_json
-      end
-    end
-
     ws "/api/admin/mangadex/queue" do |socket, env|
       interval_raw = env.params.query["interval"]?
       interval = (interval_raw.to_i? if interval_raw) || 5
       loop do
         socket.send({
-          "jobs"   => Queue.default.get_all,
+          "jobs"   => Queue.default.get_all.reverse,
           "paused" => Queue.default.paused?,
         }.to_json)
         sleep interval.seconds
@@ -390,13 +358,13 @@ struct APIRouter
     }
     get "/api/admin/mangadex/queue" do |env|
       begin
-        jobs = Queue.default.get_all
         send_json env, {
-          "jobs"    => jobs,
+          "jobs"    => Queue.default.get_all.reverse,
           "paused"  => Queue.default.paused?,
           "success" => true,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -444,6 +412,7 @@ struct APIRouter
 
         send_json env, {"success" => true}.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -516,6 +485,7 @@ struct APIRouter
 
         raise "No part with name `file` found"
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -551,6 +521,7 @@ struct APIRouter
           "title"    => title,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -594,6 +565,7 @@ struct APIRouter
           "fail":    jobs.size - inserted_count,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -612,25 +584,35 @@ struct APIRouter
         "width"  => Int32,
         "height" => Int32,
       }],
-      "margin" => Int32?,
     }
+    Koa.response 304, "Not modified (only available when `If-None-Match` is set)"
     get "/api/dimensions/:tid/:eid" do |env|
       begin
         tid = env.params.url["tid"]
         eid = env.params.url["eid"]
+        prev_e_tag = env.request.headers["If-None-Match"]?
 
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
         entry = title.get_entry eid
         raise "Entry ID `#{eid}` of `#{title.title}` not found" if entry.nil?
 
-        sizes = entry.page_dimensions
-        send_json env, {
-          "success"    => true,
-          "dimensions" => sizes,
-          "margin"     => Config.current.page_margin,
-        }.to_json
+        file_hash = Digest::SHA1.hexdigest (entry.zip_path + entry.mtime.to_s)
+        e_tag = "W/#{file_hash}"
+        if e_tag == prev_e_tag
+          env.response.status_code = 304
+          ""
+        else
+          sizes = entry.page_dimensions
+          env.response.headers["ETag"] = e_tag
+          env.response.headers["Cache-Control"] = "public, max-age=86400"
+          send_json env, {
+            "success"    => true,
+            "dimensions" => sizes,
+          }.to_json
+        end
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -770,6 +752,7 @@ struct APIRouter
           "titles"  => Storage.default.missing_titles,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -796,6 +779,7 @@ struct APIRouter
           "entries" => Storage.default.missing_entries,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -814,6 +798,7 @@ struct APIRouter
           "error"   => nil,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -832,6 +817,7 @@ struct APIRouter
           "error"   => nil,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -853,6 +839,7 @@ struct APIRouter
           "error"   => nil,
         }.to_json
       rescue e
+        Logger.error e
         send_json env, {
           "success" => false,
           "error"   => e.message,
@@ -872,114 +859,6 @@ struct APIRouter
         send_json env, {
           "success" => true,
           "error"   => nil,
-        }.to_json
-      rescue e
-        send_json env, {
-          "success" => false,
-          "error"   => e.message,
-        }.to_json
-      end
-    end
-
-    Koa.describe "Logs the current user into their MangaDex account", <<-MD
-    If successful, returns the expiration date (as a unix timestamp) of the newly created token.
-    MD
-    Koa.body schema: {
-      "username" => String,
-      "password" => String,
-    }
-    Koa.response 200, schema: {
-      "success" => Bool,
-      "error"   => String?,
-      "expires" => Int64?,
-    }
-    Koa.tags ["admin", "mangadex", "users"]
-    post "/api/admin/mangadex/login" do |env|
-      begin
-        username = env.params.json["username"].as String
-        password = env.params.json["password"].as String
-        mango_username = get_username env
-
-        client = MangaDex::Client.from_config
-        client.auth username, password
-
-        Storage.default.save_md_token mango_username, client.token.not_nil!,
-          client.token_expires
-
-        send_json env, {
-          "success" => true,
-          "error"   => nil,
-          "expires" => client.token_expires.to_unix,
-        }.to_json
-      rescue e
-        Logger.error e
-        send_json env, {
-          "success" => false,
-          "error"   => e.message,
-        }.to_json
-      end
-    end
-
-    Koa.describe "Returns the expiration date (as a unix timestamp) of the mangadex token if it exists"
-    Koa.response 200, schema: {
-      "success" => Bool,
-      "error"   => String?,
-      "expires" => Int64?,
-    }
-    Koa.tags ["admin", "mangadex", "users"]
-    get "/api/admin/mangadex/expires" do |env|
-      begin
-        username = get_username env
-        _, expires = Storage.default.get_md_token username
-
-        send_json env, {
-          "success" => true,
-          "error"   => nil,
-          "expires" => expires.try &.to_unix,
-        }.to_json
-      rescue e
-        Logger.error e
-        send_json env, {
-          "success" => false,
-          "error"   => e.message,
-        }.to_json
-      end
-    end
-
-    Koa.describe "Searches MangaDex for manga matching `query`", <<-MD
-    Returns an empty list if the current user hasn't logged in to MangaDex.
-    MD
-    Koa.query "query"
-    Koa.response 200, schema: {
-      "success" => Bool,
-      "error"   => String?,
-      "manga?"  => [{
-        "id"          => Int64,
-        "title"       => String,
-        "description" => String,
-        "mainCover"   => String,
-      }],
-    }
-    Koa.tags ["admin", "mangadex"]
-    get "/api/admin/mangadex/search" do |env|
-      begin
-        username = get_username env
-        token, expires = Storage.default.get_md_token username
-
-        unless expires && token
-          raise "No token found for user #{username}"
-        end
-
-        client = MangaDex::Client.from_config
-        client.token = token
-        client.token_expires = expires
-
-        query = env.params.query["query"]
-
-        send_json env, {
-          "success" => true,
-          "error"   => nil,
-          "manga"   => client.partial_search query,
         }.to_json
       rescue e
         Logger.error e

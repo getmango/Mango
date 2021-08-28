@@ -1,9 +1,9 @@
-FROM crystallang/crystal:0.35.1-alpine AS builder
+FROM crystallang/crystal:1.0.0-alpine AS builder
 
 WORKDIR /Mango
 
 COPY . .
-RUN apk add --no-cache yarn yaml sqlite-static libarchive-dev libarchive-static acl-static expat-static zstd-static lz4-static bzip2-static libjpeg-turbo-dev libpng-dev tiff-dev
+RUN apk add --no-cache yarn yaml-static sqlite-static libarchive-dev libarchive-static acl-static expat-static zstd-static lz4-static bzip2-static libjpeg-turbo-dev libpng-dev tiff-dev
 RUN make static || make static
 
 FROM library/alpine

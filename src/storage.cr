@@ -445,7 +445,7 @@ class Storage
           Logger.debug "Marking #{trash_ids.size} entries as unavailable"
         end
         db.exec "update ids set unavailable = 1 where id in " \
-                "(#{trash_ids.map { |i| "'#{i}'" }.join ","})"
+                "(#{trash_ids.join "," { |i| "'#{i}'" }})"
 
         # Detect dangling title IDs
         trash_titles = [] of String
@@ -461,7 +461,7 @@ class Storage
           Logger.debug "Marking #{trash_titles.size} titles as unavailable"
         end
         db.exec "update titles set unavailable = 1 where id in " \
-                "(#{trash_titles.map { |i| "'#{i}'" }.join ","})"
+                "(#{trash_titles.join "," { |i| "'#{i}'" }})"
       end
     end
   end

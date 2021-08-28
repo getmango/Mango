@@ -63,7 +63,22 @@ class Library
   end
 
   def deep_titles
-    titles + titles.map { |t| t.deep_titles }.flatten
+    titles + titles.flat_map &.deep_titles
+  end
+
+  def to_slim_json : String
+    JSON.build do |json|
+      json.object do
+        json.field "dir", @dir
+        json.field "titles" do
+          json.array do
+            self.titles.each do |title|
+              json.raw title.to_slim_json
+            end
+          end
+        end
+      end
+    end
   end
 
   def to_json(json : JSON::Builder)
@@ -98,7 +113,7 @@ class Library
       .select { |path| File.directory? path }
       .map { |path| Title.new path, "" }
       .select { |title| !(title.entries.empty? && title.titles.empty?) }
-      .sort { |a, b| a.title <=> b.title }
+      .sort! { |a, b| a.title <=> b.title }
       .tap { |_| @title_ids.clear }
       .each do |title|
         @title_hash[title.id] = title
@@ -114,7 +129,7 @@ class Library
 
   def get_continue_reading_entries(username)
     cr_entries = deep_titles
-      .map { |t| t.get_last_read_entry username }
+      .map(&.get_last_read_entry username)
       # Select elements with type `Entry` from the array and ignore all `Nil`s
       .select(Entry)[0...ENTRIES_IN_HOME_SECTIONS]
       .map { |e|
@@ -150,14 +165,14 @@ class Library
     recently_added = [] of RA
     last_date_added = nil
 
-    titles.map { |t| t.deep_entries_with_date_added }.flatten
-      .select { |e| e[:date_added] > 1.month.ago }
-      .sort { |a, b| b[:date_added] <=> a[:date_added] }
+    titles.flat_map(&.deep_entries_with_date_added)
+      .select(&.[:date_added].> 1.month.ago)
+      .sort! { |a, b| b[:date_added] <=> a[:date_added] }
       .each do |e|
         break if recently_added.size > 12
         last = recently_added.last?
         if last && e[:entry].book.id == last[:entry].book.id &&
-           (e[:date_added] - last_date_added.not_nil!).duration < 1.day
+           (e[:date_added] - last_date_added.not_nil!).abs < 1.day
           # A NamedTuple is immutable, so we have to cast it to a Hash first
           last_hash = last.to_h
           count = last_hash[:grouped_count].as(Int32)
@@ -188,9 +203,9 @@ class Library
     # If we use `deep_titles`, the start reading section might include `Vol. 2`
     #   when the user hasn't started `Vol. 1` yet
     titles
-      .select { |t| t.load_percentage(username) == 0 }
+      .select(&.load_percentage(username).== 0)
       .sample(ENTRIES_IN_HOME_SECTIONS)
-      .shuffle
+      .shuffle!
   end
 
   def thumbnail_generation_progress
@@ -205,7 +220,7 @@ class Library
     end
 
     Logger.info "Starting thumbnail generation"
-    entries = deep_titles.map(&.deep_entries).flatten.reject &.err_msg
+    entries = deep_titles.flat_map(&.deep_entries).reject &.err_msg
     @entries_count = entries.size
     @thumbnails_count = 0
 

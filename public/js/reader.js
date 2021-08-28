@@ -6,10 +6,13 @@ const readerComponent = () => {
 		alertClass: 'uk-alert-primary',
 		items: [],
 		curItem: {},
+		enableFlipAnimation: true,
 		flipAnimation: null,
 		longPages: false,
 		lastSavedPage: page,
 		selectedIndex: 0, // 0: not selected; 1: the first page
+		margin: 30,
+		preloadLookahead: 3,
 
 		/**
 		 * Initialize the component by fetching the page dimensions
@@ -27,7 +30,6 @@ const readerComponent = () => {
 							url: `${base_url}api/page/${tid}/${eid}/${i+1}`,
 							width: d.width,
 							height: d.height,
-							style: `margin-top: ${data.margin}px; margin-bottom: ${data.margin}px;`
 						};
 					});
 
@@ -47,6 +49,21 @@ const readerComponent = () => {
 					const mode = this.mode;
 					this.updateMode(this.mode, page, nextTick);
 					$('#mode-select').val(mode);
+
+					const savedMargin = localStorage.getItem('margin');
+					if (savedMargin) {
+						this.margin = savedMargin;
+					}
+
+					// Preload Images
+					this.preloadLookahead = +(localStorage.getItem('preloadLookahead') ?? 3);
+					const limit = Math.min(page + this.preloadLookahead, this.items.length + 1);
+					for (let idx = page + 1; idx <= limit; idx++) {
+						this.preloadImage(this.items[idx - 1].url);
+					}
+
+					const savedFlipAnimation = localStorage.getItem('enableFlipAnimation');
+					this.enableFlipAnimation = savedFlipAnimation === null || savedFlipAnimation === 'true';
 				})
 				.catch(e => {
 					const errMsg = `Failed to get the page dimensions. ${e}`;
@@ -54,6 +71,12 @@ const readerComponent = () => {
 					this.alertClass = 'uk-alert-danger';
 					this.msg = errMsg;
 				})
+		},
+		/**
+		 * Preload an image, which is expected to be cached
+		 */
+		preloadImage(url) {
+			(new Image()).src = url;
 		},
 		/**
 		 * Handles the `change` event for the page selector
@@ -106,12 +129,18 @@ const readerComponent = () => {
 
 			if (newIdx <= 0 || newIdx > this.items.length) return;
 
+			if (newIdx + this.preloadLookahead < this.items.length + 1) {
+				this.preloadImage(this.items[newIdx + this.preloadLookahead - 1].url);
+			}
+
 			this.toPage(newIdx);
 
-			if (isNext)
-				this.flipAnimation = 'right';
-			else
-				this.flipAnimation = 'left';
+			if (this.enableFlipAnimation) {
+				if (isNext)
+					this.flipAnimation = 'right';
+				else
+					this.flipAnimation = 'left';
+			}
 
 			setTimeout(() => {
 				this.flipAnimation = null;
@@ -277,6 +306,19 @@ const readerComponent = () => {
 		entryChanged() {
 			const id = $('#entry-select').val();
 			this.redirect(`${base_url}reader/${tid}/${id}`);
-		}
+		},
+
+		marginChanged() {
+			localStorage.setItem('margin', this.margin);
+			this.toPage(this.selectedIndex);
+		},
+
+		preloadLookaheadChanged() {
+			localStorage.setItem('preloadLookahead', this.preloadLookahead);
+		},
+
+		enableFlipAnimationChanged() {
+			localStorage.setItem('enableFlipAnimation', this.enableFlipAnimation);
+		},
 	};
 }
