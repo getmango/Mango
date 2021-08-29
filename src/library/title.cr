@@ -9,6 +9,7 @@ class Title
 
   @entry_display_name_cache : Hash(String, String)?
   @entry_cover_url_cache : Hash(String, String)?
+  @cached_display_name : String?
 
   def initialize(@dir : String, @parent_id)
     storage = Storage.default
@@ -180,11 +181,15 @@ class Title
   end
 
   def display_name
+    cached_display_name = @cached_display_name
+    return cached_display_name unless cached_display_name.nil?
+
     dn = @title
     TitleInfo.new @dir do |info|
       info_dn = info.display_name
       dn = info_dn unless info_dn.empty?
     end
+    @cached_display_name = dn
     dn
   end
 
@@ -208,6 +213,7 @@ class Title
   end
 
   def set_display_name(dn)
+    @cached_display_name = nil
     TitleInfo.new @dir do |info|
       info.display_name = dn
       info.save
@@ -217,6 +223,7 @@ class Title
   def set_display_name(entry_name : String, dn)
     TitleInfo.new @dir do |info|
       info.entry_display_name[entry_name] = dn
+      @entry_display_name_cache = info.entry_display_name
       info.save
     end
   end
