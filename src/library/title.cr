@@ -1,3 +1,4 @@
+require "digest"
 require "../archive"
 
 class Title
@@ -329,11 +330,6 @@ class Title
   def sorted_entries(username, opt : SortOptions? = nil)
     if opt.nil?
       opt = SortOptions.from_info_json @dir, username
-    else
-      TitleInfo.new @dir do |info|
-        info.sort_by[username] = opt.to_tuple
-        info.save
-      end
     end
 
     case opt.not_nil!.method

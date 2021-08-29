@@ -51,11 +51,6 @@ class Library
   def sorted_titles(username, opt : SortOptions? = nil)
     if opt.nil?
       opt = SortOptions.from_info_json @dir, username
-    else
-      TitleInfo.new @dir do |info|
-        info.sort_by[username] = opt.to_tuple
-        info.save
-      end
     end
 
     # Helper function from src/util/util.cr
