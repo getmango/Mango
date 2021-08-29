@@ -81,9 +81,17 @@ class Entry
 
   def cover_url
     return "#{Config.current.base_url}img/icon.png" if @err_msg
+
+    unless @book.entry_cover_url_cache
+      TitleInfo.new @book.dir do |info|
+        @book.entry_cover_url_cache = info.entry_cover_url
+      end
+    end
+    entry_cover_url = @book.entry_cover_url_cache
+
     url = "#{Config.current.base_url}api/cover/#{@book.id}/#{@id}"
-    TitleInfo.new @book.dir do |info|
-      info_url = info.entry_cover_url[@title]?
+    if entry_cover_url
+      info_url = entry_cover_url[@title]?
       unless info_url.nil? || info_url.empty?
         url = File.join Config.current.base_url, info_url
       end

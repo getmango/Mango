@@ -3,9 +3,12 @@ require "../archive"
 class Title
   getter dir : String, parent_id : String, title_ids : Array(String),
     entries : Array(Entry), title : String, id : String,
-    encoded_title : String, mtime : Time, signature : UInt64
+    encoded_title : String, mtime : Time, signature : UInt64,
+    entry_cover_url_cache : Hash(String, String)?
+  setter entry_cover_url_cache : Hash(String, String)?
 
   @entry_display_name_cache : Hash(String, String)?
+  @entry_cover_url_cache : Hash(String, String)?
 
   def initialize(@dir : String, @parent_id)
     storage = Storage.default
