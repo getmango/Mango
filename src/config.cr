@@ -20,6 +20,8 @@ class Config
   property plugin_path : String = File.expand_path "~/mango/plugins",
     home: true
   property download_timeout_seconds : Int32 = 30
+  property sorted_entries_cache_enable = false
+  property sorted_entries_cache_capacity_kbs = 51200
   property disable_login = false
   property default_username = ""
   property auth_proxy_header_name = ""

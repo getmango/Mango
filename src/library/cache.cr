@@ -178,9 +178,15 @@ end
 
 # LRU Cache
 class SortedEntriesCache
-  @@limit : Int128 = Int128.new 1024 * 1024 * 50 # 50MB
+  @@limit : Int128 = Int128.new 0
   # key => entry
   @@cache = {} of String => SortedEntriesCacheEntry
+
+  def self.init
+    enabled = Config.current.sorted_entries_cache_enable
+    cache_size = Config.current.sorted_entries_cache_capacity_kbs
+    @@limit = Int128.new cache_size * 1024 if enabled
+  end
 
   def self.gen_key(book_id : String, username : String,
                    entries : Array(Entry), opt : SortOptions?)
