@@ -381,7 +381,9 @@ class Title
 
     ary.reverse! unless opt.not_nil!.ascend
 
-    SortedEntriesCache.set cache_key, ary
+    if Config.current.sorted_entries_cache_enable
+      SortedEntriesCache.set cache_key, ary
+    end
     ary
   end
 
