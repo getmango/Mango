@@ -184,8 +184,8 @@ class SortedEntriesCache
 
   def self.init
     enabled = Config.current.sorted_entries_cache_enable
-    cache_size = Config.current.sorted_entries_cache_capacity_kbs
-    @@limit = Int128.new cache_size * 1024 if enabled
+    cache_size = Config.current.sorted_entries_cache_size_mbs
+    @@limit = Int128.new cache_size * 1024 * 1024 if enabled
   end
 
   def self.gen_key(book_id : String, username : String,

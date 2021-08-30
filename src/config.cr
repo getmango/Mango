@@ -21,7 +21,7 @@ class Config
     home: true
   property download_timeout_seconds : Int32 = 30
   property sorted_entries_cache_enable = false
-  property sorted_entries_cache_capacity_kbs = 51200
+  property sorted_entries_cache_size_mbs = 50
   property disable_login = false
   property default_username = ""
   property auth_proxy_header_name = ""
