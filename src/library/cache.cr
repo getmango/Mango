@@ -171,8 +171,10 @@ private class SortedEntriesCacheEntry
   end
 
   def instance_size
-    @value.size * (instance_sizeof(String) + sizeof(String)) +
-      @value.sum(&.size) + instance_sizeof(SortedEntriesCacheEntry)
+    instance_sizeof(SortedEntriesCacheEntry) + # sizeof itself
+      instance_sizeof(String) + @key.bytesize + # allocated memory for @key
+      @value.size * (instance_sizeof(String) + sizeof(String)) +
+      @value.sum(&.bytesize) # elements in Array(String)
   end
 end
 
