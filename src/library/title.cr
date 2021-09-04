@@ -345,7 +345,7 @@ class Title
   # When `opt` is not nil, it saves the options to info.json
   def sorted_entries(username, opt : SortOptions? = nil)
     cache_key = SortedEntriesCacheEntry.gen_key @id, username, @entries, opt
-    cached_entries = SortedEntriesCache.get cache_key
+    cached_entries = LRUCache.get cache_key
     return cached_entries if cached_entries.is_a? Array(Entry)
 
     if opt.nil?
@@ -382,7 +382,7 @@ class Title
     ary.reverse! unless opt.not_nil!.ascend
 
     if Config.current.sorted_entries_cache_enable
-      SortedEntriesCache.set generate_cache_entry cache_key, ary
+      LRUCache.set generate_cache_entry cache_key, ary
     end
     ary
   end
@@ -453,7 +453,7 @@ class Title
       sorted_entries_cache_key =
         SortedEntriesCacheEntry.gen_key @id, username, @entries,
           SortOptions.new(SortMethod::Progress, ascend)
-      SortedEntriesCache.invalidate sorted_entries_cache_key
+      LRUCache.invalidate sorted_entries_cache_key
     end
 
     selected_entries = ids

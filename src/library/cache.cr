@@ -238,7 +238,7 @@ def generate_cache_entry(key : String, value : Array(Entry) | Int32 | String)
 end
 
 # LRU Cache
-class SortedEntriesCache
+class LRUCache
   @@limit : Int128 = Int128.new 0
   # key => entry
   @@cache = {} of String => CacheEntryType

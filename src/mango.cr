@@ -55,7 +55,7 @@ class CLI < Clim
       Config.load(opts.config).set_current
 
       # Initialize main components
-      SortedEntriesCache.init
+      LRUCache.init
       Storage.default
       Queue.default
       Library.default
