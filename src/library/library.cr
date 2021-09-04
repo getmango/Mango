@@ -106,8 +106,6 @@ class Library
 
     storage = Storage.new auto_close: false
 
-    InfoCache.clear
-
     (Dir.entries @dir)
       .select { |fn| !fn.starts_with? "." }
       .map { |fn| File.join @dir, fn }
@@ -120,8 +118,6 @@ class Library
         @title_hash[title.id] = title
         @title_ids << title.id
       end
-
-    InfoCache.clean
 
     storage.bulk_insert_ids
     storage.close
