@@ -2,7 +2,7 @@
 
 # Mango
 
-[![Patreon](https://img.shields.io/badge/support-patreon-brightgreen?link=https://www.patreon.com/hkalexling)](https://www.patreon.com/hkalexling) ![Build](https://github.com/hkalexling/Mango/workflows/Build/badge.svg) [![Gitter](https://badges.gitter.im/mango-cr/mango.svg)](https://gitter.im/mango-cr/mango?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Patreon](https://img.shields.io/badge/support-patreon-brightgreen?link=https://www.patreon.com/hkalexling)](https://www.patreon.com/hkalexling) ![Build](https://github.com/hkalexling/Mango/workflows/Build/badge.svg) [![Gitter](https://badges.gitter.im/mango-cr/mango.svg)](https://gitter.im/mango-cr/mango?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Discord](https://img.shields.io/discord/855633663425118228?label=discord)](http://discord.com/invite/ezKtacCp9Q)
 
 Mango is a self-hosted manga server and reader. Its features include
 
@@ -13,7 +13,6 @@ Mango is a self-hosted manga server and reader. Its features include
 - Supports nested folders in library
 - Automatically stores reading progress
 - Thumbnail generation
-- Built-in [MangaDex](https://mangadex.org/) downloader
 - Supports [plugins](https://github.com/hkalexling/mango-plugins) to download from thrid-party sites
 - The web reader is responsive and works well on mobile, so there is no need for a mobile app
 - All the static files are embedded in the binary, so the deployment process is easy and painless
@@ -52,7 +51,7 @@ The official docker images are available on [Dockerhub](https://hub.docker.com/r
 ### CLI
 
 ```
-  Mango - Manga Server and Web Reader. Version 0.22.0
+  Mango - Manga Server and Web Reader. Version 0.23.0
 
   Usage:
 
@@ -87,7 +86,6 @@ log_level: info
 upload_path: ~/mango/uploads
 plugin_path: ~/mango/plugins
 download_timeout_seconds: 30
-page_margin: 30
 disable_login: false
 default_username: ""
 auth_proxy_header_name: ""

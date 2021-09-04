@@ -73,9 +73,5 @@ struct AdminRouter
     get "/admin/missing" do |env|
       layout "missing-items"
     end
-
-    get "/admin/mangadex" do |env|
-      layout "mangadex"
-    end
   end
 end

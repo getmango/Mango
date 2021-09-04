@@ -2,31 +2,31 @@ version: 2.0
 shards:
   ameba:
     git: https://github.com/crystal-ameba/ameba.git
-    version: 0.14.0
+    version: 0.14.3
 
   archive:
     git: https://github.com/hkalexling/archive.cr.git
-    version: 0.4.0
+    version: 0.5.0
 
   baked_file_system:
     git: https://github.com/schovi/baked_file_system.git
-    version: 0.9.8+git.commit.fb3091b546797fbec3c25dc0e1e2cff60bb9033b
+    version: 0.10.0
 
   clim:
     git: https://github.com/at-grandpa/clim.git
-    version: 0.12.0
+    version: 0.17.1
 
   db:
     git: https://github.com/crystal-lang/crystal-db.git
-    version: 0.9.0
+    version: 0.10.1
 
   duktape:
     git: https://github.com/jessedoyle/duktape.cr.git
-    version: 0.20.0
+    version: 1.0.0
 
   exception_page:
     git: https://github.com/crystal-loot/exception_page.git
-    version: 0.1.4
+    version: 0.1.5
 
   http_proxy:
     git: https://github.com/mamantoha/http_proxy.git
@@ -34,49 +34,45 @@ shards:
 
   image_size:
     git: https://github.com/hkalexling/image_size.cr.git
-    version: 0.4.0
+    version: 0.5.0
 
   kemal:
     git: https://github.com/kemalcr/kemal.git
-    version: 0.27.0
+    version: 1.0.0
 
   kemal-session:
     git: https://github.com/kemalcr/kemal-session.git
-    version: 0.13.0
+    version: 1.0.0
 
   kilt:
     git: https://github.com/jeromegn/kilt.git
-    version: 0.4.0
+    version: 0.4.1
 
   koa:
     git: https://github.com/hkalexling/koa.git
-    version: 0.7.0
-
-  mangadex:
-    git: https://github.com/hkalexling/mangadex.git
-    version: 0.9.0+git.commit.a8e5deb3e6f882f5bc0f4de66e0f6c20aa98a8a6
+    version: 0.8.0
 
   mg:
     git: https://github.com/hkalexling/mg.git
-    version: 0.3.0+git.commit.a19417abf03eece80039f89569926cff1ce3a1a3
+    version: 0.5.0+git.commit.697e46e27cde8c3969346e228e372db2455a6264
 
   myhtml:
     git: https://github.com/kostya/myhtml.git
-    version: 1.5.1
+    version: 1.5.8
 
   open_api:
-    git: https://github.com/jreinert/open_api.cr.git
-    version: 1.2.1+git.commit.95e4df2ca10b1fe88b8b35c62a18b06a10267b6c
+    git: https://github.com/hkalexling/open_api.cr.git
+    version: 1.2.1+git.commit.1d3c55dd5534c6b0af18964d031858a08515553a
 
   radix:
     git: https://github.com/luislavena/radix.git
-    version: 0.3.9
+    version: 0.4.1
 
   sqlite3:
     git: https://github.com/crystal-lang/crystal-sqlite3.git
-    version: 0.16.0
+    version: 0.18.0
 
   tallboy:
     git: https://github.com/epoch/tallboy.git
-    version: 0.9.3
+    version: 0.9.3+git.commit.9be1510bb0391c95e92f1b288f3afb429a73caa6
 

@@ -2,13 +2,12 @@ require "./config"
 require "./queue"
 require "./server"
 require "./main_fiber"
-require "./mangadex/*"
 require "./plugin/*"
 require "option_parser"
 require "clim"
 require "tallboy"
 
-MANGO_VERSION = "0.22.0"
+MANGO_VERSION = "0.23.0"
 
 # From http://www.network-science.de/ascii/
 BANNER = %{
@@ -59,7 +58,6 @@ class CLI < Clim
       Storage.default
       Queue.default
       Library.default
-      MangaDex::Downloader.default
       Plugin::Downloader.default
 
       spawn do
