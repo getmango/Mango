@@ -214,8 +214,8 @@ class Plugin
 
   def search_manga(query : String)
     if info.version == 1
-      raise Error.new "Manga searching is only available for plugins targeting API " \
-                      "v2 or above"
+      raise Error.new "Manga searching is only available for plugins " \
+                      "targeting API v2 or above"
     end
     json = eval_json "searchManga('#{query}')"
     begin
