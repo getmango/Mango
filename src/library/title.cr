@@ -344,7 +344,7 @@ class Title
   #   use the default (auto, ascending)
   # When `opt` is not nil, it saves the options to info.json
   def sorted_entries(username, opt : SortOptions? = nil)
-    cache_key = SortedEntriesCache.gen_key @id, username, @entries, opt
+    cache_key = SortedEntriesCacheEntry.gen_key @id, username, @entries, opt
     cached_entries = SortedEntriesCache.get cache_key
     return cached_entries if cached_entries
 
@@ -451,7 +451,7 @@ class Title
     end
     [false, true].each do |ascend|
       sorted_entries_cache_key =
-        SortedEntriesCache.gen_key @id, username, @entries,
+        SortedEntriesCacheEntry.gen_key @id, username, @entries,
           SortOptions.new(SortMethod::Progress, ascend)
       SortedEntriesCache.invalidate sorted_entries_cache_key
     end

@@ -159,22 +159,46 @@ class InfoCache
 end
 
 private class SortedEntriesCacheEntry
+  @value : Array(String)
+
   getter key : String, atime : Time
 
-  def initialize(@ctime : Time, @key : String, @value : Array(String))
+  def initialize(@ctime : Time, @key : String, value : Array(Entry))
     @atime = @ctime
+    @value = value.map &.id
   end
 
   def value
     @atime = Time.utc
-    @value
+    SortedEntriesCacheEntry.ids2entries @value
+  end
+
+  # private?
+  def self.ids2entries(ids : Array(String))
+    e_map = Library.default.deep_entries.to_h { |entry| {entry.id, entry} }
+    entries = [] of Entry
+    begin
+      ids.each do |id|
+        entries << e_map[id]
+      end
+      return entries if ids.size == entries.size
+    rescue
+    end
   end
 
   def instance_size
-    instance_sizeof(SortedEntriesCacheEntry) + # sizeof itself
+    instance_sizeof(SortedEntriesCacheEntry) +  # sizeof itself
       instance_sizeof(String) + @key.bytesize + # allocated memory for @key
       @value.size * (instance_sizeof(String) + sizeof(String)) +
       @value.sum(&.bytesize) # elements in Array(String)
+  end
+
+  def self.gen_key(book_id : String, username : String,
+                   entries : Array(Entry), opt : SortOptions?)
+    sig = Digest::SHA1.hexdigest (entries.map &.id).to_s
+    user_context = opt && opt.method == SortMethod::Progress ? username : ""
+    Digest::SHA1.hexdigest (book_id + sig + user_context +
+                            (opt ? opt.to_tuple.to_s : "nil"))
   end
 end
 
@@ -190,24 +214,16 @@ class SortedEntriesCache
     @@limit = Int128.new cache_size * 1024 * 1024 if enabled
   end
 
-  def self.gen_key(book_id : String, username : String,
-                   entries : Array(Entry), opt : SortOptions?)
-    sig = Digest::SHA1.hexdigest (entries.map &.id).to_s
-    user_context = opt && opt.method == SortMethod::Progress ? username : ""
-    Digest::SHA1.hexdigest (book_id + sig + user_context +
-                            (opt ? opt.to_tuple.to_s : "nil"))
-  end
-
   def self.get(key : String)
     entry = @@cache[key]?
-    Logger.debug "SortedEntries Cache Hit! #{key}" unless entry.nil?
-    Logger.debug "SortedEntries Cache Miss #{key}" if entry.nil?
-    return ids2entries entry.value unless entry.nil?
+    Logger.debug "LRUCache Cache Hit! #{key}" unless entry.nil?
+    Logger.debug "LRUCache Cache Miss #{key}" if entry.nil?
+    return entry.value unless entry.nil?
   end
 
   def self.set(key : String, value : Array(Entry))
-    @@cache[key] = SortedEntriesCacheEntry.new Time.utc, key, value.map &.id
-    Logger.debug "SortedEntries Cached #{key}"
+    @@cache[key] = SortedEntriesCacheEntry.new Time.utc, key, value
+    Logger.debug "LRUCache Cached #{key}"
     remove_victim_cache
   end
 
@@ -217,23 +233,11 @@ class SortedEntriesCache
 
   def self.print
     sum = @@cache.sum { |_, entry| entry.instance_size }
-    Logger.debug "---- Sorted Entries Cache ----"
+    Logger.debug "---- LRU Cache ----"
     Logger.debug "Size: #{sum} Bytes"
     Logger.debug "List:"
     @@cache.each { |k, v| Logger.debug "#{k} | #{v.atime}" }
-    Logger.debug "------------------------------"
-  end
-
-  private def self.ids2entries(ids : Array(String))
-    e_map = Library.default.deep_entries.to_h { |entry| {entry.id, entry} }
-    entries = [] of Entry
-    begin
-      ids.each do |id|
-        entries << e_map[id]
-      end
-      return entries if ids.size == entries.size
-    rescue
-    end
+    Logger.debug "-------------------"
   end
 
   private def self.is_cache_full
@@ -243,12 +247,12 @@ class SortedEntriesCache
 
   private def self.remove_victim_cache
     while is_cache_full && @@cache.size > 0
-      Logger.debug "SortedEntries Cache Full! Remove LRU"
+      Logger.debug "LRUCache Cache Full! Remove LRU"
       min = @@cache.min_by? { |_, entry| entry.atime }
-      Logger.debug "Target: #{min[0]}, Last Access Time: #{min[1].atime}" if min
+      Logger.debug "  \
+        Target: #{min[0]}, \
+        Last Access Time: #{min[1].atime}" if min
       invalidate min[0] if min
-
-      print if Logger.get_severity == Log::Severity::Debug
     end
   end
 end

@@ -188,8 +188,8 @@ class Entry
       InfoCache.invalidate_progress_cache parent.id, username
     end
     [false, true].each do |ascend|
-      sorted_entries_cache_key = SortedEntriesCache.gen_key @book.id, username,
-        @book.entries, SortOptions.new(SortMethod::Progress, ascend)
+      sorted_entries_cache_key = SortedEntriesCacheEntry.gen_key @book.id,
+        username, @book.entries, SortOptions.new(SortMethod::Progress, ascend)
       SortedEntriesCache.invalidate sorted_entries_cache_key
     end
 
