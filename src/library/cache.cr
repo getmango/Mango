@@ -1,5 +1,7 @@
 require "digest"
 
+require "./entry"
+
 class InfoCache
   alias ProgressCache = Tuple(String, Int32)
 
@@ -158,23 +160,46 @@ class InfoCache
   end
 end
 
-private class SortedEntriesCacheEntry
-  @value : Array(String)
-
+private class CacheEntry(SaveT, ReturnT)
   getter key : String, atime : Time
 
-  def initialize(@ctime : Time, @key : String, value : Array(Entry))
-    @atime = @ctime
-    @value = value.map &.id
+  @value : SaveT
+
+  def initialize(@key : String, value : ReturnT)
+    @atime = @ctime = Time.utc
+    @value = self.class.to_save_t value
   end
 
   def value
     @atime = Time.utc
-    SortedEntriesCacheEntry.ids2entries @value
+    self.class.to_return_t @value
   end
 
-  # private?
-  def self.ids2entries(ids : Array(String))
+  def self.to_save_t(value : ReturnT)
+    value
+  end
+
+  def self.to_return_t(value : SaveT)
+    value
+  end
+
+  def instance_size
+    instance_sizeof(CacheEntry(SaveT, ReturnT)) + # sizeof itself
+      instance_sizeof(String) + @key.bytesize +   # allocated memory for @key
+      @value.instance_size
+  end
+end
+
+class SortedEntriesCacheEntry < CacheEntry(Array(String), Array(Entry))
+  def self.to_save_t(value : Array(Entry))
+    value.map &.id
+  end
+
+  def self.to_return_t(value : Array(String))
+    ids2entries value
+  end
+
+  private def self.ids2entries(ids : Array(String))
     e_map = Library.default.deep_entries.to_h { |entry| {entry.id, entry} }
     entries = [] of Entry
     begin
@@ -202,11 +227,21 @@ private class SortedEntriesCacheEntry
   end
 end
 
+alias CacheEntryType = SortedEntriesCacheEntry
+
+def generate_cache_entry(key : String, value : Array(Entry) | Int32 | String)
+  if value.is_a? Array(Entry)
+    SortedEntriesCacheEntry.new key, value
+  else
+    CacheEntry(typeof(value), typeof(value)).new key, value
+  end
+end
+
 # LRU Cache
 class SortedEntriesCache
   @@limit : Int128 = Int128.new 0
   # key => entry
-  @@cache = {} of String => SortedEntriesCacheEntry
+  @@cache = {} of String => CacheEntryType
 
   def self.init
     enabled = Config.current.sorted_entries_cache_enable
@@ -221,8 +256,9 @@ class SortedEntriesCache
     return entry.value unless entry.nil?
   end
 
-  def self.set(key : String, value : Array(Entry))
-    @@cache[key] = SortedEntriesCacheEntry.new Time.utc, key, value
+  def self.set(cache_entry : CacheEntryType)
+    key = cache_entry.key
+    @@cache[key] = cache_entry
     Logger.debug "LRUCache Cached #{key}"
     remove_victim_cache
   end

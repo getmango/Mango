@@ -346,7 +346,7 @@ class Title
   def sorted_entries(username, opt : SortOptions? = nil)
     cache_key = SortedEntriesCacheEntry.gen_key @id, username, @entries, opt
     cached_entries = SortedEntriesCache.get cache_key
-    return cached_entries if cached_entries
+    return cached_entries if cached_entries.is_a? Array(Entry)
 
     if opt.nil?
       opt = SortOptions.from_info_json @dir, username
@@ -382,7 +382,7 @@ class Title
     ary.reverse! unless opt.not_nil!.ascend
 
     if Config.current.sorted_entries_cache_enable
-      SortedEntriesCache.set cache_key, ary
+      SortedEntriesCache.set generate_cache_entry cache_key, ary
     end
     ary
   end
