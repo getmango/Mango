@@ -379,9 +379,7 @@ class Title
 
     ary.reverse! unless opt.not_nil!.ascend
 
-    if Config.current.sorted_entries_cache_enable
-      LRUCache.set generate_cache_entry cache_key, ary
-    end
+    LRUCache.set generate_cache_entry cache_key, ary
     ary
   end
 

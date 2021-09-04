@@ -120,13 +120,17 @@ class LRUCache
   # key => entry
   @@cache = {} of String => CacheEntryType
 
+  def self.enabled
+    Config.current.sorted_entries_cache_enable
+  end
+
   def self.init
-    enabled = Config.current.sorted_entries_cache_enable
     cache_size = Config.current.sorted_entries_cache_size_mbs
     @@limit = Int128.new cache_size * 1024 * 1024 if enabled
   end
 
   def self.get(key : String)
+    return unless enabled
     entry = @@cache[key]?
     Logger.debug "LRUCache Cache Hit! #{key}" unless entry.nil?
     Logger.debug "LRUCache Cache Miss #{key}" if entry.nil?
@@ -134,6 +138,7 @@ class LRUCache
   end
 
   def self.set(cache_entry : CacheEntryType)
+    return unless enabled
     key = cache_entry.key
     @@cache[key] = cache_entry
     Logger.debug "LRUCache Cached #{key}"
@@ -141,6 +146,7 @@ class LRUCache
   end
 
   def self.invalidate(key : String)
+    return unless enabled
     @@cache.delete key
   end
 
@@ -149,7 +155,7 @@ class LRUCache
     Logger.debug "---- LRU Cache ----"
     Logger.debug "Size: #{sum} Bytes"
     Logger.debug "List:"
-    @@cache.each { |k, v| Logger.debug "#{k} | #{v.atime}" }
+    @@cache.each { |k, v| Logger.debug "#{k} | #{v.atime} | #{v.instance_size}" }
     Logger.debug "-------------------"
   end
 
