@@ -92,6 +92,18 @@ class TitleInfo
   @@mutex_hash = {} of String => Mutex
 
   def self.new(dir, &)
+    key = "#{dir}:info.json"
+    info = LRUCache.get key
+    if info.is_a? String
+      begin
+        instance = TitleInfo.from_json info
+        instance.dir = dir
+        yield instance
+        return
+      rescue
+      end
+    end
+
     if @@mutex_hash[dir]?
       mutex = @@mutex_hash[dir]
     else
@@ -105,6 +117,7 @@ class TitleInfo
         instance = TitleInfo.from_json File.read json_path
       end
       instance.dir = dir
+      LRUCache.set generate_cache_entry key, instance.to_json
       yield instance
     end
   end
@@ -112,5 +125,7 @@ class TitleInfo
   def save
     json_path = File.join @dir, "info.json"
     File.write json_path, self.to_pretty_json
+    key = "#{@dir}:info.json"
+    LRUCache.set generate_cache_entry key, self.to_json
   end
 end
