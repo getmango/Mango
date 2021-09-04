@@ -341,7 +341,7 @@ const component = () => {
 			fetch(`${base_url}api/admin/plugin/subscribe`, {
 					method: 'POST',
 					body: JSON.stringify({
-						filters: JSON.stringify(this.filterSettings),
+						filters: this.filterSettings,
 						plugin: this.pid,
 						name: this.subscriptionName.trim()
 					}),
