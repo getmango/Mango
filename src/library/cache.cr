@@ -155,7 +155,9 @@ class LRUCache
     Logger.debug "---- LRU Cache ----"
     Logger.debug "Size: #{sum} Bytes"
     Logger.debug "List:"
-    @@cache.each { |k, v| Logger.debug "#{k} | #{v.atime} | #{v.instance_size}" }
+    @@cache.each do |k, v|
+      Logger.debug "#{k} | #{v.atime} | #{v.instance_size}"
+    end
     Logger.debug "-------------------"
   end
 
