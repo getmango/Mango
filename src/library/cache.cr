@@ -93,7 +93,15 @@ end
 
 struct Tuple(*T)
   def instance_size
-    sizeof(T) # iterate T and add instance_size of that
+    sizeof(T) + # total size of non-reference types
+      self.sum do |e|
+        next 0 unless e.is_a? Reference
+        if e.responds_to? :instance_size
+          e.instance_size
+        else
+          instance_sizeof(typeof(e))
+        end
+      end
   end
 end
 
