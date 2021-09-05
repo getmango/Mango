@@ -81,8 +81,6 @@ class Entry
 
   def cover_url
     return "#{Config.current.base_url}img/icon.png" if @err_msg
-    cached_cover_url = LRUCache.get "#{@id}:cover_url"
-    return cached_cover_url if cached_cover_url.is_a? String
 
     unless @book.entry_cover_url_cache
       TitleInfo.new @book.dir do |info|
@@ -98,7 +96,6 @@ class Entry
         url = File.join Config.current.base_url, info_url
       end
     end
-    LRUCache.set generate_cache_entry "#{@id}:cover_url", url
     url
   end
 

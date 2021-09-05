@@ -11,6 +11,7 @@ class Title
   @entry_display_name_cache : Hash(String, String)?
   @entry_cover_url_cache : Hash(String, String)?
   @cached_display_name : String?
+  @cached_cover_url : String?
 
   def initialize(@dir : String, @parent_id)
     storage = Storage.default
@@ -230,8 +231,8 @@ class Title
   end
 
   def cover_url
-    cached_cover_url = LRUCache.get "#{@id}:cover_url"
-    return cached_cover_url if cached_cover_url.is_a? String
+    cached_cover_url = @cached_cover_url
+    return cached_cover_url unless cached_cover_url.nil?
 
     url = "#{Config.current.base_url}img/icon.png"
     readable_entries = @entries.select &.err_msg.nil?
@@ -244,12 +245,11 @@ class Title
         url = File.join Config.current.base_url, info_url
       end
     end
-    LRUCache.set generate_cache_entry "#{@id}:cover_url", url
+    @cached_cover_url = url
     url
   end
 
   def set_cover_url(url : String)
-    LRUCache.invalidate "#{@id}:cover_url"
     TitleInfo.new @dir do |info|
       info.cover_url = url
       info.save
@@ -257,8 +257,6 @@ class Title
   end
 
   def set_cover_url(entry_name : String, url : String)
-    selected_entry = @entries.find { |entry| entry.display_name == entry_name }
-    LRUCache.invalidate "#{selected_entry.id}:cover_url" if selected_entry
     TitleInfo.new @dir do |info|
       info.entry_cover_url[entry_name] = url
       info.save

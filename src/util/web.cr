@@ -121,7 +121,6 @@ macro get_and_save_sort_opt(dir)
     sort_opt = SortOptions.new sort_method, is_ascending
 
     key = "#{{{dir}}}:#{username}:sort_opt"
-    LRUCache.set generate_cache_entry key, sort_opt
     TitleInfo.new {{dir}} do |info|
       info.sort_by[username] = sort_opt.to_tuple
       info.save

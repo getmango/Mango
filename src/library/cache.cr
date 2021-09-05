@@ -70,21 +70,6 @@ class SortedEntriesCacheEntry < CacheEntry(Array(String), Array(Entry))
   end
 end
 
-class SortOptionsCacheEntry < CacheEntry(Tuple(String, Bool), SortOptions)
-  def self.to_save_t(value : SortOptions)
-    value.to_tuple
-  end
-
-  def self.to_return_t(value : Tuple(String, Bool))
-    SortOptions.from_tuple value
-  end
-
-  def instance_size
-    instance_sizeof(SortOptionsCacheEntry) +
-      @value[0].instance_size
-  end
-end
-
 class String
   def instance_size
     instance_sizeof(String) + bytesize
@@ -105,18 +90,14 @@ struct Tuple(*T)
   end
 end
 
-alias CacheableType = Array(Entry) | String | Tuple(String, Int32) |
-                      SortOptions
+alias CacheableType = Array(Entry) | String | Tuple(String, Int32)
 alias CacheEntryType = SortedEntriesCacheEntry |
-                       SortOptionsCacheEntry |
                        CacheEntry(String, String) |
                        CacheEntry(Tuple(String, Int32), Tuple(String, Int32))
 
 def generate_cache_entry(key : String, value : CacheableType)
   if value.is_a? Array(Entry)
     SortedEntriesCacheEntry.new key, value
-  elsif value.is_a? SortOptions
-    SortOptionsCacheEntry.new key, value
   else
     CacheEntry(typeof(value), typeof(value)).new key, value
   end

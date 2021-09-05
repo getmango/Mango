@@ -35,16 +35,12 @@ class SortOptions
   end
 
   def self.from_info_json(dir, username)
-    key = "#{dir}:#{username}:sort_opt"
-    cached_opt = LRUCache.get key
-    return cached_opt if cached_opt.is_a? SortOptions
     opt = SortOptions.new
     TitleInfo.new dir do |info|
       if info.sort_by.has_key? username
         opt = SortOptions.from_tuple info.sort_by[username]
       end
     end
-    LRUCache.set generate_cache_entry key, opt
     opt
   end
 
