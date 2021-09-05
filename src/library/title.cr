@@ -259,6 +259,7 @@ class Title
   def set_cover_url(entry_name : String, url : String)
     TitleInfo.new @dir do |info|
       info.entry_cover_url[entry_name] = url
+      @entry_cover_url_cache = info.entry_cover_url
       info.save
     end
   end
