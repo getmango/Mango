@@ -24,8 +24,9 @@ class Plugin
     end
 
     private def process_filename(str)
-      return "_" if str == ".."
-      str.gsub "/", "_"
+      str
+        .gsub(/[\/\s\.\177\000-\031]/, "_")
+        .gsub(/__+/, "_")
     end
 
     private def download(job : Queue::Job)
