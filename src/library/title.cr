@@ -215,7 +215,7 @@ class Title
   end
 
   def set_display_name(dn)
-    @cached_display_name = nil
+    @cached_display_name = dn
     TitleInfo.new @dir do |info|
       info.display_name = dn
       info.save
@@ -250,6 +250,7 @@ class Title
   end
 
   def set_cover_url(url : String)
+    @cached_cover_url = url
     TitleInfo.new @dir do |info|
       info.cover_url = url
       info.save
