@@ -120,3 +120,7 @@ class String
     match / s.size
   end
 end
+
+def filename_is_image(fn : String) : Bool
+  MIME.from_filename?(fn).try(&.starts_with?("image/")) || false
+end

@@ -40,8 +40,7 @@ class Entry
 
     file = ArchiveFile.new @zip_path
     @pages = file.entries.count do |e|
-      SUPPORTED_IMG_TYPES.includes? \
-        MIME.from_filename? e.filename
+      filename_is_image e.filename
     end
     file.close
   end
@@ -103,8 +102,7 @@ class Entry
     ArchiveFile.open @zip_path do |file|
       entries = file.entries
         .select { |e|
-          SUPPORTED_IMG_TYPES.includes? \
-            MIME.from_filename? e.filename
+          filename_is_image e.filename
         }
         .sort! { |a, b|
           compare_numerically a.filename, b.filename
