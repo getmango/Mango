@@ -161,7 +161,9 @@ class LRUCache
   end
 
   private def self.remove_least_recent_access
-    Logger.debug "Removing entries from LRUCache" if @@should_log
+    if @@should_log && is_cache_full
+      Logger.debug "Removing entries from LRUCache"
+    end
     while is_cache_full && @@cache.size > 0
       min_tuple = @@cache.min_by { |_, entry| entry.atime }
       min_key = min_tuple[0]
