@@ -3,6 +3,16 @@ require "digest"
 require "./entry"
 require "./types"
 
+# Base class for an entry in the LRU cache.
+# There are two ways to use it:
+#   1. Use it as it is by instantiating with the appropriate `SaveT` and
+#     `ReturnT`. Note that in this case, `SaveT` and `ReturnT` must be the
+#     same type. That is, the input value will be stored as it is without
+#     any transformation.
+#   2. You can also subclass it and provide custom implementations for
+#     `to_save_t` and `to_return_t`. This allows you to transform and store
+#     the input value to a different type. See `SortedEntriesCacheEntry` as
+#     an example.
 private class CacheEntry(SaveT, ReturnT)
   getter key : String, atime : Time
 
