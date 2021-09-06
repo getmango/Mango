@@ -106,23 +106,26 @@ end
 # LRU Cache
 class LRUCache
   @@limit : Int128 = Int128.new 0
+  @@should_log = true
   # key => entry
   @@cache = {} of String => CacheEntryType
 
   def self.enabled
-    Config.current.sorted_entries_cache_enable
+    Config.current.cache_enabled
   end
 
   def self.init
-    cache_size = Config.current.sorted_entries_cache_size_mbs
+    cache_size = Config.current.cache_size_mbs
     @@limit = Int128.new cache_size * 1024 * 1024 if enabled
+    @@should_log = Config.current.cache_log_enabled
   end
 
   def self.get(key : String)
     return unless enabled
     entry = @@cache[key]?
-    Logger.debug "LRUCache Cache Hit! #{key}" unless entry.nil?
-    Logger.debug "LRUCache Cache Miss #{key}" if entry.nil?
+    if @@should_log
+      Logger.debug "LRUCache #{entry.nil? ? "miss" : "hit"} #{key}"
+    end
     return entry.value unless entry.nil?
   end
 
@@ -130,8 +133,8 @@ class LRUCache
     return unless enabled
     key = cache_entry.key
     @@cache[key] = cache_entry
-    Logger.debug "LRUCache Cached #{key}"
-    remove_victim_cache
+    Logger.debug "LRUCache cached #{key}" if @@should_log
+    remove_least_recent_access
   end
 
   def self.invalidate(key : String)
@@ -140,6 +143,7 @@ class LRUCache
   end
 
   def self.print
+    return unless @@should_log
     sum = @@cache.sum { |_, entry| entry.instance_size }
     Logger.debug "---- LRU Cache ----"
     Logger.debug "Size: #{sum} Bytes"
@@ -155,14 +159,17 @@ class LRUCache
     sum > @@limit
   end
 
-  private def self.remove_victim_cache
+  private def self.remove_least_recent_access
+    Logger.debug "Removing entries from LRUCache" if @@should_log
     while is_cache_full && @@cache.size > 0
-      Logger.debug "LRUCache Cache Full! Remove LRU"
-      min = @@cache.min_by? { |_, entry| entry.atime }
+      min_tuple = @@cache.min_by { |_, entry| entry.atime }
+      min_key = min_tuple[0]
+      min_entry = min_tuple[1]
+
       Logger.debug "  \
-        Target: #{min[0]}, \
-        Last Access Time: #{min[1].atime}" if min
-      invalidate min[0] if min
+        Target: #{min_key}, \
+        Last Access Time: #{min_entry.atime}" if @@should_log
+      invalidate min_key
     end
   end
 end
