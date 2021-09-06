@@ -81,9 +81,17 @@ class Entry
 
   def cover_url
     return "#{Config.current.base_url}img/icon.png" if @err_msg
+
+    unless @book.entry_cover_url_cache
+      TitleInfo.new @book.dir do |info|
+        @book.entry_cover_url_cache = info.entry_cover_url
+      end
+    end
+    entry_cover_url = @book.entry_cover_url_cache
+
     url = "#{Config.current.base_url}api/cover/#{@book.id}/#{@id}"
-    TitleInfo.new @book.dir do |info|
-      info_url = info.entry_cover_url[@title]?
+    if entry_cover_url
+      info_url = entry_cover_url[@title]?
       unless info_url.nil? || info_url.empty?
         url = File.join Config.current.base_url, info_url
       end
@@ -170,6 +178,16 @@ class Entry
   # For backward backward compatibility with v0.1.0, we save entry titles
   #   instead of IDs in info.json
   def save_progress(username, page)
+    LRUCache.invalidate "#{@book.id}:#{username}:progress_sum"
+    @book.parents.each do |parent|
+      LRUCache.invalidate "#{parent.id}:#{username}:progress_sum"
+    end
+    [false, true].each do |ascend|
+      sorted_entries_cache_key = SortedEntriesCacheEntry.gen_key @book.id,
+        username, @book.entries, SortOptions.new(SortMethod::Progress, ascend)
+      LRUCache.invalidate sorted_entries_cache_key
+    end
+
     TitleInfo.new @book.dir do |info|
       if info.progress[username]?.nil?
         info.progress[username] = {@title => page}

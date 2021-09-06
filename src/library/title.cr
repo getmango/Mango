@@ -1,11 +1,17 @@
+require "digest"
 require "../archive"
 
 class Title
   getter dir : String, parent_id : String, title_ids : Array(String),
     entries : Array(Entry), title : String, id : String,
-    encoded_title : String, mtime : Time, signature : UInt64
+    encoded_title : String, mtime : Time, signature : UInt64,
+    entry_cover_url_cache : Hash(String, String)?
+  setter entry_cover_url_cache : Hash(String, String)?
 
   @entry_display_name_cache : Hash(String, String)?
+  @entry_cover_url_cache : Hash(String, String)?
+  @cached_display_name : String?
+  @cached_cover_url : String?
 
   def initialize(@dir : String, @parent_id)
     storage = Storage.default
@@ -177,11 +183,15 @@ class Title
   end
 
   def display_name
+    cached_display_name = @cached_display_name
+    return cached_display_name unless cached_display_name.nil?
+
     dn = @title
     TitleInfo.new @dir do |info|
       info_dn = info.display_name
       dn = info_dn unless info_dn.empty?
     end
+    @cached_display_name = dn
     dn
   end
 
@@ -205,6 +215,7 @@ class Title
   end
 
   def set_display_name(dn)
+    @cached_display_name = dn
     TitleInfo.new @dir do |info|
       info.display_name = dn
       info.save
@@ -214,11 +225,15 @@ class Title
   def set_display_name(entry_name : String, dn)
     TitleInfo.new @dir do |info|
       info.entry_display_name[entry_name] = dn
+      @entry_display_name_cache = info.entry_display_name
       info.save
     end
   end
 
   def cover_url
+    cached_cover_url = @cached_cover_url
+    return cached_cover_url unless cached_cover_url.nil?
+
     url = "#{Config.current.base_url}img/icon.png"
     readable_entries = @entries.select &.err_msg.nil?
     if readable_entries.size > 0
@@ -230,10 +245,12 @@ class Title
         url = File.join Config.current.base_url, info_url
       end
     end
+    @cached_cover_url = url
     url
   end
 
   def set_cover_url(url : String)
+    @cached_cover_url = url
     TitleInfo.new @dir do |info|
       info.cover_url = url
       info.save
@@ -243,6 +260,7 @@ class Title
   def set_cover_url(entry_name : String, url : String)
     TitleInfo.new @dir do |info|
       info.entry_cover_url[entry_name] = url
+      @entry_cover_url_cache = info.entry_cover_url
       info.save
     end
   end
@@ -262,8 +280,15 @@ class Title
   end
 
   def deep_read_page_count(username) : Int32
-    load_progress_for_all_entries(username).sum +
-      titles.flat_map(&.deep_read_page_count username).sum
+    key = "#{@id}:#{username}:progress_sum"
+    sig = Digest::SHA1.hexdigest (entries.map &.id).to_s
+    cached_sum = LRUCache.get key
+    return cached_sum[1] if cached_sum.is_a? Tuple(String, Int32) &&
+                            cached_sum[0] == sig
+    sum = load_progress_for_all_entries(username).sum +
+          titles.flat_map(&.deep_read_page_count username).sum
+    LRUCache.set generate_cache_entry key, {sig, sum}
+    sum
   end
 
   def deep_total_page_count : Int32
@@ -317,13 +342,12 @@ class Title
   #   use the default (auto, ascending)
   # When `opt` is not nil, it saves the options to info.json
   def sorted_entries(username, opt : SortOptions? = nil)
+    cache_key = SortedEntriesCacheEntry.gen_key @id, username, @entries, opt
+    cached_entries = LRUCache.get cache_key
+    return cached_entries if cached_entries.is_a? Array(Entry)
+
     if opt.nil?
       opt = SortOptions.from_info_json @dir, username
-    else
-      TitleInfo.new @dir do |info|
-        info.sort_by[username] = opt.to_tuple
-        info.save
-      end
     end
 
     case opt.not_nil!.method
@@ -355,6 +379,7 @@ class Title
 
     ary.reverse! unless opt.not_nil!.ascend
 
+    LRUCache.set generate_cache_entry cache_key, ary
     ary
   end
 
@@ -416,6 +441,17 @@ class Title
   end
 
   def bulk_progress(action, ids : Array(String), username)
+    LRUCache.invalidate "#{@id}:#{username}:progress_sum"
+    parents.each do |parent|
+      LRUCache.invalidate "#{parent.id}:#{username}:progress_sum"
+    end
+    [false, true].each do |ascend|
+      sorted_entries_cache_key =
+        SortedEntriesCacheEntry.gen_key @id, username, @entries,
+          SortOptions.new(SortMethod::Progress, ascend)
+      LRUCache.invalidate sorted_entries_cache_key
+    end
+
     selected_entries = ids
       .map { |id|
         @entries.find &.id.==(id)

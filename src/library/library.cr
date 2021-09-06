@@ -51,11 +51,6 @@ class Library
   def sorted_titles(username, opt : SortOptions? = nil)
     if opt.nil?
       opt = SortOptions.from_info_json @dir, username
-    else
-      TitleInfo.new @dir do |info|
-        info.sort_by[username] = opt.to_tuple
-        info.save
-      end
     end
 
     # Helper function from src/util/util.cr
@@ -64,6 +59,10 @@ class Library
 
   def deep_titles
     titles + titles.flat_map &.deep_titles
+  end
+
+  def deep_entries
+    titles.flat_map &.deep_entries
   end
 
   def to_slim_json : String
