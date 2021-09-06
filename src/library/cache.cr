@@ -39,10 +39,10 @@ class SortedEntriesCacheEntry < CacheEntry(Array(String), Array(Entry))
   end
 
   def self.to_return_t(value : Array(String))
-    ids2entries value
+    ids_to_entries value
   end
 
-  private def self.ids2entries(ids : Array(String))
+  private def self.ids_to_entries(ids : Array(String))
     e_map = Library.default.deep_entries.to_h { |entry| {entry.id, entry} }
     entries = [] of Entry
     begin
