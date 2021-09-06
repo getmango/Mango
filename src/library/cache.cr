@@ -63,10 +63,11 @@ class SortedEntriesCacheEntry < CacheEntry(Array(String), Array(Entry))
 
   def self.gen_key(book_id : String, username : String,
                    entries : Array(Entry), opt : SortOptions?)
-    sig = Digest::SHA1.hexdigest (entries.map &.id).to_s
+    entries_sig = Digest::SHA1.hexdigest (entries.map &.id).to_s
     user_context = opt && opt.method == SortMethod::Progress ? username : ""
-    Digest::SHA1.hexdigest (book_id + sig + user_context +
-                            (opt ? opt.to_tuple.to_s : "nil"))
+    sig = Digest::SHA1.hexdigest (book_id + entries_sig + user_context +
+                                  (opt ? opt.to_tuple.to_s : "nil"))
+    "#{sig}:sorted_entries"
   end
 end
 
