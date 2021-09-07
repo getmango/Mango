@@ -1,4 +1,12 @@
-SUPPORTED_IMG_TYPES = ["image/jpeg", "image/png", "image/webp"]
+SUPPORTED_IMG_TYPES = %w(
+  image/jpeg
+  image/png
+  image/webp
+  image/apng
+  image/avif
+  image/gif
+  image/svg+xml
+)
 
 enum SortMethod
   Auto
