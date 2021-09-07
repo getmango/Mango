@@ -1,3 +1,5 @@
+SUPPORTED_IMG_TYPES = ["image/jpeg", "image/png", "image/webp"]
+
 enum SortMethod
   Auto
   Title

@@ -456,8 +456,9 @@ struct APIRouter
             entry_id = env.params.query["eid"]?
             title = Library.default.get_title(title_id).not_nil!
 
-            unless filename_is_image filename
-              raise "The uploaded file must be an image"
+            unless SUPPORTED_IMG_TYPES.includes? \
+                     MIME.from_filename? filename
+              raise "The uploaded image must be either JPEG or PNG"
             end
 
             ext = File.extname filename
