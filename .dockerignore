@@ -6,3 +6,4 @@ Dockerfile.arm64v8
 README.md
 .all-contributorsrc
 env.example
+.github/
