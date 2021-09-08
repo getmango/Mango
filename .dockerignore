@@ -1,2 +1,8 @@
 node_modules
 lib
+Dockerfile
+Dockerfile.arm32v7
+Dockerfile.arm64v8
+README.md
+.all-contributorsrc
+env.example
