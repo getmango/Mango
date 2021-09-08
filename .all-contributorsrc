@@ -104,6 +104,15 @@
       "contributions": [
         "infra"
       ]
+    },
+    {
+      "login": "lincolnthedev",
+      "name": "i use arch btw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/41193328?v=4",
+      "profile": "https://lncn.dev",
+      "contributions": [
+        "infra"
+      ]
     }
   ],
   "contributorsPerLine": 7,
