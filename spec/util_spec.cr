@@ -61,3 +61,13 @@ describe "chapter_sort" do
     end.should eq ary
   end
 end
+
+describe "sanitize_filename" do
+  it "returns a random string for empty sanitized string" do
+    sanitize_filename("..").should_not eq sanitize_filename("..")
+  end
+  it "sanitizes correctly" do
+    sanitize_filename("..  \n\v.\rマンゴー/|*()<[1/2] 3.14 hello world ")
+      .should eq " . マンゴー_()[1_2] 3.14 hello world"
+  end
+end

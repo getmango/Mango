@@ -23,12 +23,6 @@ class Plugin
       job
     end
 
-    private def process_filename(str)
-      str
-        .gsub(/[\/\s\.\177\000-\031]/, "_")
-        .gsub(/__+/, "_")
-    end
-
     private def download(job : Queue::Job)
       @downloading = true
       @queue.set_status Queue::JobStatus::Downloading, job
@@ -43,8 +37,8 @@ class Plugin
 
         pages = info["pages"].as_i
 
-        manga_title = process_filename job.manga_title
-        chapter_title = process_filename info["title"].as_s
+        manga_title = sanitize_filename job.manga_title
+        chapter_title = sanitize_filename info["title"].as_s
 
         @queue.set_pages pages, job
         lib_dir = @library_path
@@ -69,7 +63,7 @@ class Plugin
       while page = plugin.next_page
         break unless @queue.exists? job
 
-        fn = process_filename page["filename"].as_s
+        fn = sanitize_filename page["filename"].as_s
         url = page["url"].as_s
         headers = HTTP::Headers.new
 
