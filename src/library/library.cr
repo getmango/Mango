@@ -6,6 +6,41 @@ class Library
 
   use_default
 
+  def save_instance
+    path = Config.current.library_path
+    instance_file_path = File.join path, "library.yml.zip"
+
+    writer = Compress::Zip::Writer.new instance_file_path
+    writer.add "instance.yml", self.to_yaml
+    writer.close
+  end
+
+  def self.load_instance
+    dir = Config.current.library_path
+    return unless Dir.exists? dir
+    instance_file_path = File.join path, "library.yml.zip"
+    return unless File.exists? instance_file_path
+
+    zip_file = Compress::Zip::File.new instance_file_path
+    instance_file = zip_file.entries.find { |entry| entry.filename == "instance.yml" }
+
+    if instance_file.nil?
+      zip_file.close
+      return
+    end
+    begin
+      instance_file.open do |content|
+        @@default = Library.from_yaml content
+      end
+    rescue e
+      Logger.error e
+    end
+
+    zip_file.close
+
+    scan
+  end
+
   def initialize
     register_mime_types
 
@@ -128,6 +163,8 @@ class Library
     ms = (Time.local - start).total_milliseconds
     Logger.debug "Scan completed. #{ms}ms"
     Storage.default.mark_unavailable
+
+    save_instance
   end
 
   def get_continue_reading_entries(username)

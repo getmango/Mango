@@ -58,6 +58,7 @@ class CLI < Clim
       LRUCache.init
       Storage.default
       Queue.default
+      Library.load_instance
       Library.default
       Plugin::Downloader.default
 
