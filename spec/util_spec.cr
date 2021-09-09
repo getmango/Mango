@@ -68,6 +68,6 @@ describe "sanitize_filename" do
   end
   it "sanitizes correctly" do
     sanitize_filename("..  \n\v.\rマンゴー/|*()<[1/2] 3.14 hello world ")
-      .should eq " . マンゴー_()[1_2] 3.14 hello world"
+      .should eq "マンゴー_()[1_2] 3.14 hello world"
   end
 end

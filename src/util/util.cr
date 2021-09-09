@@ -135,7 +135,7 @@ def sanitize_filename(str : String) : String
     .gsub(/\s+/, " ")
     .strip
     .gsub(/\//, "_")
-    .gsub(/^\.+/, "")
+    .gsub(/^[\.\s]+/, "")
     .gsub(/[\177\000-\031\\:\*\?\"<>\|]/, "")
   sanitized.size > 0 ? sanitized : random_str
 end
