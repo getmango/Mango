@@ -1,4 +1,6 @@
 class Library
+  include YAML::Serializable
+
   getter dir : String, title_ids : Array(String),
     title_hash : Hash(String, Title)
 

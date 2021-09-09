@@ -2,6 +2,8 @@ require "digest"
 require "../archive"
 
 class Title
+  include YAML::Serializable
+
   getter dir : String, parent_id : String, title_ids : Array(String),
     entries : Array(Entry), title : String, id : String,
     encoded_title : String, mtime : Time, signature : UInt64,
