@@ -35,6 +35,11 @@ def register_mime_types
     # FontAwesome fonts
     ".woff"  => "font/woff",
     ".woff2" => "font/woff2",
+
+    # Supported image formats. JPG, PNG, GIF, WebP, and SVG are already
+    #   defiend by Crystal in `MIME.DEFAULT_TYPES`
+    ".apng" => "image/apng",
+    ".avif" => "image/avif",
   }.each do |k, v|
     MIME.register k, v
   end
