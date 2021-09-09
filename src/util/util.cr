@@ -125,3 +125,22 @@ class String
     match / s.size
   end
 end
+
+# Does the followings:
+#   - turns space-like characters into the normal whitespaces ( )
+#   - strips and collapses spaces
+#   - removes ASCII control characters
+#   - replaces slashes (/) with underscores (_)
+#   - removes leading dots (.)
+#   - removes the following special characters: \:*?"<>|
+#
+# If the sanitized string is empty, returns a random string instead.
+def sanitize_filename(str : String) : String
+  sanitized = str
+    .gsub(/\s+/, " ")
+    .strip
+    .gsub(/\//, "_")
+    .gsub(/^[\.\s]+/, "")
+    .gsub(/[\177\000-\031\\:\*\?\"<>\|]/, "")
+  sanitized.size > 0 ? sanitized : random_str
+end
