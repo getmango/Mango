@@ -10,9 +10,13 @@ class Title
     entry_cover_url_cache : Hash(String, String)?
   setter entry_cover_url_cache : Hash(String, String)?
 
+  @[YAML::Field(ignore: true)]
   @entry_display_name_cache : Hash(String, String)?
+  @[YAML::Field(ignore: true)]
   @entry_cover_url_cache : Hash(String, String)?
+  @[YAML::Field(ignore: true)]
   @cached_display_name : String?
+  @[YAML::Field(ignore: true)]
   @cached_cover_url : String?
 
   def initialize(@dir : String, @parent_id)

@@ -18,7 +18,7 @@ class Library
   def self.load_instance
     dir = Config.current.library_path
     return unless Dir.exists? dir
-    instance_file_path = File.join path, "library.yml.zip"
+    instance_file_path = File.join dir, "library.yml.zip"
     return unless File.exists? instance_file_path
 
     zip_file = Compress::Zip::File.new instance_file_path
@@ -38,7 +38,7 @@ class Library
 
     zip_file.close
 
-    scan
+    Library.default.scan
   end
 
   def initialize
