@@ -21,6 +21,7 @@ class Library
     instance_file_path = File.join dir, "library.yml.zip"
     return unless File.exists? instance_file_path
 
+    Logger.debug "Load library instance"
     zip_file = Compress::Zip::File.new instance_file_path
     instance_file = zip_file.entries.find { |entry| entry.filename == "instance.yml" }
 
@@ -38,7 +39,13 @@ class Library
 
     zip_file.close
 
-    Library.default.scan
+    spawn do
+      start = Time.local
+      Library.default.scan
+      ms = (Time.local - start).total_milliseconds
+      Logger.info "Re-scanned #{Library.default.title_ids.size} titles \
+        in #{ms}ms"
+    end
   end
 
   def initialize
