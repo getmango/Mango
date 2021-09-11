@@ -70,11 +70,12 @@ class Title
     end
   end
 
-  def examine : Bool
+  def examine(cache = {} of String => String) : Bool
     return false unless Dir.exists? @dir # no title, should be removed
-    contents_signature = Dir.contents_signature @dir
+    contents_signature = Dir.contents_signature @dir, cache
     # not changed, preserve
     return true if @contents_signature == contents_signature
+    puts "Contents changed in #{@dir}"
 
     # fix title
     @contents_signature = contents_signature
@@ -95,7 +96,7 @@ class Title
     previous_titles_size = @title_ids.size
     @title_ids.select! do |title_id|
       title = Library.default.get_title! title_id
-      title.examine
+      title.examine cache
     end
     remained_title_dirs = @title_ids.map do |id|
       title = Library.default.get_title! id

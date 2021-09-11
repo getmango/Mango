@@ -54,7 +54,8 @@ class Dir
   # Rescan conditions:
   #   - When a file added, moved, removed, renamed (including which in nested
   #       directories)
-  def self.contents_signature(dirname) : String
+  def self.contents_signature(dirname, cache = {} of String => String) : String
+    return cache[dirname] if cache[dirname]?
     signatures = [] of String
     self.open dirname do |dir|
       dir.entries.sort.each do |fn|
@@ -69,6 +70,8 @@ class Dir
         end
       end
     end
-    Digest::SHA1.hexdigest(signatures.sort.join)
+    hash = Digest::SHA1.hexdigest(signatures.sort.join)
+    cache[dirname] = hash
+    hash
   end
 end
