@@ -69,6 +69,12 @@ class Title
     end
   end
 
+  def examine : Bool
+    return false unless Dir.exists? @dir
+    signature = Dir.signature @dir
+    return @signature == signature
+  end
+
   def to_slim_json : String
     JSON.build do |json|
       json.object do

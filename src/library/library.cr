@@ -144,14 +144,20 @@ class Library
 
     storage = Storage.new auto_close: false
 
+    @title_ids.select! do |title_id|
+      title = @title_hash[title_id]
+      title.examine
+    end
+    remained_title_dirs = @title_ids.map { |id| title_hash[id].dir }
+
     (Dir.entries @dir)
       .select { |fn| !fn.starts_with? "." }
       .map { |fn| File.join @dir, fn }
+      .select { |path| !(remained_title_dirs.includes? path) }
       .select { |path| File.directory? path }
       .map { |path| Title.new path, "" }
       .select { |title| !(title.entries.empty? && title.titles.empty?) }
       .sort! { |a, b| a.title <=> b.title }
-      .tap { |_| @title_ids.clear }
       .each do |title|
         @title_hash[title.id] = title
         @title_ids << title.id
