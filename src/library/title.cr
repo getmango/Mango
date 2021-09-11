@@ -70,9 +70,71 @@ class Title
   end
 
   def examine : Bool
-    return false unless Dir.exists? @dir
+    return false unless Dir.exists? @dir # no title, should be removed
     signature = Dir.signature @dir
-    return @signature == signature
+    # `signature` doesn't reflect movings, renames in nested titles
+    # return true if @signature == signature # not changed, preserve
+
+    # fix title
+    @signature = signature
+    storage = Storage.default
+    id = storage.get_title_id dir, signature
+    if id.nil?
+      id = random_str
+      storage.insert_title_id({
+        path:      dir,
+        id:        id,
+        signature: signature.to_s,
+      })
+    end
+    @id = id
+    @mtime = File.info(@dir).modification_time
+
+    @title_ids.select! do |title_id|
+      title = Library.default.get_title! title_id
+      title.examine
+    end
+    remained_title_dirs = @title_ids.map do |id|
+      title = Library.default.get_title! id
+      title.dir
+    end
+
+    @entries.select! { |entry| File.exists? entry.zip_path }
+    remained_entry_zip_paths = @entries.map &.zip_path
+
+    Dir.entries(dir).each do |fn|
+      next if fn.starts_with? "."
+      path = File.join dir, fn
+      if File.directory? path
+        next if remained_title_dirs.includes? path
+        title = Title.new path, @id
+        next if title.entries.size == 0 && title.titles.size == 0
+        Library.default.title_hash[title.id] = title
+        @title_ids << title.id
+        next
+      end
+      if is_supported_file path
+        next if remained_entry_zip_paths.includes? path
+        entry = Entry.new path, self
+        @entries << entry if entry.pages > 0 || entry.err_msg
+      end
+    end
+
+    mtimes = [@mtime]
+    mtimes += @title_ids.map { |e| Library.default.title_hash[e].mtime }
+    mtimes += @entries.map &.mtime
+    @mtime = mtimes.max
+
+    @title_ids.sort! do |a, b|
+      compare_numerically Library.default.title_hash[a].title,
+        Library.default.title_hash[b].title
+    end
+    sorter = ChapterSorter.new @entries.map &.title
+    @entries.sort! do |a, b|
+      sorter.compare a.title, b.title
+    end
+
+    return true # this could be recycled
   end
 
   def to_slim_json : String
