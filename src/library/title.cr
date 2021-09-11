@@ -92,6 +92,7 @@ class Title
     @id = id
     @mtime = File.info(@dir).modification_time
 
+    previous_titles_size = @title_ids.size
     @title_ids.select! do |title_id|
       title = Library.default.get_title! title_id
       title.examine
@@ -101,9 +102,12 @@ class Title
       title.dir
     end
 
+    previous_entries_size = @entries.size
     @entries.select! { |entry| File.exists? entry.zip_path }
     remained_entry_zip_paths = @entries.map &.zip_path
 
+    is_titles_added = false
+    is_entries_added = false
     Dir.entries(dir).each do |fn|
       next if fn.starts_with? "."
       path = File.join dir, fn
@@ -113,12 +117,16 @@ class Title
         next if title.entries.size == 0 && title.titles.size == 0
         Library.default.title_hash[title.id] = title
         @title_ids << title.id
+        is_titles_added = true
         next
       end
       if is_supported_file path
         next if remained_entry_zip_paths.includes? path
         entry = Entry.new path, self
-        @entries << entry if entry.pages > 0 || entry.err_msg
+        if entry.pages > 0 || entry.err_msg
+          @entries << entry
+          is_entries_added = true
+        end
       end
     end
 
@@ -127,13 +135,17 @@ class Title
     mtimes += @entries.map &.mtime
     @mtime = mtimes.max
 
-    @title_ids.sort! do |a, b|
-      compare_numerically Library.default.title_hash[a].title,
-        Library.default.title_hash[b].title
+    if is_titles_added || previous_titles_size != @title_ids.size
+      @title_ids.sort! do |a, b|
+        compare_numerically Library.default.title_hash[a].title,
+          Library.default.title_hash[b].title
+      end
     end
-    sorter = ChapterSorter.new @entries.map &.title
-    @entries.sort! do |a, b|
-      sorter.compare a.title, b.title
+    if is_entries_added || previous_entries_size != @entries.size
+      sorter = ChapterSorter.new @entries.map &.title
+      @entries.sort! do |a, b|
+        sorter.compare a.title, b.title
+      end
     end
 
     return true # this could be recycled
