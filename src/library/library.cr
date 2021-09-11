@@ -98,6 +98,7 @@ class Library
   end
 
   def scan
+    start = Time.local
     unless Dir.exists? @dir
       Logger.info "The library directory #{@dir} does not exist. " \
                   "Attempting to create it"
@@ -122,7 +123,8 @@ class Library
     storage.bulk_insert_ids
     storage.close
 
-    Logger.debug "Scan completed"
+    ms = (Time.local - start).total_milliseconds
+    Logger.debug "Scan completed. #{ms}ms"
     Storage.default.mark_unavailable
   end
 
