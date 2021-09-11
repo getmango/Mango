@@ -29,22 +29,26 @@ class Library
       zip_file.close
       return
     end
+    is_loaded = false
     begin
       instance_file.open do |content|
         @@default = Library.from_yaml content
       end
+      is_loaded = true
     rescue e
       Logger.error e
     end
 
     zip_file.close
 
-    spawn do
-      start = Time.local
-      Library.default.scan
-      ms = (Time.local - start).total_milliseconds
-      Logger.info "Re-scanned #{Library.default.title_ids.size} titles \
-        in #{ms}ms"
+    if is_loaded
+      spawn do
+        start = Time.local
+        Library.default.scan
+        ms = (Time.local - start).total_milliseconds
+        Logger.info "Re-scanned #{Library.default.title_ids.size} titles \
+          in #{ms}ms"
+      end
     end
   end
 
