@@ -32,6 +32,7 @@ class Title
       })
     end
     @id = id
+    @contents_signature = Dir.contents_signature dir
     @title = File.basename dir
     @encoded_title = URI.encode @title
     @title_ids = [] of String
@@ -71,12 +72,13 @@ class Title
 
   def examine : Bool
     return false unless Dir.exists? @dir # no title, should be removed
-    signature = Dir.signature @dir
-    # `signature` doesn't reflect movings, renames in nested titles
-    # return true if @signature == signature # not changed, preserve
+    contents_signature = Dir.contents_signature @dir
+    # not changed, preserve
+    return true if @contents_signature == contents_signature
 
     # fix title
-    @signature = signature
+    @contents_signature = contents_signature
+    @signature = Dir.signature @dir
     storage = Storage.default
     id = storage.get_title_id dir, signature
     if id.nil?

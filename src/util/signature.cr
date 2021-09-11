@@ -48,4 +48,27 @@ class Dir
     end
     Digest::CRC32.checksum(signatures.sort.join).to_u64
   end
+
+  # Returns the contents signature of the directory at dirname for checking
+  #   to rescan.
+  # Rescan conditions:
+  #   - When a file added, moved, removed, renamed (including which in nested
+  #       directories)
+  def self.contents_signature(dirname) : String
+    signatures = [] of String
+    self.open dirname do |dir|
+      dir.entries.sort.each do |fn|
+        next if fn.starts_with? "."
+        path = File.join dirname, fn
+        if File.directory? path
+          signatures << Dir.contents_signature path
+        else
+          # Only add its signature value to `signatures` when it is a
+          #   supported file
+          signatures << fn if is_supported_file fn
+        end
+      end
+    end
+    Digest::SHA1.hexdigest(signatures.sort.join)
+  end
 end
