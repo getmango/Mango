@@ -75,7 +75,6 @@ class Title
     contents_signature = Dir.contents_signature @dir, cache
     # not changed, preserve
     return true if @contents_signature == contents_signature
-    puts "Contents changed in #{@dir}"
 
     # fix title
     @contents_signature = contents_signature
