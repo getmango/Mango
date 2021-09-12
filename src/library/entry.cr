@@ -1,4 +1,5 @@
 require "image_size"
+require "yaml"
 
 class Entry
   include YAML::Serializable
