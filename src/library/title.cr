@@ -95,7 +95,9 @@ class Title
     previous_titles_size = @title_ids.size
     @title_ids.select! do |title_id|
       title = Library.default.get_title! title_id
-      title.examine cache
+      existence = title.examine cache
+      Library.default.title_hash.delete title_id unless existence
+      existence
     end
     remained_title_dirs = @title_ids.map do |title_id|
       title = Library.default.get_title! title_id
