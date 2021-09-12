@@ -8,7 +8,7 @@ class Library
 
   def save_instance
     path = Config.current.library_path
-    instance_file_path = File.join path, "library.yml.zip"
+    instance_file_path = File.join path, "library.yml.gz"
 
     writer = Compress::Gzip::Writer.new instance_file_path,
       Compress::Gzip::BEST_COMPRESSION
@@ -19,7 +19,7 @@ class Library
   def self.load_instance
     dir = Config.current.library_path
     return unless Dir.exists? dir
-    instance_file_path = File.join dir, "library.yml.zip"
+    instance_file_path = File.join dir, "library.yml.gz"
     return unless File.exists? instance_file_path
 
     Logger.debug "Load library instance"
