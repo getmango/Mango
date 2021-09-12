@@ -10,8 +10,9 @@ class Library
     path = Config.current.library_path
     instance_file_path = File.join path, "library.yml.zip"
 
-    writer = Compress::Zip::Writer.new instance_file_path
-    writer.add "instance.yml", self.to_yaml
+    writer = Compress::Gzip::Writer.new instance_file_path,
+      Compress::Gzip::BEST_COMPRESSION
+    writer.write self.to_yaml.to_slice
     writer.close
   end
 
@@ -22,26 +23,16 @@ class Library
     return unless File.exists? instance_file_path
 
     Logger.debug "Load library instance"
-    zip_file = Compress::Zip::File.new instance_file_path
-    instance_file = zip_file.entries.find do |entry|
-      entry.filename == "instance.yml"
-    end
 
-    if instance_file.nil?
-      zip_file.close
-      return
-    end
     is_loaded = false
     begin
-      instance_file.open do |content|
+      Compress::Gzip::Reader.open instance_file_path do |content|
         @@default = Library.from_yaml content
       end
       is_loaded = true
     rescue e
       Logger.error e
     end
-
-    zip_file.close
 
     if is_loaded
       Library.default.register_jobs
