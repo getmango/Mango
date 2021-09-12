@@ -44,19 +44,11 @@ class Library
     zip_file.close
 
     if is_loaded
-      spawn do
-        start = Time.local
-        Library.default.scan
-        ms = (Time.local - start).total_milliseconds
-        Logger.info "Re-scanned #{Library.default.title_ids.size} titles \
-          in #{ms}ms"
-      end
+      Library.default.register_jobs
     end
   end
 
   def initialize
-    register_mime_types
-
     @dir = Config.current.library_path
     # explicitly initialize @titles to bypass the compiler check. it will
     #   be filled with actual Titles in the `scan` call below
@@ -65,6 +57,12 @@ class Library
 
     @entries_count = 0
     @thumbnails_count = 0
+
+    register_jobs
+  end
+
+  protected def register_jobs
+    register_mime_types
 
     scan_interval = Config.current.scan_interval_minutes
     if scan_interval < 1
