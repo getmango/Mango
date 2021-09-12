@@ -23,7 +23,9 @@ class Library
 
     Logger.debug "Load library instance"
     zip_file = Compress::Zip::File.new instance_file_path
-    instance_file = zip_file.entries.find { |entry| entry.filename == "instance.yml" }
+    instance_file = zip_file.entries.find do |entry|
+      entry.filename == "instance.yml"
+    end
 
     if instance_file.nil?
       zip_file.close

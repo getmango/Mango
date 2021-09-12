@@ -71,12 +71,12 @@ class Title
   end
 
   def examine(cache = {} of String => String) : Bool
-    return false unless Dir.exists? @dir # no title, should be removed
+    return false unless Dir.exists? @dir # No title, Remove this
     contents_signature = Dir.contents_signature @dir, cache
-    # not changed, preserve
+    # Not changed. Reuse this
     return true if @contents_signature == contents_signature
 
-    # fix title
+    # Fix title
     @contents_signature = contents_signature
     @signature = Dir.signature @dir
     storage = Storage.default
@@ -97,8 +97,8 @@ class Title
       title = Library.default.get_title! title_id
       title.examine cache
     end
-    remained_title_dirs = @title_ids.map do |id|
-      title = Library.default.get_title! id
+    remained_title_dirs = @title_ids.map do |title_id|
+      title = Library.default.get_title! title_id
       title.dir
     end
 
@@ -148,7 +148,7 @@ class Title
       end
     end
 
-    return true # this could be recycled
+    true # Fixed, reuse this
   end
 
   def to_slim_json : String
