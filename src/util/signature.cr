@@ -70,7 +70,7 @@ class Dir
         end
       end
     end
-    hash = Digest::SHA1.hexdigest(signatures.sort.join)
+    hash = Digest::SHA1.hexdigest(signatures.join)
     cache[dirname] = hash
     hash
   end
