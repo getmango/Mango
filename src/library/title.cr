@@ -63,24 +63,35 @@ class Title
     end
   end
 
-  def to_slim_json : String
-    JSON.build do |json|
-      json.object do
-        {% for str in ["dir", "title", "id"] %}
+  def build_json(json : JSON::Builder, *, slim = false, shallow = false)
+    json.object do
+      {% for str in ["dir", "title", "id"] %}
         json.field {{str}}, @{{str.id}}
       {% end %}
-        json.field "signature" { json.number @signature }
+      json.field "signature" { json.number @signature }
+      unless slim
+        json.field "display_name", display_name
+        json.field "cover_url", cover_url
+        json.field "mtime" { json.number @mtime.to_unix }
+      end
+      unless shallow
         json.field "titles" do
           json.array do
             self.titles.each do |title|
-              json.raw title.to_slim_json
+              raw = JSON.build do |j|
+                title.build_json j, slim: slim, shallow: shallow
+              end
+              json.raw raw
             end
           end
         end
         json.field "entries" do
           json.array do
             @entries.each do |entry|
-              json.raw entry.to_slim_json
+              raw = JSON.build do |j|
+                entry.build_json j, slim: slim
+              end
+              json.raw raw
             end
           end
         end
@@ -91,34 +102,6 @@ class Title
                 json.field "title", title.title
                 json.field "id", title.id
               end
-            end
-          end
-        end
-      end
-    end
-  end
-
-  def to_json(json : JSON::Builder)
-    json.object do
-      {% for str in ["dir", "title", "id"] %}
-        json.field {{str}}, @{{str.id}}
-      {% end %}
-      json.field "signature" { json.number @signature }
-      json.field "display_name", display_name
-      json.field "cover_url", cover_url
-      json.field "mtime" { json.number @mtime.to_unix }
-      json.field "titles" do
-        json.raw self.titles.to_json
-      end
-      json.field "entries" do
-        json.raw @entries.to_json
-      end
-      json.field "parents" do
-        json.array do
-          self.parents.each do |title|
-            json.object do
-              json.field "title", title.title
-              json.field "id", title.id
             end
           end
         end

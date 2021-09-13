@@ -133,10 +133,12 @@ struct APIRouter
     end
 
     Koa.describe "Returns the book with title `tid`", <<-MD
-    Supply the `tid` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
+    - Supply the `slim` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
+    - Supply the `shallow` query parameter to get only the title information, without the list of entries and nested titles
     MD
     Koa.path "tid", desc: "Title ID"
     Koa.query "slim"
+    Koa.query "shallow"
     Koa.response 200, schema: "title"
     Koa.response 404, "Title not found"
     Koa.tag "library"
@@ -146,10 +148,11 @@ struct APIRouter
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
 
-        if env.params.query["slim"]?
-          send_json env, title.to_slim_json
-        else
-          send_json env, title.to_json
+        slim = !env.params.query["slim"]?.nil?
+        shallow = !env.params.query["shallow"]?.nil?
+
+        json = JSON.build do |j|
+          title.build_json j, slim: slim, shallow: shallow
         end
       rescue e
         Logger.error e
@@ -159,20 +162,24 @@ struct APIRouter
     end
 
     Koa.describe "Returns the entire library with all titles and entries", <<-MD
-    Supply the `tid` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
+    - Supply the `slim` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
+    - Supply the `shallow` query parameter to get only the top-level titles, without the nested titles and entries
     MD
     Koa.query "slim"
+    Koa.query "shallow"
     Koa.response 200, schema: {
       "dir"    => String,
       "titles" => ["title"],
     }
     Koa.tag "library"
     get "/api/library" do |env|
-      if env.params.query["slim"]?
-        send_json env, Library.default.to_slim_json
-      else
-        send_json env, Library.default.to_json
+      slim = !env.params.query["slim"]?.nil?
+      shallow = !env.params.query["shallow"]?.nil?
+
+      json = JSON.build do |j|
+        Library.default.build_json j, slim: slim, shallow: shallow
       end
+      send_json env, json
     end
 
     Koa.describe "Triggers a library scan"
