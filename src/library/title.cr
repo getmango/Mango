@@ -63,7 +63,10 @@ class Title
     end
   end
 
-  def build_json(json : JSON::Builder, *, slim = false, shallow = false)
+  alias SortContext = NamedTuple(username: String, opt: SortOptions)
+
+  def build_json(json : JSON::Builder, *, slim = false, shallow = false,
+                 sort_context : SortContext? = nil)
     json.object do
       {% for str in ["dir", "title", "id"] %}
         json.field {{str}}, @{{str.id}}
@@ -87,7 +90,13 @@ class Title
         end
         json.field "entries" do
           json.array do
-            @entries.each do |entry|
+            _entries = if sort_context
+                         sorted_entries sort_context[:username],
+                           sort_context[:opt]
+                       else
+                         @entries
+                       end
+            _entries.each do |entry|
               raw = JSON.build do |j|
                 entry.build_json j, slim: slim
               end

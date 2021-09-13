@@ -139,11 +139,18 @@ struct APIRouter
     Koa.path "tid", desc: "Title ID"
     Koa.query "slim"
     Koa.query "shallow"
+    Koa.query "sort", desc: "Sorting option for entries. Can be one of 'auto', 'title', 'progress', 'time_added' and 'time_modified'"
+    Koa.query "ascend", desc: "Sorting direction for entries. Set to 0 for the descending order. Doesn't work without specifying 'sort'"
     Koa.response 200, schema: "title"
     Koa.response 404, "Title not found"
     Koa.tag "library"
     get "/api/book/:tid" do |env|
       begin
+        username = get_username env
+
+        sort_opt = SortOptions.new
+        get_sort_opt
+
         tid = env.params.url["tid"]
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
@@ -152,7 +159,8 @@ struct APIRouter
         shallow = !env.params.query["shallow"]?.nil?
 
         json = JSON.build do |j|
-          title.build_json j, slim: slim, shallow: shallow
+          title.build_json j, slim: slim, shallow: shallow,
+            sort_context: {username: username, opt: sort_opt}
         end
       rescue e
         Logger.error e
