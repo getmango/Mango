@@ -9,6 +9,7 @@ class Library
   def save_instance
     path = Config.current.library_path
     instance_file_path = File.join path, "library.yml.gz"
+    Logger.debug "Caching library to #{instance_file_path}"
 
     writer = Compress::Gzip::Writer.new instance_file_path,
       Compress::Gzip::BEST_COMPRESSION
@@ -22,20 +23,15 @@ class Library
     instance_file_path = File.join dir, "library.yml.gz"
     return unless File.exists? instance_file_path
 
-    Logger.debug "Load library instance"
+    Logger.debug "Loading cached library from #{instance_file_path}"
 
-    is_loaded = false
     begin
       Compress::Gzip::Reader.open instance_file_path do |content|
         @@default = Library.from_yaml content
       end
-      is_loaded = true
+      Library.default.register_jobs
     rescue e
       Logger.error e
-    end
-
-    if is_loaded
-      Library.default.register_jobs
     end
   end
 
@@ -64,7 +60,7 @@ class Library
           start = Time.local
           scan
           ms = (Time.local - start).total_milliseconds
-          Logger.info "Scanned #{@title_ids.size} titles in #{ms}ms"
+          Logger.debug "Library initialized in #{ms}ms"
           sleep scan_interval.minutes
         end
       end
@@ -171,10 +167,13 @@ class Library
     storage.close
 
     ms = (Time.local - start).total_milliseconds
-    Logger.debug "Scan completed. #{ms}ms"
+    Logger.info "Scanned #{@title_ids.size} titles in #{ms}ms"
+
     Storage.default.mark_unavailable
 
-    save_instance
+    spawn do
+      save_instance
+    end
   end
 
   def get_continue_reading_entries(username)
