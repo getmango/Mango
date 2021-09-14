@@ -134,14 +134,21 @@ class TitleInfo
   end
 end
 
+class YieldCounter
+  setter threshold : Int32
+
+  def initialize(@threshold : Int32)
+    @file_count = 0
+  end
+
+  def count_and_yield
+    @file_count += 1
+    Fiber.yield if @file_count % @threshold == 0
+  end
+end
+
 alias ExamineContext = NamedTuple(
-  file_count: Int32,
+  file_counter: YieldCounter,
   cached_contents_signature: Hash(String, String),
   deleted_title_ids: Array(String),
-  deleted_entry_ids: Array(String)
-)
-
-def yield_process_file(context : ExamineContext)
-  context["file_count"] += 1
-  Fiber.yield if context["file_count"] % 1000 == 0
-end
+  deleted_entry_ids: Array(String))

@@ -143,10 +143,10 @@ class Library
     storage = Storage.new auto_close: false
 
     examine_context : ExamineContext = {
-      file_count: 0,
+      file_counter:              (YieldCounter.new 1000),
       cached_contents_signature: {} of String => String,
-      deleted_title_ids: [] of String,
-      deleted_entry_ids: [] of String
+      deleted_title_ids:         [] of String,
+      deleted_entry_ids:         [] of String,
     }
 
     @title_ids.select! do |title_id|
