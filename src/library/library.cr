@@ -153,8 +153,9 @@ class Library
       title = @title_hash[title_id]
       existence = title.examine examine_context
       unless existence
+        examine_context["deleted_title_ids"].concat title.deep_titles.map &.id
+        examine_context["deleted_entry_ids"].concat title.deep_entries.map &.id
         @title_hash.delete title_id
-        examine_context["deleted_title_ids"] << title_id
       end
       existence
     end
