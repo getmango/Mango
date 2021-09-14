@@ -62,7 +62,7 @@ class Dir
         next if fn.starts_with? "."
         path = File.join dirname, fn
         if File.directory? path
-          signatures << Dir.contents_signature path
+          signatures << Dir.contents_signature path, cache
         else
           # Only add its signature value to `signatures` when it is a
           #   supported file
