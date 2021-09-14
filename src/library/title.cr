@@ -101,7 +101,10 @@ class Title
     @title_ids.select! do |title_id|
       title = Library.default.get_title! title_id
       existence = title.examine context
-      Library.default.title_hash.delete title_id unless existence
+      unless existence
+        Library.default.title_hash.delete title_id
+        context["deleted_title_ids"] << title_id
+      end
       existence
     end
     remained_title_dirs = @title_ids.map do |title_id|
@@ -110,7 +113,11 @@ class Title
     end
 
     previous_entries_size = @entries.size
-    @entries.select! { |entry| File.exists? entry.zip_path }
+    @entries.select! do |entry|
+      existence = File.exists? entry.zip_path
+      context["deleted_entry_ids"] << entry.id unless existence
+      existence
+    end
     remained_entry_zip_paths = @entries.map &.zip_path
 
     is_titles_added = false

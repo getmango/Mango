@@ -152,7 +152,10 @@ class Library
     @title_ids.select! do |title_id|
       title = @title_hash[title_id]
       existence = title.examine examine_context
-      @title_hash.delete title_id unless existence
+      unless existence
+        @title_hash.delete title_id
+        examine_context["deleted_title_ids"] << title_id
+      end
       existence
     end
     remained_title_dirs = @title_ids.map { |id| title_hash[id].dir }
