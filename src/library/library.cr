@@ -153,13 +153,15 @@ class Library
       title = @title_hash[title_id]
       existence = title.examine examine_context
       unless existence
-        examine_context["deleted_title_ids"].concat title.deep_titles.map &.id
+        examine_context["deleted_title_ids"].concat [title_id] + title.deep_titles.map &.id
         examine_context["deleted_entry_ids"].concat title.deep_entries.map &.id
-        @title_hash.delete title_id
       end
       existence
     end
     remained_title_dirs = @title_ids.map { |id| title_hash[id].dir }
+    examine_context["deleted_title_ids"].each do |title_id|
+      @title_hash.delete title_id
+    end
 
     cache = examine_context["cached_contents_signature"]
     (Dir.entries @dir)
