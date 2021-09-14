@@ -140,3 +140,8 @@ alias ExamineContext = NamedTuple(
   deleted_title_ids: Array(String),
   deleted_entry_ids: Array(String)
 )
+
+def yield_process_file(context : ExamineContext)
+  context["file_count"] += 1
+  Fiber.yield if context["file_count"] % 1000 == 0
+end

@@ -56,6 +56,7 @@ class Dir
   #       directories)
   def self.contents_signature(dirname, cache = {} of String => String) : String
     return cache[dirname] if !cache.nil? && cache[dirname]?
+    Fiber.yield # Yield first
     signatures = [] of String
     self.open dirname do |dir|
       dir.entries.sort.each do |fn|

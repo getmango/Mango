@@ -115,6 +115,7 @@ class Title
     previous_entries_size = @entries.size
     @entries.select! do |entry|
       existence = File.exists? entry.zip_path
+      yield_process_file context
       context["deleted_entry_ids"] << entry.id unless existence
       existence
     end
