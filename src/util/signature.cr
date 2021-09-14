@@ -55,7 +55,7 @@ class Dir
   #   - When a file added, moved, removed, renamed (including which in nested
   #       directories)
   def self.contents_signature(dirname, cache = {} of String => String) : String
-    return cache[dirname] if cache[dirname]?
+    return cache[dirname] if !cache.nil? && cache[dirname]?
     signatures = [] of String
     self.open dirname do |dir|
       dir.entries.sort.each do |fn|
@@ -71,7 +71,7 @@ class Dir
       end
     end
     hash = Digest::SHA1.hexdigest(signatures.join)
-    cache[dirname] = hash
+    cache[dirname] = hash unless cache.nil?
     hash
   end
 end

@@ -142,20 +142,28 @@ class Library
 
     storage = Storage.new auto_close: false
 
+    examine_context : ExamineContext = {
+      file_count: 0,
+      cached_contents_signature: {} of String => String,
+      deleted_title_ids: [] of String,
+      deleted_entry_ids: [] of String
+    }
+
     @title_ids.select! do |title_id|
       title = @title_hash[title_id]
-      existence = title.examine
+      existence = title.examine examine_context
       @title_hash.delete title_id unless existence
       existence
     end
     remained_title_dirs = @title_ids.map { |id| title_hash[id].dir }
 
+    cache = examine_context["cached_contents_signature"]
     (Dir.entries @dir)
       .select { |fn| !fn.starts_with? "." }
       .map { |fn| File.join @dir, fn }
       .select { |path| !(remained_title_dirs.includes? path) }
       .select { |path| File.directory? path }
-      .map { |path| Title.new path, "" }
+      .map { |path| Title.new path, "", cache }
       .select { |title| !(title.entries.empty? && title.titles.empty?) }
       .sort! { |a, b| a.title <=> b.title }
       .each do |title|

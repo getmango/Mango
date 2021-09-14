@@ -19,7 +19,7 @@ class Title
   @[YAML::Field(ignore: true)]
   @cached_cover_url : String?
 
-  def initialize(@dir : String, @parent_id)
+  def initialize(@dir : String, @parent_id, cache : Hash(String, String)?)
     storage = Storage.default
     @signature = Dir.signature dir
     id = storage.get_title_id dir, signature
@@ -32,7 +32,7 @@ class Title
       })
     end
     @id = id
-    @contents_signature = Dir.contents_signature dir
+    @contents_signature = Dir.contents_signature dir, cache
     @title = File.basename dir
     @encoded_title = URI.encode @title
     @title_ids = [] of String
@@ -70,9 +70,14 @@ class Title
     end
   end
 
-  def examine(cache = {} of String => String) : Bool
+  def self.new(dir : String, parent_id)
+    new dir, parent_id, nil
+  end
+
+  def examine(context : ExamineContext) : Bool
     return false unless Dir.exists? @dir # No title, Remove this
-    contents_signature = Dir.contents_signature @dir, cache
+    contents_signature = Dir.contents_signature @dir,
+      context["cached_contents_signature"]
     # Not changed. Reuse this
     return true if @contents_signature == contents_signature
 
@@ -95,7 +100,7 @@ class Title
     previous_titles_size = @title_ids.size
     @title_ids.select! do |title_id|
       title = Library.default.get_title! title_id
-      existence = title.examine cache
+      existence = title.examine context
       Library.default.title_hash.delete title_id unless existence
       existence
     end
@@ -115,7 +120,7 @@ class Title
       path = File.join dir, fn
       if File.directory? path
         next if remained_title_dirs.includes? path
-        title = Title.new path, @id
+        title = Title.new path, @id, context["cached_contents_signature"]
         next if title.entries.size == 0 && title.titles.size == 0
         Library.default.title_hash[title.id] = title
         @title_ids << title.id
