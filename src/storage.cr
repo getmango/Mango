@@ -466,6 +466,47 @@ class Storage
     end
   end
 
+  # Limit mark targets with given arguments
+  def mark_unavailable(trash_ids_candidates : Array(String), trash_titles_candidates : Array(String))
+    MainFiber.run do
+      get_db do |db|
+        # Detect dangling entry IDs
+        trash_ids = [] of String
+        db.query "select path, id from ids where id in " \
+                 "(#{trash_ids_candidates.join "," { |i| "'#{i}'" }})" do |rs|
+          rs.each do
+            path = rs.read String
+            fullpath = Path.new(path).expand(Config.current.library_path).to_s
+            trash_ids << rs.read String unless File.exists? fullpath
+          end
+        end
+
+        unless trash_ids.empty?
+          Logger.debug "Marking #{trash_ids.size} entries as unavailable"
+        end
+        db.exec "update ids set unavailable = 1 where id in " \
+                "(#{trash_ids.join "," { |i| "'#{i}'" }})"
+
+        # Detect dangling title IDs
+        trash_titles = [] of String
+        db.query "select path, id from titles where id in " \
+                 "(#{trash_titles_candidates.join "," { |i| "'#{i}'" }})" do |rs|
+          rs.each do
+            path = rs.read String
+            fullpath = Path.new(path).expand(Config.current.library_path).to_s
+            trash_titles << rs.read String unless Dir.exists? fullpath
+          end
+        end
+
+        unless trash_titles.empty?
+          Logger.debug "Marking #{trash_titles.size} titles as unavailable"
+        end
+        db.exec "update titles set unavailable = 1 where id in " \
+                "(#{trash_titles.join "," { |i| "'#{i}'" }})"
+      end
+    end
+  end
+
   private def get_missing(tablename)
     ary = [] of IDTuple
     MainFiber.run do

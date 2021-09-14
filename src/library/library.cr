@@ -183,7 +183,8 @@ class Library
     ms = (Time.local - start).total_milliseconds
     Logger.info "Scanned #{@title_ids.size} titles in #{ms}ms"
 
-    Storage.default.mark_unavailable
+    Storage.default.mark_unavailable examine_context["deleted_entry_ids"],
+      examine_context["deleted_title_ids"]
 
     spawn do
       save_instance
