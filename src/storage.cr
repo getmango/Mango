@@ -467,6 +467,8 @@ class Storage
   end
 
   # Limit mark targets with given arguments
+  # They should be checked again if they are really gone,
+  #   since they would be available which are renamed or moved
   def mark_unavailable(ids_candidates : Array(String),
                        titles_candidates : Array(String))
     MainFiber.run do
