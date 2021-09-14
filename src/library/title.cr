@@ -65,51 +65,47 @@ class Title
 
   alias SortContext = NamedTuple(username: String, opt: SortOptions)
 
-  def build_json(json : JSON::Builder, *, slim = false, shallow = false,
+  def build_json(*, slim = false, shallow = false,
                  sort_context : SortContext? = nil)
-    json.object do
-      {% for str in ["dir", "title", "id"] %}
+    JSON.build do |json|
+      json.object do
+        {% for str in ["dir", "title", "id"] %}
         json.field {{str}}, @{{str.id}}
       {% end %}
-      json.field "signature" { json.number @signature }
-      unless slim
-        json.field "display_name", display_name
-        json.field "cover_url", cover_url
-        json.field "mtime" { json.number @mtime.to_unix }
-      end
-      unless shallow
-        json.field "titles" do
-          json.array do
-            self.titles.each do |title|
-              raw = JSON.build do |j|
-                title.build_json j, slim: slim, shallow: shallow
+        json.field "signature" { json.number @signature }
+        unless slim
+          json.field "display_name", display_name
+          json.field "cover_url", cover_url
+          json.field "mtime" { json.number @mtime.to_unix }
+        end
+        unless shallow
+          json.field "titles" do
+            json.array do
+              self.titles.each do |title|
+                json.raw title.build_json(slim: slim, shallow: shallow)
               end
-              json.raw raw
             end
           end
-        end
-        json.field "entries" do
-          json.array do
-            _entries = if sort_context
-                         sorted_entries sort_context[:username],
-                           sort_context[:opt]
-                       else
-                         @entries
-                       end
-            _entries.each do |entry|
-              raw = JSON.build do |j|
-                entry.build_json j, slim: slim
+          json.field "entries" do
+            json.array do
+              _entries = if sort_context
+                           sorted_entries sort_context[:username],
+                             sort_context[:opt]
+                         else
+                           @entries
+                         end
+              _entries.each do |entry|
+                json.raw entry.build_json(slim: slim)
               end
-              json.raw raw
             end
           end
-        end
-        json.field "parents" do
-          json.array do
-            self.parents.each do |title|
-              json.object do
-                json.field "title", title.title
-                json.field "id", title.id
+          json.field "parents" do
+            json.array do
+              self.parents.each do |title|
+                json.object do
+                  json.field "title", title.title
+                  json.field "id", title.id
+                end
               end
             end
           end

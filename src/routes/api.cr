@@ -158,10 +158,9 @@ struct APIRouter
         slim = !env.params.query["slim"]?.nil?
         shallow = !env.params.query["shallow"]?.nil?
 
-        json = JSON.build do |j|
-          title.build_json j, slim: slim, shallow: shallow,
-            sort_context: {username: username, opt: sort_opt}
-        end
+        send_json env, title.build_json(slim: slim, shallow: shallow,
+          sort_context: {username: username,
+                         opt:      sort_opt})
       rescue e
         Logger.error e
         env.response.status_code = 404
@@ -184,10 +183,7 @@ struct APIRouter
       slim = !env.params.query["slim"]?.nil?
       shallow = !env.params.query["shallow"]?.nil?
 
-      json = JSON.build do |j|
-        Library.default.build_json j, slim: slim, shallow: shallow
-      end
-      send_json env, json
+      send_json env, Library.default.build_json(slim: slim, shallow: shallow)
     end
 
     Koa.describe "Triggers a library scan"
