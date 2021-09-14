@@ -467,13 +467,14 @@ class Storage
   end
 
   # Limit mark targets with given arguments
-  def mark_unavailable(trash_ids_candidates : Array(String), trash_titles_candidates : Array(String))
+  def mark_unavailable(ids_candidates : Array(String),
+                       titles_candidates : Array(String))
     MainFiber.run do
       get_db do |db|
         # Detect dangling entry IDs
         trash_ids = [] of String
         db.query "select path, id from ids where id in " \
-                 "(#{trash_ids_candidates.join "," { |i| "'#{i}'" }})" do |rs|
+                 "(#{ids_candidates.join "," { |i| "'#{i}'" }})" do |rs|
           rs.each do
             path = rs.read String
             fullpath = Path.new(path).expand(Config.current.library_path).to_s
@@ -490,7 +491,7 @@ class Storage
         # Detect dangling title IDs
         trash_titles = [] of String
         db.query "select path, id from titles where id in " \
-                 "(#{trash_titles_candidates.join "," { |i| "'#{i}'" }})" do |rs|
+                 "(#{titles_candidates.join "," { |i| "'#{i}'" }})" do |rs|
           rs.each do
             path = rs.read String
             fullpath = Path.new(path).expand(Config.current.library_path).to_s

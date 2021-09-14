@@ -102,7 +102,8 @@ class Title
       title = Library.default.get_title! title_id
       existence = title.examine context
       unless existence
-        context["deleted_title_ids"].concat [title_id] + title.deep_titles.map &.id
+        context["deleted_title_ids"].concat [title_id] +
+                                            title.deep_titles.map &.id
         context["deleted_entry_ids"].concat title.deep_entries.map &.id
       end
       existence
