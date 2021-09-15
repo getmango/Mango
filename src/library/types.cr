@@ -135,7 +135,7 @@ class TitleInfo
 end
 
 class YieldCounter
-  setter threshold : Int32
+  @file_count : UInt32
 
   def initialize(@threshold : Int32)
     @file_count = 0
@@ -143,7 +143,7 @@ class YieldCounter
 
   def count_and_yield
     @file_count += 1
-    Fiber.yield if @file_count % @threshold == 0
+    Fiber.yield if @threshold > 0 && @file_count % @threshold == 0
   end
 end
 
