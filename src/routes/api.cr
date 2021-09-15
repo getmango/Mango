@@ -133,24 +133,34 @@ struct APIRouter
     end
 
     Koa.describe "Returns the book with title `tid`", <<-MD
-    Supply the `tid` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
+    - Supply the `slim` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
+    - Supply the `shallow` query parameter to get only the title information, without the list of entries and nested titles
     MD
     Koa.path "tid", desc: "Title ID"
     Koa.query "slim"
+    Koa.query "shallow"
+    Koa.query "sort", desc: "Sorting option for entries. Can be one of 'auto', 'title', 'progress', 'time_added' and 'time_modified'"
+    Koa.query "ascend", desc: "Sorting direction for entries. Set to 0 for the descending order. Doesn't work without specifying 'sort'"
     Koa.response 200, schema: "title"
     Koa.response 404, "Title not found"
     Koa.tag "library"
     get "/api/book/:tid" do |env|
       begin
+        username = get_username env
+
+        sort_opt = SortOptions.new
+        get_sort_opt
+
         tid = env.params.url["tid"]
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
 
-        if env.params.query["slim"]?
-          send_json env, title.to_slim_json
-        else
-          send_json env, title.to_json
-        end
+        slim = !env.params.query["slim"]?.nil?
+        shallow = !env.params.query["shallow"]?.nil?
+
+        send_json env, title.build_json(slim: slim, shallow: shallow,
+          sort_context: {username: username,
+                         opt:      sort_opt})
       rescue e
         Logger.error e
         env.response.status_code = 404
@@ -159,20 +169,21 @@ struct APIRouter
     end
 
     Koa.describe "Returns the entire library with all titles and entries", <<-MD
-    Supply the `tid` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
+    - Supply the `slim` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
+    - Supply the `shallow` query parameter to get only the top-level titles, without the nested titles and entries
     MD
     Koa.query "slim"
+    Koa.query "shallow"
     Koa.response 200, schema: {
       "dir"    => String,
       "titles" => ["title"],
     }
     Koa.tag "library"
     get "/api/library" do |env|
-      if env.params.query["slim"]?
-        send_json env, Library.default.to_slim_json
-      else
-        send_json env, Library.default.to_json
-      end
+      slim = !env.params.query["slim"]?.nil?
+      shallow = !env.params.query["shallow"]?.nil?
+
+      send_json env, Library.default.build_json(slim: slim, shallow: shallow)
     end
 
     Koa.describe "Triggers a library scan"
