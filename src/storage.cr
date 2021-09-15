@@ -429,54 +429,24 @@ class Storage
   end
 
   def mark_unavailable
-    MainFiber.run do
-      get_db do |db|
-        # Detect dangling entry IDs
-        trash_ids = [] of String
-        db.query "select path, id from ids where unavailable = 0" do |rs|
-          rs.each do
-            path = rs.read String
-            fullpath = Path.new(path).expand(Config.current.library_path).to_s
-            trash_ids << rs.read String unless File.exists? fullpath
-          end
-        end
-
-        unless trash_ids.empty?
-          Logger.debug "Marking #{trash_ids.size} entries as unavailable"
-        end
-        db.exec "update ids set unavailable = 1 where id in " \
-                "(#{trash_ids.join "," { |i| "'#{i}'" }})"
-
-        # Detect dangling title IDs
-        trash_titles = [] of String
-        db.query "select path, id from titles where unavailable  = 0" do |rs|
-          rs.each do
-            path = rs.read String
-            fullpath = Path.new(path).expand(Config.current.library_path).to_s
-            trash_titles << rs.read String unless Dir.exists? fullpath
-          end
-        end
-
-        unless trash_titles.empty?
-          Logger.debug "Marking #{trash_titles.size} titles as unavailable"
-        end
-        db.exec "update titles set unavailable = 1 where id in " \
-                "(#{trash_titles.join "," { |i| "'#{i}'" }})"
-      end
-    end
+    mark_unavailable nil, nil
   end
 
   # Limit mark targets with given arguments
   # They should be checked again if they are really gone,
   #   since they would be available which are renamed or moved
-  def mark_unavailable(ids_candidates : Array(String),
-                       titles_candidates : Array(String))
+  def mark_unavailable(ids_candidates : Array(String) | Nil,
+                       titles_candidates : Array(String) | Nil)
     MainFiber.run do
       get_db do |db|
         # Detect dangling entry IDs
         trash_ids = [] of String
-        db.query "select path, id from ids where id in " \
-                 "(#{ids_candidates.join "," { |i| "'#{i}'" }})" do |rs|
+        # Use query builder instead?
+        query = "select path, id from ids where unavailable = 0"
+        unless ids_candidates.nil?
+          query += " and id in (#{ids_candidates.join "," { |i| "'#{i}'" }})"
+        end
+        db.query query do |rs|
           rs.each do
             path = rs.read String
             fullpath = Path.new(path).expand(Config.current.library_path).to_s
@@ -492,8 +462,11 @@ class Storage
 
         # Detect dangling title IDs
         trash_titles = [] of String
-        db.query "select path, id from titles where id in " \
-                 "(#{titles_candidates.join "," { |i| "'#{i}'" }})" do |rs|
+        query = "select path, id from titles where unavailable = 0"
+        unless titles_candidates.nil?
+          query += " and id in (#{titles_candidates.join "," { |i| "'#{i}'" }})"
+        end
+        db.query query do |rs|
           rs.each do
             path = rs.read String
             fullpath = Path.new(path).expand(Config.current.library_path).to_s
