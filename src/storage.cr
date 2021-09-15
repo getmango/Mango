@@ -428,15 +428,11 @@ class Storage
     end
   end
 
-  def mark_unavailable
-    mark_unavailable nil, nil
-  end
-
   # Limit mark targets with given arguments
   # They should be checked again if they are really gone,
   #   since they would be available which are renamed or moved
-  def mark_unavailable(ids_candidates : Array(String) | Nil,
-                       titles_candidates : Array(String) | Nil)
+  def mark_unavailable(ids_candidates : Array(String)?,
+                       titles_candidates : Array(String)?)
     MainFiber.run do
       get_db do |db|
         # Detect dangling entry IDs
