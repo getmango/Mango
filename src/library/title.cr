@@ -19,7 +19,7 @@ class Title
   @[YAML::Field(ignore: true)]
   @cached_cover_url : String?
 
-  def initialize(@dir : String, @parent_id, cache : Hash(String, String)? = nil)
+  def initialize(@dir : String, @parent_id, cache = {} of String => String)
     storage = Storage.default
     @signature = Dir.signature dir
     id = storage.get_title_id dir, signature
@@ -43,7 +43,7 @@ class Title
       next if fn.starts_with? "."
       path = File.join dir, fn
       if File.directory? path
-        title = Title.new path, @id
+        title = Title.new path, @id, cache
         next if title.entries.size == 0 && title.titles.size == 0
         Library.default.title_hash[title.id] = title
         @title_ids << title.id
@@ -73,7 +73,7 @@ class Title
   def examine(context : ExamineContext) : Bool
     return false unless Dir.exists? @dir # No title, Remove this
     contents_signature = Dir.contents_signature @dir,
-      context["cached_contents_signature"]
+      context["cached_contents_signature"], context["file_counter"]
     # Not changed. Reuse this
     return true if @contents_signature == contents_signature
 

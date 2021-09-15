@@ -23,6 +23,7 @@ class Config
   property cache_enabled = false
   property cache_size_mbs = 50
   property cache_log_enabled = true
+  property forcely_yield_count = 1000
   property disable_login = false
   property default_username = ""
   property auth_proxy_header_name = ""
