@@ -19,7 +19,7 @@ class Title
   @[YAML::Field(ignore: true)]
   @cached_cover_url : String?
 
-  def initialize(@dir : String, @parent_id, cache : Hash(String, String)?)
+  def initialize(@dir : String, @parent_id, cache : Hash(String, String)? = nil)
     storage = Storage.default
     @signature = Dir.signature dir
     id = storage.get_title_id dir, signature
@@ -68,10 +68,6 @@ class Title
     @entries.sort! do |a, b|
       sorter.compare a.title, b.title
     end
-  end
-
-  def self.new(dir : String, parent_id)
-    new dir, parent_id, nil
   end
 
   def examine(context : ExamineContext) : Bool
