@@ -80,7 +80,7 @@ class Title
   # - When the title exists and its contents signature is still the same, we
   #     return true so it can be reused without rescanning
   def examine(context : ExamineContext) : Bool
-    return false unless Dir.exists? @dir # No title, Remove this
+    return false unless Dir.exists? @dir
     contents_signature = Dir.contents_signature @dir,
       context["cached_contents_signature"]
     return true if @contents_signature == contents_signature

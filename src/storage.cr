@@ -438,7 +438,6 @@ class Storage
       get_db do |db|
         # Detect dangling entry IDs
         trash_ids = [] of String
-        # Use query builder instead?
         query = "select path, id from ids where unavailable = 0"
         unless ids_candidates.nil?
           query += " and id in (#{ids_candidates.join "," { |i| "'#{i}'" }})"
