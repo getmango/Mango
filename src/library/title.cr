@@ -70,14 +70,21 @@ class Title
     end
   end
 
+  # Utility method used in library rescanning.
+  # - When the title does not exist on the file system anymore, return false
+  #     and let it be deleted from the libaray instance
+  # - When the title exists, but its contents sigature is now different from
+  #     the cache, it means some of its content (nested titles or entries)
+  #     has been added, deleted, or renamed. In this case we update its
+  #     contents signature and instance variables
+  # - When the title exists and its contents sigature is still the same, we
+  #     return true so it can be reused without rescanning
   def examine(context : ExamineContext) : Bool
     return false unless Dir.exists? @dir # No title, Remove this
     contents_signature = Dir.contents_signature @dir,
       context["cached_contents_signature"], context["file_counter"]
-    # Not changed. Reuse this
     return true if @contents_signature == contents_signature
 
-    # Fix title
     @contents_signature = contents_signature
     @signature = Dir.signature @dir
     storage = Storage.default
@@ -160,7 +167,7 @@ class Title
       end
     end
 
-    true # Fixed, reuse this
+    true
   end
 
   alias SortContext = NamedTuple(username: String, opt: SortOptions)
