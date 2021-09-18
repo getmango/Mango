@@ -380,7 +380,7 @@ class Title
     cached_sum = LRUCache.get key
     return cached_sum[1] if cached_sum.is_a? Tuple(String, Int32) &&
                             cached_sum[0] == sig
-    sum = load_progress_for_all_entries(username).sum +
+    sum = load_progress_for_all_entries(username, nil, true).sum +
           titles.flat_map(&.deep_read_page_count username).sum
     LRUCache.set generate_cache_entry key, {sig, sum}
     sum
