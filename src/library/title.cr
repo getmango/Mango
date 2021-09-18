@@ -82,7 +82,7 @@ class Title
   def examine(context : ExamineContext) : Bool
     return false unless Dir.exists? @dir # No title, Remove this
     contents_signature = Dir.contents_signature @dir,
-      context["cached_contents_signature"], context["file_counter"]
+      context["cached_contents_signature"]
     return true if @contents_signature == contents_signature
 
     @contents_signature = contents_signature
@@ -119,7 +119,7 @@ class Title
     previous_entries_size = @entries.size
     @entries.select! do |entry|
       existence = File.exists? entry.zip_path
-      context["file_counter"].count_and_yield
+      Fiber.yield
       context["deleted_entry_ids"] << entry.id unless existence
       existence
     end
