@@ -133,9 +133,7 @@ class Library
 
     storage = Storage.new auto_close: false
 
-    count = Config.current.forcely_yield_count
     examine_context : ExamineContext = {
-      file_counter:              (YieldCounter.new count),
       cached_contents_signature: {} of String => String,
       deleted_title_ids:         [] of String,
       deleted_entry_ids:         [] of String,

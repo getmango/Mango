@@ -54,24 +54,22 @@ class Dir
   # Rescan conditions:
   #   - When a file added, moved, removed, renamed (including which in nested
   #       directories)
-  def self.contents_signature(dirname,
-                              cache = {} of String => String,
-                              counter : YieldCounter? = nil) : String
+  def self.contents_signature(dirname, cache = {} of String => String) : String
     return cache[dirname] if cache[dirname]?
-    counter.count_and_yield unless counter.nil?
+    Fiber.yield
     signatures = [] of String
     self.open dirname do |dir|
       dir.entries.sort.each do |fn|
         next if fn.starts_with? "."
         path = File.join dirname, fn
         if File.directory? path
-          signatures << Dir.contents_signature path, cache, counter
+          signatures << Dir.contents_signature path, cache
         else
           # Only add its signature value to `signatures` when it is a
           #   supported file
           signatures << fn if is_supported_file fn
         end
-        counter.count_and_yield unless counter.nil?
+        Fiber.yield
       end
     end
     hash = Digest::SHA1.hexdigest(signatures.join)
