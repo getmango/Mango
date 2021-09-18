@@ -428,9 +428,10 @@ class Storage
     end
   end
 
-  # Limit mark targets with given arguments
-  # They should be checked again if they are really gone,
-  #   since they would be available which are renamed or moved
+  # Mark titles and entries that no longer exist on the file system as
+  #   unavailable. By supplying `id_candidates` and `titles_candidates`, it
+  #   only checks the existence of the candidate titles/entries to speed up
+  #   the process.
   def mark_unavailable(ids_candidates : Array(String)?,
                        titles_candidates : Array(String)?)
     MainFiber.run do
