@@ -7,26 +7,23 @@ class Library
   use_default
 
   def save_instance
-    path = Config.current.library_path
-    instance_file_path = File.join path, "library.yml.gz"
-    Logger.debug "Caching library to #{instance_file_path}"
+    path = Config.current.library_cache_path
+    Logger.debug "Caching library to #{path}"
 
-    writer = Compress::Gzip::Writer.new instance_file_path,
+    writer = Compress::Gzip::Writer.new path,
       Compress::Gzip::BEST_COMPRESSION
     writer.write self.to_yaml.to_slice
     writer.close
   end
 
   def self.load_instance
-    dir = Config.current.library_path
-    return unless Dir.exists? dir
-    instance_file_path = File.join dir, "library.yml.gz"
-    return unless File.exists? instance_file_path
+    path = Config.current.library_cache_path
+    return unless File.exists? path
 
-    Logger.debug "Loading cached library from #{instance_file_path}"
+    Logger.debug "Loading cached library from #{path}"
 
     begin
-      Compress::Gzip::Reader.open instance_file_path do |content|
+      Compress::Gzip::Reader.open path do |content|
         @@default = Library.from_yaml content
       end
       Library.default.register_jobs

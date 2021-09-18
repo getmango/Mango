@@ -11,6 +11,8 @@ class Config
   property session_secret : String = "mango-session-secret"
   property library_path : String = File.expand_path "~/mango/library",
     home: true
+  property library_cache_path = File.expand_path "~/mango/library.yml.cbz",
+    home: true
   property db_path : String = File.expand_path "~/mango/mango.db", home: true
   property scan_interval_minutes : Int32 = 5
   property thumbnail_generation_interval_hours : Int32 = 24
