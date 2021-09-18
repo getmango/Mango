@@ -2,18 +2,24 @@ require "digest"
 require "../archive"
 
 class Title
+  include YAML::Serializable
+
   getter dir : String, parent_id : String, title_ids : Array(String),
     entries : Array(Entry), title : String, id : String,
     encoded_title : String, mtime : Time, signature : UInt64,
     entry_cover_url_cache : Hash(String, String)?
   setter entry_cover_url_cache : Hash(String, String)?
 
+  @[YAML::Field(ignore: true)]
   @entry_display_name_cache : Hash(String, String)?
+  @[YAML::Field(ignore: true)]
   @entry_cover_url_cache : Hash(String, String)?
+  @[YAML::Field(ignore: true)]
   @cached_display_name : String?
+  @[YAML::Field(ignore: true)]
   @cached_cover_url : String?
 
-  def initialize(@dir : String, @parent_id)
+  def initialize(@dir : String, @parent_id, cache = {} of String => String)
     storage = Storage.default
     @signature = Dir.signature dir
     id = storage.get_title_id dir, signature
@@ -26,6 +32,7 @@ class Title
       })
     end
     @id = id
+    @contents_signature = Dir.contents_signature dir, cache
     @title = File.basename dir
     @encoded_title = URI.encode @title
     @title_ids = [] of String
@@ -36,7 +43,7 @@ class Title
       next if fn.starts_with? "."
       path = File.join dir, fn
       if File.directory? path
-        title = Title.new path, @id
+        title = Title.new path, @id, cache
         next if title.entries.size == 0 && title.titles.size == 0
         Library.default.title_hash[title.id] = title
         @title_ids << title.id
@@ -61,6 +68,106 @@ class Title
     @entries.sort! do |a, b|
       sorter.compare a.title, b.title
     end
+  end
+
+  # Utility method used in library rescanning.
+  # - When the title does not exist on the file system anymore, return false
+  #     and let it be deleted from the library instance
+  # - When the title exists, but its contents signature is now different from
+  #     the cache, it means some of its content (nested titles or entries)
+  #     has been added, deleted, or renamed. In this case we update its
+  #     contents signature and instance variables
+  # - When the title exists and its contents signature is still the same, we
+  #     return true so it can be reused without rescanning
+  def examine(context : ExamineContext) : Bool
+    return false unless Dir.exists? @dir
+    contents_signature = Dir.contents_signature @dir,
+      context["cached_contents_signature"]
+    return true if @contents_signature == contents_signature
+
+    @contents_signature = contents_signature
+    @signature = Dir.signature @dir
+    storage = Storage.default
+    id = storage.get_title_id dir, signature
+    if id.nil?
+      id = random_str
+      storage.insert_title_id({
+        path:      dir,
+        id:        id,
+        signature: signature.to_s,
+      })
+    end
+    @id = id
+    @mtime = File.info(@dir).modification_time
+
+    previous_titles_size = @title_ids.size
+    @title_ids.select! do |title_id|
+      title = Library.default.get_title! title_id
+      existence = title.examine context
+      unless existence
+        context["deleted_title_ids"].concat [title_id] +
+                                            title.deep_titles.map &.id
+        context["deleted_entry_ids"].concat title.deep_entries.map &.id
+      end
+      existence
+    end
+    remained_title_dirs = @title_ids.map do |title_id|
+      title = Library.default.get_title! title_id
+      title.dir
+    end
+
+    previous_entries_size = @entries.size
+    @entries.select! do |entry|
+      existence = File.exists? entry.zip_path
+      Fiber.yield
+      context["deleted_entry_ids"] << entry.id unless existence
+      existence
+    end
+    remained_entry_zip_paths = @entries.map &.zip_path
+
+    is_titles_added = false
+    is_entries_added = false
+    Dir.entries(dir).each do |fn|
+      next if fn.starts_with? "."
+      path = File.join dir, fn
+      if File.directory? path
+        next if remained_title_dirs.includes? path
+        title = Title.new path, @id, context["cached_contents_signature"]
+        next if title.entries.size == 0 && title.titles.size == 0
+        Library.default.title_hash[title.id] = title
+        @title_ids << title.id
+        is_titles_added = true
+        next
+      end
+      if is_supported_file path
+        next if remained_entry_zip_paths.includes? path
+        entry = Entry.new path, self
+        if entry.pages > 0 || entry.err_msg
+          @entries << entry
+          is_entries_added = true
+        end
+      end
+    end
+
+    mtimes = [@mtime]
+    mtimes += @title_ids.map { |e| Library.default.title_hash[e].mtime }
+    mtimes += @entries.map &.mtime
+    @mtime = mtimes.max
+
+    if is_titles_added || previous_titles_size != @title_ids.size
+      @title_ids.sort! do |a, b|
+        compare_numerically Library.default.title_hash[a].title,
+          Library.default.title_hash[b].title
+      end
+    end
+    if is_entries_added || previous_entries_size != @entries.size
+      sorter = ChapterSorter.new @entries.map &.title
+      @entries.sort! do |a, b|
+        sorter.compare a.title, b.title
+      end
+    end
+
+    true
   end
 
   alias SortContext = NamedTuple(username: String, opt: SortOptions)

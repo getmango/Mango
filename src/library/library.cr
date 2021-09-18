@@ -1,12 +1,41 @@
 class Library
+  include YAML::Serializable
+
   getter dir : String, title_ids : Array(String),
     title_hash : Hash(String, Title)
 
   use_default
 
-  def initialize
-    register_mime_types
+  def save_instance
+    path = Config.current.library_path
+    instance_file_path = File.join path, "library.yml.gz"
+    Logger.debug "Caching library to #{instance_file_path}"
 
+    writer = Compress::Gzip::Writer.new instance_file_path,
+      Compress::Gzip::BEST_COMPRESSION
+    writer.write self.to_yaml.to_slice
+    writer.close
+  end
+
+  def self.load_instance
+    dir = Config.current.library_path
+    return unless Dir.exists? dir
+    instance_file_path = File.join dir, "library.yml.gz"
+    return unless File.exists? instance_file_path
+
+    Logger.debug "Loading cached library from #{instance_file_path}"
+
+    begin
+      Compress::Gzip::Reader.open instance_file_path do |content|
+        @@default = Library.from_yaml content
+      end
+      Library.default.register_jobs
+    rescue e
+      Logger.error e
+    end
+  end
+
+  def initialize
     @dir = Config.current.library_path
     # explicitly initialize @titles to bypass the compiler check. it will
     #   be filled with actual Titles in the `scan` call below
@@ -15,6 +44,12 @@ class Library
 
     @entries_count = 0
     @thumbnails_count = 0
+
+    register_jobs
+  end
+
+  protected def register_jobs
+    register_mime_types
 
     scan_interval = Config.current.scan_interval_minutes
     if scan_interval < 1
@@ -25,7 +60,7 @@ class Library
           start = Time.local
           scan
           ms = (Time.local - start).total_milliseconds
-          Logger.info "Scanned #{@title_ids.size} titles in #{ms}ms"
+          Logger.debug "Library initialized in #{ms}ms"
           sleep scan_interval.minutes
         end
       end
@@ -89,6 +124,7 @@ class Library
   end
 
   def scan
+    start = Time.local
     unless Dir.exists? @dir
       Logger.info "The library directory #{@dir} does not exist. " \
                   "Attempting to create it"
@@ -97,14 +133,36 @@ class Library
 
     storage = Storage.new auto_close: false
 
+    examine_context : ExamineContext = {
+      cached_contents_signature: {} of String => String,
+      deleted_title_ids:         [] of String,
+      deleted_entry_ids:         [] of String,
+    }
+
+    @title_ids.select! do |title_id|
+      title = @title_hash[title_id]
+      existence = title.examine examine_context
+      unless existence
+        examine_context["deleted_title_ids"].concat [title_id] +
+                                                    title.deep_titles.map &.id
+        examine_context["deleted_entry_ids"].concat title.deep_entries.map &.id
+      end
+      existence
+    end
+    remained_title_dirs = @title_ids.map { |id| title_hash[id].dir }
+    examine_context["deleted_title_ids"].each do |title_id|
+      @title_hash.delete title_id
+    end
+
+    cache = examine_context["cached_contents_signature"]
     (Dir.entries @dir)
       .select { |fn| !fn.starts_with? "." }
       .map { |fn| File.join @dir, fn }
+      .select { |path| !(remained_title_dirs.includes? path) }
       .select { |path| File.directory? path }
-      .map { |path| Title.new path, "" }
+      .map { |path| Title.new path, "", cache }
       .select { |title| !(title.entries.empty? && title.titles.empty?) }
       .sort! { |a, b| a.title <=> b.title }
-      .tap { |_| @title_ids.clear }
       .each do |title|
         @title_hash[title.id] = title
         @title_ids << title.id
@@ -113,8 +171,15 @@ class Library
     storage.bulk_insert_ids
     storage.close
 
-    Logger.debug "Scan completed"
-    Storage.default.mark_unavailable
+    ms = (Time.local - start).total_milliseconds
+    Logger.info "Scanned #{@title_ids.size} titles in #{ms}ms"
+
+    Storage.default.mark_unavailable examine_context["deleted_entry_ids"],
+      examine_context["deleted_title_ids"]
+
+    spawn do
+      save_instance
+    end
   end
 
   def get_continue_reading_entries(username)

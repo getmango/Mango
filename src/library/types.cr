@@ -133,3 +133,8 @@ class TitleInfo
     LRUCache.set generate_cache_entry key, self.to_json
   end
 end
+
+alias ExamineContext = NamedTuple(
+  cached_contents_signature: Hash(String, String),
+  deleted_title_ids: Array(String),
+  deleted_entry_ids: Array(String))

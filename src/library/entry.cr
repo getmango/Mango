@@ -1,6 +1,9 @@
 require "image_size"
+require "yaml"
 
 class Entry
+  include YAML::Serializable
+
   getter zip_path : String, book : Title, title : String,
     size : String, pages : Int32, id : String, encoded_path : String,
     encoded_title : String, mtime : Time, err_msg : String?
