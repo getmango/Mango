@@ -172,7 +172,7 @@ class Title
 
   alias SortContext = NamedTuple(username: String, opt: SortOptions)
 
-  def build_json(*, slim = false, shallow = false,
+  def build_json(*, slim = false, depth = -1,
                  sort_context : SortContext? = nil)
     JSON.build do |json|
       json.object do
@@ -185,11 +185,12 @@ class Title
           json.field "cover_url", cover_url
           json.field "mtime" { json.number @mtime.to_unix }
         end
-        unless shallow
+        unless depth == 0
           json.field "titles" do
             json.array do
               self.titles.each do |title|
-                json.raw title.build_json(slim: slim, shallow: shallow)
+                json.raw title.build_json(slim: slim,
+                  depth: depth > 0 ? depth - 1 : depth)
               end
             end
           end
@@ -206,13 +207,13 @@ class Title
               end
             end
           end
-          json.field "parents" do
-            json.array do
-              self.parents.each do |title|
-                json.object do
-                  json.field "title", title.title
-                  json.field "id", title.id
-                end
+        end
+        json.field "parents" do
+          json.array do
+            self.parents.each do |title|
+              json.object do
+                json.field "title", title.title
+                json.field "id", title.id
               end
             end
           end
