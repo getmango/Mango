@@ -134,11 +134,15 @@ struct APIRouter
 
     Koa.describe "Returns the book with title `tid`", <<-MD
     - Supply the `slim` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
-    - Supply the `shallow` query parameter to get only the title information, without the list of entries and nested titles
+    - Supply the `depth` query parameter to control the depth of nested titles to return.
+      - When `depth` is 1, returns the top-level titles and sub-titles/entries one level in them
+      - When `depth` is 0, returns the top-level titles without their sub-titles/entries
+      - When `depth` is N, returns the top-level titles and sub-titles/entries N levels in them
+      - When `depth` is negative, returns the entire library
     MD
     Koa.path "tid", desc: "Title ID"
     Koa.query "slim"
-    Koa.query "shallow"
+    Koa.query "depth"
     Koa.query "sort", desc: "Sorting option for entries. Can be one of 'auto', 'title', 'progress', 'time_added' and 'time_modified'"
     Koa.query "ascend", desc: "Sorting direction for entries. Set to 0 for the descending order. Doesn't work without specifying 'sort'"
     Koa.response 200, schema: "title"
@@ -156,9 +160,9 @@ struct APIRouter
         raise "Title ID `#{tid}` not found" if title.nil?
 
         slim = !env.params.query["slim"]?.nil?
-        shallow = !env.params.query["shallow"]?.nil?
+        depth = env.params.query["depth"]?.try(&.to_i?) || -1
 
-        send_json env, title.build_json(slim: slim, shallow: shallow,
+        send_json env, title.build_json(slim: slim, depth: depth,
           sort_context: {username: username,
                          opt:      sort_opt})
       rescue e
@@ -170,10 +174,14 @@ struct APIRouter
 
     Koa.describe "Returns the entire library with all titles and entries", <<-MD
     - Supply the `slim` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
-    - Supply the `shallow` query parameter to get only the top-level titles, without the nested titles and entries
+    - Supply the `dpeth` query parameter to control the depth of nested titles to return.
+      - When `depth` is 1, returns the requested title and sub-titles/entries one level in it
+      - When `depth` is 0, returns the requested title without its sub-titles/entries
+      - When `depth` is N, returns the requested title and sub-titles/entries N levels in it
+      - When `depth` is negative, returns the requested title and all sub-titles/entries in it
     MD
     Koa.query "slim"
-    Koa.query "shallow"
+    Koa.query "depth"
     Koa.response 200, schema: {
       "dir"    => String,
       "titles" => ["title"],
@@ -181,9 +189,9 @@ struct APIRouter
     Koa.tag "library"
     get "/api/library" do |env|
       slim = !env.params.query["slim"]?.nil?
-      shallow = !env.params.query["shallow"]?.nil?
+      depth = env.params.query["depth"]?.try(&.to_i?) || -1
 
-      send_json env, Library.default.build_json(slim: slim, shallow: shallow)
+      send_json env, Library.default.build_json(slim: slim, depth: depth)
     end
 
     Koa.describe "Triggers a library scan"
