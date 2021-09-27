@@ -35,6 +35,11 @@ def register_mime_types
     # FontAwesome fonts
     ".woff"  => "font/woff",
     ".woff2" => "font/woff2",
+
+    # Supported image formats. JPG, PNG, GIF, WebP, and SVG are already
+    #   defiend by Crystal in `MIME.DEFAULT_TYPES`
+    ".apng" => "image/apng",
+    ".avif" => "image/avif",
   }.each do |k, v|
     MIME.register k, v
   end
@@ -119,4 +124,23 @@ class String
     match = s.reverse.zip(l.reverse).count { |a, b| a == b }
     match / s.size
   end
+end
+
+# Does the followings:
+#   - turns space-like characters into the normal whitespaces ( )
+#   - strips and collapses spaces
+#   - removes ASCII control characters
+#   - replaces slashes (/) with underscores (_)
+#   - removes leading dots (.)
+#   - removes the following special characters: \:*?"<>|
+#
+# If the sanitized string is empty, returns a random string instead.
+def sanitize_filename(str : String) : String
+  sanitized = str
+    .gsub(/\s+/, " ")
+    .strip
+    .gsub(/\//, "_")
+    .gsub(/^[\.\s]+/, "")
+    .gsub(/[\177\000-\031\\:\*\?\"<>\|]/, "")
+  sanitized.size > 0 ? sanitized : random_str
 end

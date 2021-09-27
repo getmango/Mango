@@ -428,12 +428,21 @@ class Storage
     end
   end
 
-  def mark_unavailable
+  # Mark titles and entries that no longer exist on the file system as
+  #   unavailable. By supplying `id_candidates` and `titles_candidates`, it
+  #   only checks the existence of the candidate titles/entries to speed up
+  #   the process.
+  def mark_unavailable(ids_candidates : Array(String)?,
+                       titles_candidates : Array(String)?)
     MainFiber.run do
       get_db do |db|
         # Detect dangling entry IDs
         trash_ids = [] of String
-        db.query "select path, id from ids where unavailable = 0" do |rs|
+        query = "select path, id from ids where unavailable = 0"
+        unless ids_candidates.nil?
+          query += " and id in (#{ids_candidates.join "," { |i| "'#{i}'" }})"
+        end
+        db.query query do |rs|
           rs.each do
             path = rs.read String
             fullpath = Path.new(path).expand(Config.current.library_path).to_s
@@ -449,7 +458,11 @@ class Storage
 
         # Detect dangling title IDs
         trash_titles = [] of String
-        db.query "select path, id from titles where unavailable  = 0" do |rs|
+        query = "select path, id from titles where unavailable = 0"
+        unless titles_candidates.nil?
+          query += " and id in (#{titles_candidates.join "," { |i| "'#{i}'" }})"
+        end
+        db.query query do |rs|
           rs.each do
             path = rs.read String
             fullpath = Path.new(path).expand(Config.current.library_path).to_s
