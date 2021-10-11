@@ -23,7 +23,7 @@ struct APIRouter
 
     # Authentication
 
-    All endpoints require authentication. After logging in, your session ID would be stored as a cookie named `mango-sessid-#{Config.current.port}`, which can be used to authenticate the API access. Note that all admin API endpoints (`/api/admin/...`) require the logged-in user to have admin access.
+    All endpoints except `/api/login` require authentication. After logging in, your session ID would be stored as a cookie named `mango-sessid-#{Config.current.port}`, which can be used to authenticate the API access. Note that all admin API endpoints (`/api/admin/...`) require the logged-in user to have admin access.
 
     # Terminologies
 
@@ -55,6 +55,29 @@ struct APIRouter
       "success" => Bool,
       "error"   => String?,
     }
+
+    Koa.describe "Authenticates a user", <<-MD
+    After successful login, the cookie `mango-sessid-#{Config.current.port}` will contain a valid session ID that can be used for subsequent requests
+    MD
+    Koa.body schema: {
+      "username" => String,
+      "password" => String,
+    }
+    Koa.tag "users"
+    post "/api/login" do |env|
+      begin
+        username = env.params.json["username"].as String
+        password = env.params.json["password"].as String
+        token = Storage.default.verify_user(username, password).not_nil!
+
+        env.session.string "token", token
+        "Authenticated"
+      rescue e
+        Logger.error e
+        env.response.status_code = 403
+        e.message
+      end
+    end
 
     Koa.describe "Returns a page in a manga entry"
     Koa.path "tid", desc: "Title ID"
