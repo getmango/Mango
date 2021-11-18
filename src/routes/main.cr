@@ -41,7 +41,7 @@ struct MainRouter
         username = get_username env
 
         sort_opt = SortOptions.from_info_json Library.default.dir, username
-        get_sort_opt
+        get_and_save_sort_opt Library.default.dir
 
         titles = Library.default.sorted_titles username, sort_opt
         percentage = titles.map &.load_percentage username
@@ -59,12 +59,12 @@ struct MainRouter
         username = get_username env
 
         sort_opt = SortOptions.from_info_json title.dir, username
-        get_sort_opt
+        get_and_save_sort_opt title.dir
 
         entries = title.sorted_entries username, sort_opt
-
         percentage = title.load_percentage_for_all_entries username, sort_opt
         title_percentage = title.titles.map &.load_percentage username
+
         layout "title"
       rescue e
         Logger.error e

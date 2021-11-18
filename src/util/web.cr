@@ -107,6 +107,26 @@ macro get_sort_opt
   end
 end
 
+macro get_and_save_sort_opt(dir)
+  sort_method = env.params.query["sort"]?
+
+  if sort_method
+    is_ascending = true
+
+    ascend = env.params.query["ascend"]?
+    if ascend && ascend.to_i? == 0
+      is_ascending = false
+    end
+
+    sort_opt = SortOptions.new sort_method, is_ascending
+
+    TitleInfo.new {{dir}} do |info|
+      info.sort_by[username] = sort_opt.to_tuple
+      info.save
+    end
+  end
+end
+
 module HTTP
   class Client
     private def self.exec(uri : URI, tls : TLSContext = nil)

@@ -54,8 +54,9 @@ class AuthHandler < Kemal::Handler
   end
 
   def call(env)
-    # Skip all authentication if requesting /login, /logout, or a static file
-    if request_path_startswith(env, ["/login", "/logout"]) ||
+    # Skip all authentication if requesting /login, /logout, /api/login,
+    #   or a static file
+    if request_path_startswith(env, ["/login", "/logout", "/api/login"]) ||
        requesting_static_file env
       return call_next(env)
     end

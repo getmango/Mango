@@ -161,7 +161,17 @@
                   <template x-for="ch in chapters" :key="ch">
                     <tr class="ui-widget-content" :id="ch.id">
                       <template x-for="k in chapterKeys" :key="k">
-                        <td x-text="ch[k]"></td>
+                        <td>
+                          <template x-if="ch[k].length > 40">
+                            <span>
+                              <span x-text="`${ch[k].substring(0, 40)}...`"></span>
+                              <div uk-dropdown><span x-text="ch[k]"></span></div>
+                            </span>
+                          </template>
+                          <template x-if="!ch[k].length || ch[k].length <= 40">
+                            <span x-text="ch[k]"></span>
+                          </template>
+                        </td>
                       </template>
                     </tr>
                   </template>

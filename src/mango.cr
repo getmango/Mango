@@ -7,7 +7,7 @@ require "option_parser"
 require "clim"
 require "tallboy"
 
-MANGO_VERSION = "0.23.0"
+MANGO_VERSION = "0.24.0"
 
 # From http://www.network-science.de/ascii/
 BANNER = %{
@@ -55,8 +55,10 @@ class CLI < Clim
       Config.load(opts.config).set_current
 
       # Initialize main components
+      LRUCache.init
       Storage.default
       Queue.default
+      Library.load_instance
       Library.default
       Plugin::Downloader.default
 
