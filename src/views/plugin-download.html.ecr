@@ -114,10 +114,10 @@
 
               <div x-show="field.type === 'date'" class="uk-grid-small" uk-grid>
                 <div class="uk-width-1-2@s">
-                  <input class="uk-input" placeholder="minimum date, e.g., Jan 1 1970" :data-filter-key="field.key" data-filter-type="date-min">
+                  <input class="uk-input" type="date" placeholder="minimum date (yyyy-mm-dd)" :data-filter-key="field.key" data-filter-type="date-min">
                 </div>
                 <div class="uk-width-1-2@s">
-                  <input class="uk-input" placeholder="maximum date, e.g., Jan 1 1970" :data-filter-key="field.key" data-filter-type="date-max">
+                  <input class="uk-input" type="date" placeholder="maximum date (yyyy-mm-dd)" :data-filter-key="field.key" data-filter-type="date-max">
                 </div>
               </div>
 
@@ -161,17 +161,7 @@
                   <template x-for="ch in chapters" :key="ch">
                     <tr class="ui-widget-content" :id="ch.id">
                       <template x-for="k in chapterKeys" :key="k">
-                        <td>
-                          <template x-if="ch[k].length > 40">
-                            <span>
-                              <span x-text="`${ch[k].substring(0, 40)}...`"></span>
-                              <div uk-dropdown><span x-text="ch[k]"></span></div>
-                            </span>
-                          </template>
-                          <template x-if="!ch[k].length || ch[k].length <= 40">
-                            <span x-text="ch[k]"></span>
-                          </template>
-                        </td>
+                        <td x-html="renderCell(ch[k])"></td>
                       </template>
                     </tr>
                   </template>
@@ -201,11 +191,7 @@
           </thead>
           <tbody>
             <template x-for="ft in filterSettings" :key="ft">
-              <tr>
-                <td x-text="ft.key"></td>
-                <td x-text="filterTypeToReadable(ft.type)"></td>
-                <td x-text="ft.value"></td>
-              </tr>
+              <tr x-html="renderFilterRow(ft)"></tr>
             </template>
           </tbody>
         </table>
@@ -222,6 +208,7 @@
 
 <% content_for "script" do %>
   <%= render_component "jquery-ui" %>
+  <%= render_component "moment" %>
   <script src="<%= base_url %>js/alert.js"></script>
   <script src="<%= base_url %>js/plugin-download.js"></script>
 <% end %>

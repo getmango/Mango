@@ -6,8 +6,8 @@ const component = () => {
 		chapters: undefined, // undefined: not searched yet, []: empty
 		manga: undefined, // undefined: not searched yet, []: empty
 		allChapters: [],
-		query: '',
-		mangaTitle: '',
+		query: "",
+		mangaTitle: "",
 		searching: false,
 		adding: false,
 		sortOptions: [],
@@ -16,73 +16,82 @@ const component = () => {
 		chaptersLimit: 500,
 		listManga: false,
 		subscribing: false,
-		subscriptionName: '',
+		subscriptionName: "",
 
 		init() {
 			const tableObserver = new MutationObserver(() => {
-				console.log('table mutated');
-				$('#selectable').selectable({
-					filter: 'tr'
+				console.log("table mutated");
+				$("#selectable").selectable({
+					filter: "tr",
 				});
 			});
-			tableObserver.observe($('table').get(0), {
+			tableObserver.observe($("table").get(0), {
 				childList: true,
-				subtree: true
+				subtree: true,
 			});
 			fetch(`${base_url}api/admin/plugin`)
-				.then(res => res.json())
-				.then(data => {
-					if (!data.success)
-						throw new Error(data.error);
+				.then((res) => res.json())
+				.then((data) => {
+					if (!data.success) throw new Error(data.error);
 					this.plugins = data.plugins;
 
-					const pid = localStorage.getItem('plugin');
-					if (pid && this.plugins.map(p => p.id).includes(pid))
+					const pid = localStorage.getItem("plugin");
+					if (pid && this.plugins.map((p) => p.id).includes(pid))
 						return this.loadPlugin(pid);
 
 					if (this.plugins.length > 0)
 						this.loadPlugin(this.plugins[0].id);
 				})
-				.catch(e => {
-					alert('danger', `Failed to list the available plugins. Error: ${e}`);
+				.catch((e) => {
+					alert(
+						"danger",
+						`Failed to list the available plugins. Error: ${e}`
+					);
 				});
 		},
 		loadPlugin(pid) {
-			fetch(`${base_url}api/admin/plugin/info?${new URLSearchParams({
-				plugin: pid
-			})}`)
-				.then(res => res.json())
-				.then(data => {
-					if (!data.success)
-						throw new Error(data.error);
+			fetch(
+				`${base_url}api/admin/plugin/info?${new URLSearchParams({
+					plugin: pid,
+				})}`
+			)
+				.then((res) => res.json())
+				.then((data) => {
+					if (!data.success) throw new Error(data.error);
 					this.info = data.info;
 					this.pid = pid;
 				})
-				.catch(e => {
-					alert('danger', `Failed to get plugin metadata. Error: ${e}`);
+				.catch((e) => {
+					alert(
+						"danger",
+						`Failed to get plugin metadata. Error: ${e}`
+					);
 				});
 		},
 		pluginChanged() {
 			this.loadPlugin(this.pid);
-			localStorage.setItem('plugin', this.pid);
+			localStorage.setItem("plugin", this.pid);
 		},
 		get chapterKeys() {
 			if (this.allChapters.length < 1) return [];
-			return Object.keys(this.allChapters[0]).filter(k => !['manga_title'].includes(k));
+			return Object.keys(this.allChapters[0]).filter(
+				(k) => !["manga_title"].includes(k)
+			);
 		},
 		searchChapters(query) {
 			this.searching = true;
 			this.allChapters = [];
 			this.chapters = undefined;
 			this.listManga = false;
-			fetch(`${base_url}api/admin/plugin/list?${new URLSearchParams({
-				plugin: this.pid,
-				query: query
-			})}`)
-				.then(res => res.json())
-				.then(data => {
-					if (!data.success)
-						throw new Error(data.error);
+			fetch(
+				`${base_url}api/admin/plugin/list?${new URLSearchParams({
+					plugin: this.pid,
+					query: query,
+				})}`
+			)
+				.then((res) => res.json())
+				.then((data) => {
+					if (!data.success) throw new Error(data.error);
 					try {
 						this.mangaTitle = data.chapters[0].manga_title;
 						if (!this.mangaTitle) throw new Error();
@@ -90,16 +99,20 @@ const component = () => {
 						this.mangaTitle = data.title;
 					}
 
-					data.chapters.forEach(c => {
-						c.array = ['hello', 'world', 'haha', 'wtf'].sort(() => 0.5 - Math.random()).slice(0, 2);
-						c.date = ['4 Jun, 1989', '1 July, 2021'].sort(() => 0.5 - Math.random())[0];
+					data.chapters.forEach((c) => {
+						c.array = ["hello", "world", "haha", "wtf"]
+							.sort(() => 0.5 - Math.random())
+							.slice(0, 2);
+						c.date = [612892800000, "1625068800000"].sort(
+							() => 0.5 - Math.random()
+						)[0];
 					});
 
 					this.allChapters = data.chapters;
 					this.chapters = data.chapters;
 				})
-				.catch(e => {
-					alert('danger', `Failed to list chapters. Error: ${e}`);
+				.catch((e) => {
+					alert("danger", `Failed to list chapters. Error: ${e}`);
 				})
 				.finally(() => {
 					this.searching = false;
@@ -110,19 +123,20 @@ const component = () => {
 			this.allChapters = [];
 			this.chapters = undefined;
 			this.manga = undefined;
-			fetch(`${base_url}api/admin/plugin/search?${new URLSearchParams({
-				plugin: this.pid,
-				query: query
-			})}`)
-				.then(res => res.json())
-				.then(data => {
-					if (!data.success)
-						throw new Error(data.error);
+			fetch(
+				`${base_url}api/admin/plugin/search?${new URLSearchParams({
+					plugin: this.pid,
+					query: query,
+				})}`
+			)
+				.then((res) => res.json())
+				.then((data) => {
+					if (!data.success) throw new Error(data.error);
 					this.manga = data.manga;
 					this.listManga = true;
 				})
-				.catch(e => {
-					alert('danger', `Search failed. Error: ${e}`);
+				.catch((e) => {
+					alert("danger", `Search failed. Error: ${e}`);
 				})
 				.finally(() => {
 					this.searching = false;
@@ -140,53 +154,64 @@ const component = () => {
 			}
 		},
 		selectAll() {
-			$('tbody > tr').each((i, e) => {
-				$(e).addClass('ui-selected');
+			$("tbody > tr").each((i, e) => {
+				$(e).addClass("ui-selected");
 			});
 		},
 		clearSelection() {
-			$('tbody > tr').each((i, e) => {
-				$(e).removeClass('ui-selected');
+			$("tbody > tr").each((i, e) => {
+				$(e).removeClass("ui-selected");
 			});
 		},
 		download() {
-			const selected = $('tbody > tr.ui-selected').get();
+			const selected = $("tbody > tr.ui-selected").get();
 			if (selected.length === 0) return;
 
-			UIkit.modal.confirm(`Download ${selected.length} selected chapters?`).then(() => {
-				const ids = selected.map(e => e.id);
-				const chapters = this.chapters.filter(c => ids.includes(c.id));
-				console.log(chapters);
-				this.adding = true;
-				fetch(`${base_url}api/admin/plugin/download`, {
-						method: 'POST',
+			UIkit.modal
+				.confirm(`Download ${selected.length} selected chapters?`)
+				.then(() => {
+					const ids = selected.map((e) => e.id);
+					const chapters = this.chapters.filter((c) =>
+						ids.includes(c.id)
+					);
+					console.log(chapters);
+					this.adding = true;
+					fetch(`${base_url}api/admin/plugin/download`, {
+						method: "POST",
 						body: JSON.stringify({
 							chapters,
 							plugin: this.pid,
-							title: this.mangaTitle
+							title: this.mangaTitle,
 						}),
 						headers: {
-							"Content-Type": "application/json"
-						}
+							"Content-Type": "application/json",
+						},
 					})
-					.then(res => res.json())
-					.then(data => {
-						if (!data.success)
-							throw new Error(data.error);
-						const successCount = parseInt(data.success);
-						const failCount = parseInt(data.fail);
-						alert('success', `${successCount} of ${successCount + failCount} chapters added to the download queue. You can view and manage your download queue on the <a href="${base_url}admin/downloads">download manager page</a>.`);
-					})
-					.catch(e => {
-						alert('danger', `Failed to add chapters to the download queue. Error: ${e}`);
-					})
-					.finally(() => {
-						this.adding = false;
-					});
-			})
+						.then((res) => res.json())
+						.then((data) => {
+							if (!data.success) throw new Error(data.error);
+							const successCount = parseInt(data.success);
+							const failCount = parseInt(data.fail);
+							alert(
+								"success",
+								`${successCount} of ${
+									successCount + failCount
+								} chapters added to the download queue. You can view and manage your download queue on the <a href="${base_url}admin/downloads">download manager page</a>.`
+							);
+						})
+						.catch((e) => {
+							alert(
+								"danger",
+								`Failed to add chapters to the download queue. Error: ${e}`
+							);
+						})
+						.finally(() => {
+							this.adding = false;
+						});
+				});
 		},
 		thClicked(event) {
-			const idx = parseInt(event.currentTarget.id.split('-')[1]);
+			const idx = parseInt(event.currentTarget.id.split("-")[1]);
 			if (idx === undefined || isNaN(idx)) return;
 			const curOption = this.sortOptions[idx];
 			let option;
@@ -202,40 +227,58 @@ const component = () => {
 					option = 1;
 			}
 			this.sortOptions[idx] = option;
-			this.sort(this.chapterKeys[idx], option)
+			this.sort(this.chapterKeys[idx], option);
 		},
 		// Returns an array of filtered but unsorted chapters. Useful when
 		// 	reseting the sort options.
 		get filteredChapters() {
 			let ary = this.allChapters.slice();
 
-			console.log('initial size:', ary.length);
+			console.log("initial size:", ary.length);
 			for (let filter of this.appliedFilters) {
-				if (!filter.value) continue;
-				if (filter.type === 'array' && filter.value === 'all') continue;
+				if (!filter.value || isNaN(filter.value)) continue;
+				if (filter.type === "array" && filter.value === "all") continue;
 
-				console.log('applying filter:', filter);
+				console.log("applying filter:", filter);
 
-				if (filter.type === 'string') {
-					ary = ary.filter(ch => ch[filter.key].toLowerCase().includes(filter.value.toLowerCase()));
+				if (filter.type === "string") {
+					ary = ary.filter((ch) =>
+						ch[filter.key]
+							.toLowerCase()
+							.includes(filter.value.toLowerCase())
+					);
 				}
-				if (filter.type === 'number-min') {
-					ary = ary.filter(ch => Number(ch[filter.key]) >= Number(filter.value));
+				if (filter.type === "number-min") {
+					ary = ary.filter(
+						(ch) => Number(ch[filter.key]) >= Number(filter.value)
+					);
 				}
-				if (filter.type === 'number-max') {
-					ary = ary.filter(ch => Number(ch[filter.key]) <= Number(filter.value));
+				if (filter.type === "number-max") {
+					ary = ary.filter(
+						(ch) => Number(ch[filter.key]) <= Number(filter.value)
+					);
 				}
-				if (filter.type === 'date-min') {
-					ary = ary.filter(ch => this.parseDate(ch[filter.key]) >= this.parseDate(filter.value));
+				if (filter.type === "date-min") {
+					ary = ary.filter(
+						(ch) => Number(ch[filter.key]) >= Number(filter.value)
+					);
 				}
-				if (filter.type === 'date-max') {
-					ary = ary.filter(ch => this.parseDate(ch[filter.key]) <= this.parseDate(filter.value));
+				if (filter.type === "date-max") {
+					ary = ary.filter(
+						(ch) => Number(ch[filter.key]) <= Number(filter.value)
+					);
 				}
-				if (filter.type === 'array') {
-					ary = ary.filter(ch => ch[filter.key].map(s => typeof s === 'string' ? s.toLowerCase() : s).includes(filter.value.toLowerCase()));
+				if (filter.type === "array") {
+					ary = ary.filter((ch) =>
+						ch[filter.key]
+							.map((s) =>
+								typeof s === "string" ? s.toLowerCase() : s
+							)
+							.includes(filter.value.toLowerCase())
+					);
 				}
 
-				console.log('filtered size:', ary.length);
+				console.log("filtered size:", ary.length);
 			}
 
 			return ary;
@@ -258,124 +301,146 @@ const component = () => {
 		compare(a, b) {
 			if (a === b) return 0;
 
-			// try numbers
-			// this must come before the date checks, because any integer would
-			// 		also be parsed as a date.
-			if (!isNaN(a) && !isNaN(b))
-				return Number(a) - Number(b);
-
-			// try dates
-			if (!isNaN(this.parseDate(a)) && !isNaN(this.parseDate(b)))
-				return this.parseDate(a) - this.parseDate(b);
+			// try numbers (also covers dates)
+			if (!isNaN(a) && !isNaN(b)) return Number(a) - Number(b);
 
 			const preprocessString = (val) => {
-				if (typeof val !== 'string') return val;
-				return val.toLowerCase().replace(/\s\s/g, ' ').trim();
+				if (typeof val !== "string") return val;
+				return val.toLowerCase().replace(/\s\s/g, " ").trim();
 			};
 
 			return preprocessString(a) > preprocessString(b) ? 1 : -1;
 		},
 		fieldType(values) {
-			if (values.every(v => !isNaN(v))) return 'number'; // display input for number range
-			if (values.every(v => !isNaN(this.parseDate(v)))) return 'date'; // display input for date range
-			if (values.every(v => Array.isArray(v))) return 'array'; // display select
-			return 'string'; // display input for string searching.
+			if (values.every((v) => this.numIsDate(v))) return "date"; // 328896000000 => 1 Jan, 1980
+			if (values.every((v) => !isNaN(v))) return "number";
+			if (values.every((v) => Array.isArray(v))) return "array";
+			return "string";
 		},
 		get filters() {
 			if (this.allChapters.length < 1) return [];
-			const keys = Object.keys(this.allChapters[0]).filter(k => !['manga_title', 'id'].includes(k));
-			return keys.map(k => {
-				let values = this.allChapters.map(c => c[k]);
+			const keys = Object.keys(this.allChapters[0]).filter(
+				(k) => !["manga_title", "id"].includes(k)
+			);
+			return keys.map((k) => {
+				let values = this.allChapters.map((c) => c[k]);
 				const type = this.fieldType(values);
 
-				if (type === 'array') {
+				if (type === "array") {
 					// if the type is an array, return the list of available elements
 					// example: an array of groups or authors
-					values = Array.from(new Set(values.flat().map(v => {
-						if (typeof v === 'string') return v.toLowerCase();
-					})));
+					values = Array.from(
+						new Set(
+							values.flat().map((v) => {
+								if (typeof v === "string")
+									return v.toLowerCase();
+							})
+						)
+					);
 				}
 
 				return {
 					key: k,
 					type: type,
-					values: values
+					values: values,
 				};
 			});
 		},
 		get filterSettings() {
-			return $('#filter-form input:visible, #filter-form select:visible')
+			return $("#filter-form input:visible, #filter-form select:visible")
 				.get()
-				.map(i => ({
-					key: i.getAttribute('data-filter-key'),
-					value: i.value.trim(),
-					type: i.getAttribute('data-filter-type')
-				}));
+				.map((i) => {
+					const type = i.getAttribute("data-filter-type");
+					let value = i.value.trim();
+					if (type.startsWith("date"))
+						value = value ? Date.parse(value).toString() : "";
+					return {
+						key: i.getAttribute("data-filter-key"),
+						value: value,
+						type: type,
+					};
+				});
 		},
 		applyFilters() {
 			this.appliedFilters = this.filterSettings;
 			this.chapters = this.filteredChapters;
 		},
 		clearFilters() {
-			$('#filter-form input').get().forEach(i => i.value = '');
+			$("#filter-form input")
+				.get()
+				.forEach((i) => (i.value = ""));
 			this.appliedFilters = [];
 			this.chapters = this.filteredChapters;
 		},
 		mangaSelected(event) {
-			const mid = event.currentTarget.getAttribute('data-id');
+			const mid = event.currentTarget.getAttribute("data-id");
 			this.searchChapters(mid);
 		},
-		parseDate(str) {
-			const regex = /([0-9]+[/\-,\ ][0-9]+[/\-,\ ][0-9]+)|([A-Za-z]+)[/\-,\ ]+[0-9]+(st|nd|rd|th)?[/\-,\ ]+[0-9]+/g;
-			// Basic sanity check to make sure it's an actual date.
-			// We need this because Date.parse thinks 'Chapter 1' is a date.
-			if (!regex.test(str))
-				return NaN;
-			return Date.parse(str);
-		},
 		subscribe(modal) {
-			// TODO:
-			// 		- use select2
-
 			this.subscribing = true;
 			fetch(`${base_url}api/admin/plugin/subscribe`, {
-					method: 'POST',
-					body: JSON.stringify({
-						filters: this.filterSettings,
-						plugin: this.pid,
-						name: this.subscriptionName.trim()
-					}),
-					headers: {
-						"Content-Type": "application/json"
-					}
+				method: "POST",
+				body: JSON.stringify({
+					filters: this.filterSettings,
+					plugin: this.pid,
+					name: this.subscriptionName.trim(),
+				}),
+				headers: {
+					"Content-Type": "application/json",
+				},
+			})
+				.then((res) => res.json())
+				.then((data) => {
+					if (!data.success) throw new Error(data.error);
+					alert("success", "Subscription created");
 				})
-				.then(res => res.json())
-				.then(data => {
-					if (!data.success)
-						throw new Error(data.error);
-					alert('success', 'Subscription created');
-				})
-				.catch(e => {
-					alert('danger', `Failed to subscribe. Error: ${e}`);
+				.catch((e) => {
+					alert("danger", `Failed to subscribe. Error: ${e}`);
 				})
 				.finally(() => {
 					this.subscribing = false;
 					UIkit.modal(modal).hide();
 				});
 		},
-		filterTypeToReadable(type) {
+		numIsDate(num) {
+			return !isNaN(num) && Number(num) > 328896000000; // 328896000000 => 1 Jan, 1980
+		},
+		renderCell(value) {
+			if (this.numIsDate(value))
+				return `<span>${moment(Number(value)).format(
+					"MMM D, YYYY"
+				)}</span>`;
+			const maxLength = 40;
+			if (value.length > maxLength)
+				return `<span>${value.substr(
+					0,
+					maxLength
+				)}...</span><div uk-dropdown>${value}</div>`;
+			return `<span>${value}</span>`;
+		},
+		renderFilterRow(ft) {
+			const key = ft.key;
+			let type = ft.type;
 			switch (type) {
-				case 'number-min':
-					return 'number (minimum value)';
-				case 'number-max':
-					return 'number (maximum value)';
-				case 'date-min':
-					return 'minimum date';
-				case 'date-max':
-					return 'maximum date';
-				default:
-					return type;
+				case "number-min":
+					type = "number (minimum value)";
+					break;
+				case "number-max":
+					type = "number (maximum value)";
+					break;
+				case "date-min":
+					type = "minimum date";
+					break;
+				case "date-max":
+					type = "maximum date";
+					break;
 			}
-		}
-	}
+			let value = ft.value;
+			if (!value || isNaN(value)) value = "";
+			else if (ft.type.startsWith("date"))
+				value = moment(Number(value)).format("MMM D, YYYY");
+
+			return `<td>${key}</td><td>${type}</td><td>${value}</td>`;
+		},
+	};
 };
