@@ -626,7 +626,7 @@ struct APIRouter
       end
     end
 
-    post "/api/admin/plugin/subscribe" do |env|
+    post "/api/admin/plugin/subscriptions" do |env|
       begin
         plugin_id = env.params.json["plugin"].as String
         filters = env.params.json["filters"].as(Array(JSON::Any)).map do |f|
@@ -639,6 +639,41 @@ struct APIRouter
 
         plugin = Plugin.new plugin_id
         plugin.subscribe sub
+
+        send_json env, {
+          "success" => true,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    get "/api/admin/plugin/subscriptions" do |env|
+      begin
+        pid = env.params.query["plugin"].as String
+        send_json env, {
+          "success"       => true,
+          "subscriptions" => Plugin.new(pid).list_subscriptions,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    delete "/api/admin/plugin/subscriptions" do |env|
+      begin
+        pid = env.params.query["plugin"].as String
+        sid = env.params.query["subscription"].as String
+
+        Plugin.new(pid).unsubscribe sid
 
         send_json env, {
           "success" => true,

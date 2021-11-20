@@ -145,7 +145,7 @@ class Plugin
 
   def unsubscribe(id : String)
     list = SubscriptionList.new info.dir
-    list.reject &.id.== id
+    list.reject! &.id.== id
     list.save
   end
 

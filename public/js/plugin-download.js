@@ -378,7 +378,7 @@ const component = () => {
 		},
 		subscribe(modal) {
 			this.subscribing = true;
-			fetch(`${base_url}api/admin/plugin/subscribe`, {
+			fetch(`${base_url}api/admin/plugin/subscriptions`, {
 				method: "POST",
 				body: JSON.stringify({
 					filters: this.filterSettings,
