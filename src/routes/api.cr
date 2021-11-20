@@ -649,7 +649,6 @@ struct APIRouter
           "success" => false,
           "error"   => e.message,
         }.to_json
-        raise e
       end
     end
 
