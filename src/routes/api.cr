@@ -629,12 +629,13 @@ struct APIRouter
     post "/api/admin/plugin/subscriptions" do |env|
       begin
         plugin_id = env.params.json["plugin"].as String
+        manga_id = env.params.json["manga"].as String
         filters = env.params.json["filters"].as(Array(JSON::Any)).map do |f|
           Filter.from_json f.to_json
         end
         name = env.params.json["name"].as String
 
-        sub = Subscription.new plugin_id, name
+        sub = Subscription.new plugin_id, manga_id, name
         sub.filters = filters
 
         plugin = Plugin.new plugin_id

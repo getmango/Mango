@@ -5,6 +5,7 @@ const component = () => {
 		pid: undefined,
 		chapters: undefined, // undefined: not searched yet, []: empty
 		manga: undefined, // undefined: not searched yet, []: empty
+		mid: undefined, // id of the selected manga
 		allChapters: [],
 		query: "",
 		mangaTitle: "",
@@ -374,6 +375,7 @@ const component = () => {
 		},
 		mangaSelected(event) {
 			const mid = event.currentTarget.getAttribute("data-id");
+			this.mid = mid;
 			this.searchChapters(mid);
 		},
 		subscribe(modal) {
@@ -384,6 +386,7 @@ const component = () => {
 					filters: this.filterSettings,
 					plugin: this.pid,
 					name: this.subscriptionName.trim(),
+					manga: this.mid,
 				}),
 				headers: {
 					"Content-Type": "application/json",

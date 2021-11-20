@@ -54,12 +54,13 @@ struct Subscription
 
   property id : String
   property plugin_id : String
+  property manga_id : String
   property name : String
   property created_at : Int64
   property last_checked : Int64
   property filters = [] of Filter
 
-  def initialize(@plugin_id, @name)
+  def initialize(@plugin_id, @manga_id, @name)
     @id = UUID.random.to_s
     @created_at = Time.utc.to_unix
     @last_checked = Time.utc.to_unix
