@@ -70,6 +70,10 @@ struct AdminRouter
       layout "download-manager"
     end
 
+    get "/admin/subscriptions" do |env|
+      layout "subscription-manager"
+    end
+
     get "/admin/missing" do |env|
       layout "missing-items"
     end

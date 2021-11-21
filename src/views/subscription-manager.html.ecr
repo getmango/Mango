@@ -1,0 +1,29 @@
+<h2 class=uk-title>Subscription Manager</h2>
+<div x-data="component()" x-init="init()">
+    <div class="uk-grid-small" uk-grid style="margin-bottom:40px;">
+        <div class="uk-container uk-text-center" x-show="plugins.length === 0" style="width:100%">
+            <h2>No Plugins Found</h2>
+            <p>We could't find any plugins in the directory <code><%= Config.current.plugin_path %></code>.</p>
+            <p>You can download official plugins from the <a href="https://github.com/hkalexling/mango-plugins">Mango plugins repository</a>.</p>
+        </div>
+
+        <div x-show="plugins.length > 0" style="width:100%">
+            <div class="uk-margin">
+                <label class="uk-form-label">Choose a plugin</label>
+                <div class="uk-form-controls">
+                    <select class="uk-select" x-model="pid" @change="pluginChanged()">
+                        <template x-for="p in plugins" :key="p">
+                            <option :value="p.id" x-text="p.title"></option>
+                        </template>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<% content_for "script" do %>
+    <%= render_component "moment" %>
+    <script src="<%= base_url %>js/alert.js"></script>
+    <script src="<%= base_url %>js/subscription-manager.js"></script>
+<% end %>
