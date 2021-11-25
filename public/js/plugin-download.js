@@ -237,8 +237,10 @@ const component = () => {
 
 			console.log("initial size:", ary.length);
 			for (let filter of this.appliedFilters) {
-				if (!filter.value || isNaN(filter.value)) continue;
+				if (!filter.value) continue;
 				if (filter.type === "array" && filter.value === "all") continue;
+				if (filter.type.startsWith("number") && isNaN(filter.value))
+					continue;
 
 				console.log("applying filter:", filter);
 
@@ -370,6 +372,7 @@ const component = () => {
 			$("#filter-form input")
 				.get()
 				.forEach((i) => (i.value = ""));
+			$("#filter-form select").val("all");
 			this.appliedFilters = [];
 			this.chapters = this.filteredChapters;
 		},
@@ -439,8 +442,9 @@ const component = () => {
 					break;
 			}
 			let value = ft.value;
-			if (!value || isNaN(value)) value = "";
-			else if (ft.type.startsWith("date"))
+
+			if (ft.type.startsWith("number") && isNaN(value)) value = "";
+			else if (ft.type.startsWith("date") && value)
 				value = moment(Number(value)).format("MMM D, YYYY");
 
 			return `<td>${key}</td><td>${type}</td><td>${value}</td>`;
