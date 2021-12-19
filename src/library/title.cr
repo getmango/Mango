@@ -145,12 +145,12 @@ class Title
         # We think they are removed, but they are here!
         # Cancel reserved jobs
         revival_title_ids = [title.id] + title.deep_titles.map &.id
-        context["deleted_title_ids"].select! do |id|
-          !(revival_title_ids.includes? id)
+        context["deleted_title_ids"].select! do |deleted_title_id|
+          !(revival_title_ids.includes? deleted_title_id)
         end
         revival_entry_ids = title.deep_entries.map &.id
-        context["deleted_entry_ids"].select! do |id|
-          !(revival_entry_ids.includes? id)
+        context["deleted_entry_ids"].select! do |deleted_entry_id|
+          !(revival_entry_ids.includes? deleted_entry_id)
         end
 
         next
@@ -161,7 +161,9 @@ class Title
         if entry.pages > 0 || entry.err_msg
           @entries << entry
           is_entries_added = true
-          context["deleted_entry_ids"].select! { |id| entry.id != id }
+          context["deleted_entry_ids"].select! do |deleted_entry_id|
+            entry.id != deleted_entry_id
+          end
         end
       end
     end
