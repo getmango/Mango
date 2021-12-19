@@ -161,6 +161,7 @@ class Title
         if entry.pages > 0 || entry.err_msg
           @entries << entry
           is_entries_added = true
+          context["deleted_entry_ids"].select! { |id| entry.id != id }
         end
       end
     end
