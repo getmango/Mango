@@ -102,7 +102,11 @@ class Title
 
     previous_titles_size = @title_ids.size
     @title_ids.select! do |title_id|
-      title = Library.default.get_title! title_id
+      title = Library.default.get_title title_id
+      unless title # for if data consistency broken
+        context["deleted_title_ids"].concat [title_id]
+        next false
+      end
       existence = title.examine context
       unless existence
         context["deleted_title_ids"].concat [title_id] +
@@ -137,6 +141,18 @@ class Title
         Library.default.title_hash[title.id] = title
         @title_ids << title.id
         is_titles_added = true
+
+        # We think they are removed, but they are here!
+        # Cancel reserved jobs
+        revival_title_ids = [title.id] + title.deep_titles.map &.id
+        context["deleted_title_ids"].select! do |deleted_title_id|
+          !(revival_title_ids.includes? deleted_title_id)
+        end
+        revival_entry_ids = title.deep_entries.map &.id
+        context["deleted_entry_ids"].select! do |deleted_entry_id|
+          !(revival_entry_ids.includes? deleted_entry_id)
+        end
+
         next
       end
       if is_supported_file path
@@ -145,6 +161,9 @@ class Title
         if entry.pages > 0 || entry.err_msg
           @entries << entry
           is_entries_added = true
+          context["deleted_entry_ids"].select! do |deleted_entry_id|
+            entry.id != deleted_entry_id
+          end
         end
       end
     end
@@ -167,7 +186,12 @@ class Title
       end
     end
 
-    true
+    if @title_ids.size > 0 || @entries.size > 0
+      true
+    else
+      context["deleted_title_ids"].concat [@id]
+      false
+    end
   end
 
   alias SortContext = NamedTuple(username: String, opt: SortOptions)
