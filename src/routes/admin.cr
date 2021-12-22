@@ -61,7 +61,7 @@ struct AdminRouter
       redirect_url = URI.new \
         path: "/admin/user/edit",
         query: hash_to_query({"username" => original_username, \
-           "admin" => admin, "error" => e.message})
+                                 "admin" => admin, "error" => e.message})
       redirect env, redirect_url.to_s
     end
 
