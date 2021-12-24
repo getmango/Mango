@@ -98,6 +98,8 @@ def sort_titles(titles : Array(Title), opt : SortOptions, username : String)
       (a.load_percentage(username) <=> b.load_percentage(username)).or \
         compare_numerically a.title, b.title
     end
+  when .title?
+    ary.sort! { |a, b| compare_numerically a.title, b.title }
   else
     unless opt.method.auto?
       Logger.warn "Unknown sorting method #{opt.not_nil!.method}. Using " \
