@@ -342,6 +342,44 @@ class Storage
     end
   end
 
+  def get_title_sort_title(title_id : String)
+    sort_title = nil
+    MainFiber.run do
+      get_db do |db|
+        sort_title = db.query_one? "Select sort_title from titles where id = (?)", title_id, as: String | Nil
+      end
+    end
+    sort_title
+  end
+
+  def set_title_sort_title(title_id : String, sort_title : String | Nil)
+    sort_title = nil if sort_title == ""
+    MainFiber.run do
+      get_db do |db|
+        db.exec "update titles set sort_title = (?) where id = (?)", sort_title, title_id
+      end
+    end
+  end
+
+  def get_entry_sort_title(entry_id : String)
+    sort_title = nil
+    MainFiber.run do
+      get_db do |db|
+        sort_title = db.query_one? "Select sort_title from ids where id = (?)", entry_id, as: String | Nil
+      end
+    end
+    sort_title
+  end
+
+  def set_entry_sort_title(entry_id : String, sort_title : String | Nil)
+    sort_title = nil if sort_title == ""
+    MainFiber.run do
+      get_db do |db|
+        db.exec "update ids set sort_title = (?) where id = (?)", sort_title, entry_id
+      end
+    end
+  end
+
   def save_thumbnail(id : String, img : Image)
     MainFiber.run do
       get_db do |db|

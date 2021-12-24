@@ -11,6 +11,8 @@ class Title
   setter entry_cover_url_cache : Hash(String, String)?
 
   @[YAML::Field(ignore: true)]
+  @sort_title : String?
+  @[YAML::Field(ignore: true)]
   @entry_display_name_cache : Hash(String, String)?
   @[YAML::Field(ignore: true)]
   @entry_cover_url_cache : Hash(String, String)?
@@ -284,6 +286,27 @@ class Title
     ary << "#{tsize} #{tsize > 1 ? "titles" : "title"}" if tsize > 0
     ary << "#{esize} #{esize > 1 ? "entries" : "entry"}" if esize > 0
     ary.join " and "
+  end
+
+  def sort_title
+    sort_title_cached = @sort_title
+    return sort_title_cached if sort_title_cached
+    sort_title = Storage.default.get_title_sort_title id
+    if sort_title
+      @sort_title = sort_title
+      return sort_title
+    end
+    @sort_title = @title
+    @title
+  end
+
+  def sort_title=(sort_title : String | Nil)
+    Storage.default.set_title_sort_title id, sort_title
+    @sort_title = sort_title
+  end
+
+  def sort_title_db
+    Storage.default.get_title_sort_title id
   end
 
   def tags
