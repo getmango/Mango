@@ -302,7 +302,11 @@ class Title
 
   def set_sort_title(sort_title : String | Nil, username : String)
     Storage.default.set_title_sort_title id, sort_title
-    @sort_title = sort_title
+    if sort_title == "" || sort_title.nil?
+      @sort_title = nil
+    else
+      @sort_title = sort_title
+    end
 
     [false, true].each do |ascend|
       [SortMethod::Auto, SortMethod::Title].each do |sort_method|
