@@ -122,6 +122,34 @@ const renameSubmit = (name, eid) => {
 		});
 };
 
+const renameSortNameSubmit = (name, eid) => {
+	const upload = $('.upload-field');
+	const titleId = upload.attr('data-title-id');
+
+	const params = {};
+	if (eid) params.eid = eid;
+	if (name) params.name = name;
+	const query = $.param(params);
+	let url = `${base_url}api/admin/sort_title/${titleId}?${query}`;
+
+	$.ajax({
+			type: 'PUT',
+			url,
+			contentType: 'application/json',
+			dataType: 'json'
+		})
+		.done(data => {
+			if (data.error) {
+				alert('danger', `Failed to update sort title. Error: ${data.error}`);
+				return;
+			}
+			location.reload();
+		})
+		.fail((jqXHR, status) => {
+			alert('danger', `Failed to update sort title. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+		});
+};
+
 const edit = (eid) => {
 	const cover = $('#edit-modal #cover');
 	let url = cover.attr('data-title-cover');
