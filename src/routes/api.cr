@@ -371,6 +371,37 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Sets the sort title of a title or an entry", <<-MD
+      When `eid` is provided, apply the sort title to the entry. Otherwise, apply the sort title to the title identified by `tid`.
+    MD
+    Koa.tags ["admin", "library"]
+    Koa.path "tid", desc: "Title ID"
+    Koa.query "eid", desc: "Entry ID", required: false
+    Koa.query "name", desc: "The new sort title"
+    Koa.response 200, schema: "result"
+    put "/api/admin/sort_title/:tid" do |env|
+      begin
+        title = (Library.default.get_title env.params.url["tid"])
+          .not_nil!
+        name = env.params.query["name"]?
+        entry = env.params.query["eid"]?
+        if entry.nil?
+          title.sort_title = name
+        else
+          eobj = title.get_entry entry
+          eobj.sort_title = name unless eobj.nil?
+        end
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      else
+        send_json env, {"success" => true}.to_json
+      end
+    end
+
     ws "/api/admin/mangadex/queue" do |socket, env|
       interval_raw = env.params.query["interval"]?
       interval = (interval_raw.to_i? if interval_raw) || 5
