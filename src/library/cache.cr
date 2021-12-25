@@ -127,7 +127,8 @@ struct Tuple(*T)
   end
 end
 
-alias CacheableType = Array(Entry) | Array(Title) | String | Tuple(String, Int32)
+alias CacheableType = Array(Entry) | Array(Title) | String |
+                      Tuple(String, Int32)
 alias CacheEntryType = SortedEntriesCacheEntry |
                        SortedTitlesCacheEntry |
                        CacheEntry(String, String) |

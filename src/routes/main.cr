@@ -66,9 +66,9 @@ struct MainRouter
         percentage = title.load_percentage_for_all_entries username, sort_opt
         title_percentage = title.titles.map &.load_percentage username
         title_percentage_map = {} of String => Float64
-        title_percentage.each_with_index do |percentage, i|
+        title_percentage.each_with_index do |tp, i|
           t = title.titles[i]
-          title_percentage_map[t.id] = percentage
+          title_percentage_map[t.id] = tp
         end
 
         layout "title"

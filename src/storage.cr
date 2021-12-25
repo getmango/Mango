@@ -346,7 +346,9 @@ class Storage
     sort_title = nil
     MainFiber.run do
       get_db do |db|
-        sort_title = db.query_one? "Select sort_title from titles where id = (?)", title_id, as: String | Nil
+        sort_title =
+          db.query_one? "Select sort_title from titles where id = (?)",
+            title_id, as: String | Nil
       end
     end
     sort_title
@@ -356,7 +358,8 @@ class Storage
     sort_title = nil if sort_title == ""
     MainFiber.run do
       get_db do |db|
-        db.exec "update titles set sort_title = (?) where id = (?)", sort_title, title_id
+        db.exec "update titles set sort_title = (?) where id = (?)",
+          sort_title, title_id
       end
     end
   end
@@ -365,7 +368,9 @@ class Storage
     sort_title = nil
     MainFiber.run do
       get_db do |db|
-        sort_title = db.query_one? "Select sort_title from ids where id = (?)", entry_id, as: String | Nil
+        sort_title =
+          db.query_one? "Select sort_title from ids where id = (?)",
+            entry_id, as: String | Nil
       end
     end
     sort_title
@@ -375,7 +380,8 @@ class Storage
     results = Hash(String, String | Nil).new
     MainFiber.run do
       get_db do |db|
-        db.query "select id, sort_title from ids where id in (#{ids.join "," { |id| "'#{id}'" }})" do |rs|
+        db.query "select id, sort_title from ids where id in " \
+                 "(#{ids.join "," { |id| "'#{id}'" }})" do |rs|
           rs.each do
             id = rs.read String
             sort_title = rs.read String | Nil
@@ -391,7 +397,8 @@ class Storage
     sort_title = nil if sort_title == ""
     MainFiber.run do
       get_db do |db|
-        db.exec "update ids set sort_title = (?) where id = (?)", sort_title, entry_id
+        db.exec "update ids set sort_title = (?) where id = (?)",
+          sort_title, entry_id
       end
     end
   end

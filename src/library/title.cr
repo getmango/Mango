@@ -522,7 +522,9 @@ class Title
 
     case opt.not_nil!.method
     when .title?
-      ary = @entries.sort { |a, b| compare_numerically a.sort_title, b.sort_title }
+      ary = @entries.sort do |a, b|
+        compare_numerically a.sort_title, b.sort_title
+      end
     when .time_modified?
       ary = @entries.sort { |a, b| (a.mtime <=> b.mtime).or \
         compare_numerically a.sort_title, b.sort_title }
