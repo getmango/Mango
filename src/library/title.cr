@@ -317,14 +317,7 @@ class Title
       @sort_title = sort_title
     end
 
-    [false, true].each do |ascend|
-      [SortMethod::Auto, SortMethod::Title].each do |sort_method|
-        sorted_entries_cache_key =
-          SortedEntriesCacheEntry.gen_key @id, username, @entries,
-            SortOptions.new(sort_method, ascend)
-        LRUCache.invalidate sorted_entries_cache_key
-      end
-    end
+    remove_sorted_caches [SortMethod::Auto, SortMethod::Title], username
   end
 
   def sort_title_db
@@ -605,17 +598,32 @@ class Title
     zip + titles.flat_map &.deep_entries_with_date_added
   end
 
+  def remove_sorted_caches(sort_methods : Array(SortMethod), username : String)
+    [false, true].each do |ascend|
+      sort_methods.each do |sort_method|
+        sorted_entries_cache_key =
+          SortedEntriesCacheEntry.gen_key @id, username, @entries,
+            SortOptions.new(sort_method, ascend)
+        LRUCache.invalidate sorted_entries_cache_key
+      end
+    end
+    parents.each do |parent|
+      [false, true].each do |ascend|
+        sort_methods.each do |sort_method|
+          sorted_titles_cache_key = SortedTitlesCacheEntry.gen_key username,
+            parent.titles, SortOptions.new(sort_method, ascend)
+          LRUCache.invalidate sorted_titles_cache_key
+        end
+      end
+    end
+  end
+
   def bulk_progress(action, ids : Array(String), username)
     LRUCache.invalidate "#{@id}:#{username}:progress_sum"
     parents.each do |parent|
       LRUCache.invalidate "#{parent.id}:#{username}:progress_sum"
     end
-    [false, true].each do |ascend|
-      sorted_entries_cache_key =
-        SortedEntriesCacheEntry.gen_key @id, username, @entries,
-          SortOptions.new(SortMethod::Progress, ascend)
-      LRUCache.invalidate sorted_entries_cache_key
-    end
+    remove_sorted_caches [SortMethod::Progress], username
 
     selected_entries = ids
       .map { |id|

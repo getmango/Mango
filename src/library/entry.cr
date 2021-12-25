@@ -89,13 +89,7 @@ class Entry
       @sort_title = sort_title
     end
 
-    [false, true].each do |ascend|
-      [SortMethod::Auto, SortMethod::Title].each do |sort_method|
-        sorted_entries_cache_key = SortedEntriesCacheEntry.gen_key @book.id,
-          username, @book.entries, SortOptions.new(sort_method, ascend)
-        LRUCache.invalidate sorted_entries_cache_key
-      end
-    end
+    @book.remove_sorted_caches [SortMethod::Auto, SortMethod::Title], username
   end
 
   def sort_title_db
@@ -213,11 +207,7 @@ class Entry
     @book.parents.each do |parent|
       LRUCache.invalidate "#{parent.id}:#{username}:progress_sum"
     end
-    [false, true].each do |ascend|
-      sorted_entries_cache_key = SortedEntriesCacheEntry.gen_key @book.id,
-        username, @book.entries, SortOptions.new(SortMethod::Progress, ascend)
-      LRUCache.invalidate sorted_entries_cache_key
-    end
+    @book.remove_sorted_caches [SortMethod::Progress], username
 
     TitleInfo.new @book.dir do |info|
       if info.progress[username]?.nil?

@@ -1,6 +1,7 @@
 require "digest"
 
 require "./entry"
+require "./title"
 require "./types"
 
 # Base class for an entry in the LRU cache.
@@ -81,6 +82,31 @@ class SortedEntriesCacheEntry < CacheEntry(Array(String), Array(Entry))
   end
 end
 
+class SortedTitlesCacheEntry < CacheEntry(Array(String), Array(Title))
+  def self.to_save_t(value : Array(Title))
+    value.map &.id
+  end
+
+  def self.to_return_t(value : Array(String))
+    value.map { |title_id| Library.default.title_hash[title_id].not_nil! }
+  end
+
+  def instance_size
+    instance_sizeof(SortedTitlesCacheEntry) +   # sizeof itself
+      instance_sizeof(String) + @key.bytesize + # allocated memory for @key
+      @value.size * (instance_sizeof(String) + sizeof(String)) +
+      @value.sum(&.bytesize) # elements in Array(String)
+  end
+
+  def self.gen_key(username : String, titles : Array(Title), opt : SortOptions?)
+    titles_sig = Digest::SHA1.hexdigest (titles.map &.id).to_s
+    user_context = opt && opt.method == SortMethod::Progress ? username : ""
+    sig = Digest::SHA1.hexdigest (titles_sig + user_context +
+                                  (opt ? opt.to_tuple.to_s : "nil"))
+    "#{sig}:sorted_titles"
+  end
+end
+
 class String
   def instance_size
     instance_sizeof(String) + bytesize
@@ -101,14 +127,17 @@ struct Tuple(*T)
   end
 end
 
-alias CacheableType = Array(Entry) | String | Tuple(String, Int32)
+alias CacheableType = Array(Entry) | Array(Title) | String | Tuple(String, Int32)
 alias CacheEntryType = SortedEntriesCacheEntry |
+                       SortedTitlesCacheEntry |
                        CacheEntry(String, String) |
                        CacheEntry(Tuple(String, Int32), Tuple(String, Int32))
 
 def generate_cache_entry(key : String, value : CacheableType)
   if value.is_a? Array(Entry)
     SortedEntriesCacheEntry.new key, value
+  elsif value.is_a? Array(Title)
+    SortedTitlesCacheEntry.new key, value
   else
     CacheEntry(typeof(value), typeof(value)).new key, value
   end

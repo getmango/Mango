@@ -86,7 +86,11 @@ def env_is_true?(key : String) : Bool
   val.downcase.in? "1", "true"
 end
 
-def sort_titles(titles : Array(Title), opt : SortOptions, username : String)
+def sort_titles(titles : Array(Title), opt : SortOptions, username : String) : Array(Title)
+  cache_key = SortedTitlesCacheEntry.gen_key username, titles, opt
+  cached_titles = LRUCache.get cache_key
+  return cached_titles if cached_titles.is_a? Array(Title)
+
   ary = titles
 
   case opt.method
@@ -110,6 +114,7 @@ def sort_titles(titles : Array(Title), opt : SortOptions, username : String)
 
   ary.reverse! unless opt.not_nil!.ascend
 
+  LRUCache.set generate_cache_entry cache_key, ary
   ary
 end
 
