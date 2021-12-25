@@ -380,16 +380,17 @@ struct APIRouter
     Koa.query "name", desc: "The new sort title"
     Koa.response 200, schema: "result"
     put "/api/admin/sort_title/:tid" do |env|
+      username = get_username env
       begin
         title = (Library.default.get_title env.params.url["tid"])
           .not_nil!
         name = env.params.query["name"]?
         entry = env.params.query["eid"]?
         if entry.nil?
-          title.sort_title = name
+          title.set_sort_title name, username
         else
           eobj = title.get_entry entry
-          eobj.sort_title = name unless eobj.nil?
+          eobj.set_sort_title name, username unless eobj.nil?
         end
       rescue e
         Logger.error e

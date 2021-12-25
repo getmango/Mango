@@ -81,9 +81,17 @@ class Entry
     @title
   end
 
-  def sort_title=(sort_title : String | Nil)
+  def set_sort_title(sort_title : String | Nil, username : String)
     Storage.default.set_entry_sort_title id, sort_title
     @sort_title = sort_title
+
+    [false, true].each do |ascend|
+      [SortMethod::Auto, SortMethod::Title].each do |sort_method|
+        sorted_entries_cache_key = SortedEntriesCacheEntry.gen_key @book.id,
+          username, @book.entries, SortOptions.new(sort_method, ascend)
+        LRUCache.invalidate sorted_entries_cache_key
+      end
+    end
   end
 
   def sort_title_db
