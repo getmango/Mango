@@ -68,7 +68,7 @@ class Title
     end
     sorter = ChapterSorter.new @entries.map &.title
     @entries.sort! do |a, b|
-      sorter.compare a.title, b.title
+      sorter.compare a.sort_title, b.sort_title
     end
   end
 
@@ -182,9 +182,9 @@ class Title
       end
     end
     if is_entries_added || previous_entries_size != @entries.size
-      sorter = ChapterSorter.new @entries.map &.title
+      sorter = ChapterSorter.new @entries.map &.sort_title
       @entries.sort! do |a, b|
-        sorter.compare a.title, b.title
+        sorter.compare a.sort_title, b.sort_title
       end
     end
 
@@ -495,28 +495,28 @@ class Title
 
     case opt.not_nil!.method
     when .title?
-      ary = @entries.sort { |a, b| compare_numerically a.title, b.title }
+      ary = @entries.sort { |a, b| compare_numerically a.sort_title, b.sort_title }
     when .time_modified?
       ary = @entries.sort { |a, b| (a.mtime <=> b.mtime).or \
-        compare_numerically a.title, b.title }
+        compare_numerically a.sort_title, b.sort_title }
     when .time_added?
       ary = @entries.sort { |a, b| (a.date_added <=> b.date_added).or \
-        compare_numerically a.title, b.title }
+        compare_numerically a.sort_title, b.sort_title }
     when .progress?
       percentage_ary = load_percentage_for_all_entries username, opt, true
       ary = @entries.zip(percentage_ary)
         .sort { |a_tp, b_tp| (a_tp[1] <=> b_tp[1]).or \
-          compare_numerically a_tp[0].title, b_tp[0].title }
+          compare_numerically a_tp[0].sort_title, b_tp[0].sort_title }
         .map &.[0]
     else
       unless opt.method.auto?
         Logger.warn "Unknown sorting method #{opt.not_nil!.method}. Using " \
                     "Auto instead"
       end
-      sorter = ChapterSorter.new @entries.map &.title
+      sorter = ChapterSorter.new @entries.map &.sort_title
       ary = @entries.sort do |a, b|
-        sorter.compare(a.title, b.title).or \
-          compare_numerically a.title, b.title
+        sorter.compare(a.sort_title, b.sort_title).or \
+          compare_numerically a.sort_title, b.sort_title
       end
     end
 
