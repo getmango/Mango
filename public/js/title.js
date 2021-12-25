@@ -60,6 +60,11 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 	UIkit.modal($('#modal')).show();
 }
 
+UIkit.util.on(document, 'hidden', '#modal', () => {
+	$('#read-btn').off('click');
+	$('#unread-btn').off('click');
+});
+
 const updateProgress = (tid, eid, page) => {
 	let url = `${base_url}api/progress/${tid}/${page}`
 	const query = $.param({
@@ -181,7 +186,7 @@ const edit = (eid) => {
 	});
 
 	const sortTitleField = $('#sort-title-field');
-	sortTitleField.attr('value', sortTitle);
+	sortTitleField.val(sortTitle);
 	sortTitleField.attr('placeholder', fileTitle);
 	sortTitleField.keyup(event => {
 		if (event.keyCode === 13) {
@@ -196,6 +201,16 @@ const edit = (eid) => {
 
 	UIkit.modal($('#edit-modal')).show();
 };
+
+UIkit.util.on(document, 'hidden', '#edit-modal', () => {
+	const displayNameField = $('#display-name-field');
+	displayNameField.off('keyup');
+	displayNameField.off('click');
+
+	const sortTitleField = $('#sort-title-field');
+	sortTitleField.off('keyup');
+	sortTitleField.off('click');
+});
 
 const setupUpload = (eid) => {
 	const upload = $('.upload-field');
