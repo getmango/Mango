@@ -90,8 +90,6 @@ const renameSubmit = (name, eid) => {
 	const upload = $('.upload-field');
 	const titleId = upload.attr('data-title-id');
 
-	console.log(name);
-
 	if (name.length === 0) {
 		alert('danger', 'The display name should not be empty');
 		return;
@@ -172,20 +170,19 @@ const edit = (eid) => {
 
 	const displayNameField = $('#display-name-field');
 	displayNameField.attr('value', displayName);
-	console.log(displayNameField);
+	displayNameField.attr('placeholder', fileTitle);
 	displayNameField.keyup(event => {
 		if (event.keyCode === 13) {
-			renameSubmit(displayNameField.val(), eid);
+			renameSubmit(displayNameField.val() || fileTitle, eid);
 		}
 	});
 	displayNameField.siblings('a.uk-form-icon').click(() => {
-		renameSubmit(displayNameField.val(), eid);
+		renameSubmit(displayNameField.val() || fileTitle, eid);
 	});
 
 	const sortTitleField = $('#sort-title-field');
 	sortTitleField.attr('value', sortTitle);
 	sortTitleField.attr('placeholder', fileTitle);
-	console.log(sortTitle);
 	sortTitleField.keyup(event => {
 		if (event.keyCode === 13) {
 			renameSortNameSubmit(sortTitleField.val(), eid);
@@ -211,7 +208,6 @@ const setupUpload = (eid) => {
 		queryObj['eid'] = eid;
 	const query = $.param(queryObj);
 	const url = `${base_url}api/admin/upload/cover?${query}`;
-	console.log(url);
 	UIkit.upload('.upload-field', {
 		url: url,
 		name: 'file',
