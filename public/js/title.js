@@ -154,11 +154,15 @@ const edit = (eid) => {
 	const cover = $('#edit-modal #cover');
 	let url = cover.attr('data-title-cover');
 	let displayName = $('h2.uk-title > span').text();
+	let fileTitle = $('h2.uk-title').attr('data-file-title');
+	let sortTitle = $('h2.uk-title').attr('data-sort-title');
 
 	if (eid) {
 		const item = $(`#${eid}`);
 		url = item.find('img').attr('data-src');
 		displayName = item.find('.uk-card-title').attr('data-title');
+		fileTitle = item.find('.uk-card-title').attr('data-file-title');
+		sortTitle = item.find('.uk-card-title').attr('data-sort-title');
 		$('#title-progress-control').attr('hidden', '');
 	} else {
 		$('#title-progress-control').removeAttr('hidden');
@@ -176,6 +180,19 @@ const edit = (eid) => {
 	});
 	displayNameField.siblings('a.uk-form-icon').click(() => {
 		renameSubmit(displayNameField.val(), eid);
+	});
+
+	const sortTitleField = $('#sort-title-field');
+	sortTitleField.attr('value', sortTitle);
+	sortTitleField.attr('placeholder', fileTitle);
+	console.log(sortTitle);
+	sortTitleField.keyup(event => {
+		if (event.keyCode === 13) {
+			renameSortNameSubmit(sortTitleField.val(), eid);
+		}
+	});
+	sortTitleField.siblings('a.uk-form-icon').click(() => {
+		renameSortNameSubmit(sortTitleField.val(), eid);
 	});
 
 	setupUpload(eid);
