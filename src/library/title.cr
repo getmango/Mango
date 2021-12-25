@@ -252,6 +252,10 @@ class Title
     @title_ids.map { |tid| Library.default.get_title! tid }
   end
 
+  def sorted_titles(username, opt : SortOptions? = nil)
+    titles 
+  end
+
   # Get all entries, including entries in nested titles
   def deep_entries
     return @entries if title_ids.empty?

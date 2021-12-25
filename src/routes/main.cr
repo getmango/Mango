@@ -61,9 +61,15 @@ struct MainRouter
         sort_opt = SortOptions.from_info_json title.dir, username
         get_and_save_sort_opt title.dir
 
+        sorted_titles = title.sorted_titles username, sort_opt
         entries = title.sorted_entries username, sort_opt
         percentage = title.load_percentage_for_all_entries username, sort_opt
         title_percentage = title.titles.map &.load_percentage username
+        title_percentage_map = {} of String => Float64
+        title_percentage.each_with_index do |percentage, i|
+          t = title.titles[i]
+          title_percentage_map[t.id] = percentage
+        end
 
         layout "title"
       rescue e

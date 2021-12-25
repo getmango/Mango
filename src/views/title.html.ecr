@@ -60,8 +60,8 @@
 </div>
 
 <div class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
-  <% title.titles.each_with_index do |item, i| %>
-    <% progress = title_percentage[i] %>
+  <% sorted_titles.each do |item| %>
+    <% progress = title_percentage_map[item.id] %>
     <%= render_component "card" %>
   <% end %>
 </div>
