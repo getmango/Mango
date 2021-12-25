@@ -371,6 +371,22 @@ class Storage
     sort_title
   end
 
+  def get_entries_sort_title(ids : Array(String))
+    results = Hash(String, String | Nil).new
+    MainFiber.run do
+      get_db do |db|
+        db.query "select id, sort_title from ids where id in (#{ids.join "," { |id| "'#{id}'" }})" do |rs|
+          rs.each do
+            id = rs.read String
+            sort_title = rs.read String | Nil
+            results[id] = sort_title
+          end
+        end
+      end
+    end
+    results
+  end
+
   def set_entry_sort_title(entry_id : String, sort_title : String | Nil)
     sort_title = nil if sort_title == ""
     MainFiber.run do

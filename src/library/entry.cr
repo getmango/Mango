@@ -72,7 +72,7 @@ class Entry
   def sort_title
     sort_title_cached = @sort_title
     return sort_title_cached if sort_title_cached
-    sort_title = Storage.default.get_entry_sort_title id
+    sort_title = @book.entry_sort_title_db id
     if sort_title
       @sort_title = sort_title
       return sort_title
@@ -89,11 +89,12 @@ class Entry
       @sort_title = sort_title
     end
 
+    @book.entry_sort_title_cache = nil
     @book.remove_sorted_caches [SortMethod::Auto, SortMethod::Title], username
   end
 
   def sort_title_db
-    Storage.default.get_entry_sort_title id
+    @book.entry_sort_title_db @id
   end
 
   def display_name

@@ -8,10 +8,13 @@ class Title
     entries : Array(Entry), title : String, id : String,
     encoded_title : String, mtime : Time, signature : UInt64,
     entry_cover_url_cache : Hash(String, String)?
-  setter entry_cover_url_cache : Hash(String, String)?
+  setter entry_cover_url_cache : Hash(String, String)?,
+    entry_sort_title_cache : Hash(String, String | Nil)?
 
   @[YAML::Field(ignore: true)]
   @sort_title : String?
+  @[YAML::Field(ignore: true)]
+  @entry_sort_title_cache : Hash(String, String | Nil)?
   @[YAML::Field(ignore: true)]
   @entry_display_name_cache : Hash(String, String)?
   @[YAML::Field(ignore: true)]
@@ -322,6 +325,15 @@ class Title
 
   def sort_title_db
     Storage.default.get_title_sort_title id
+  end
+
+  def entry_sort_title_db(entry_id)
+    unless @entry_sort_title_cache
+      @entry_sort_title_cache =
+        Storage.default.get_entries_sort_title @entries.map &.id
+    end
+
+    @entry_sort_title_cache.not_nil![entry_id]?
   end
 
   def tags
