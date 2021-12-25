@@ -320,7 +320,13 @@ class Title
       @sort_title = sort_title
     end
 
-    remove_sorted_caches [SortMethod::Auto, SortMethod::Title], username
+    if parents.size > 0
+      target = parents[-1].titles
+    else
+      target = Library.default.titles
+    end
+    remove_sorted_titles_cache target,
+      [SortMethod::Auto, SortMethod::Title], username
   end
 
   def sort_title_db
@@ -612,7 +618,8 @@ class Title
     zip + titles.flat_map &.deep_entries_with_date_added
   end
 
-  def remove_sorted_caches(sort_methods : Array(SortMethod), username : String)
+  def remove_sorted_entries_cache(sort_methods : Array(SortMethod),
+                                  username : String)
     [false, true].each do |ascend|
       sort_methods.each do |sort_method|
         sorted_entries_cache_key =
@@ -621,15 +628,14 @@ class Title
         LRUCache.invalidate sorted_entries_cache_key
       end
     end
+  end
+
+  def remove_sorted_caches(sort_methods : Array(SortMethod), username : String)
+    remove_sorted_entries_cache sort_methods, username
     parents.each do |parent|
-      [false, true].each do |ascend|
-        sort_methods.each do |sort_method|
-          sorted_titles_cache_key = SortedTitlesCacheEntry.gen_key username,
-            parent.titles, SortOptions.new(sort_method, ascend)
-          LRUCache.invalidate sorted_titles_cache_key
-        end
-      end
+      remove_sorted_titles_cache parent.titles, sort_methods, username
     end
+    remove_sorted_titles_cache Library.default.titles, sort_methods, username
   end
 
   def bulk_progress(action, ids : Array(String), username)

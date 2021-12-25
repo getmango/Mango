@@ -90,7 +90,8 @@ class Entry
     end
 
     @book.entry_sort_title_cache = nil
-    @book.remove_sorted_caches [SortMethod::Auto, SortMethod::Title], username
+    @book.remove_sorted_entries_cache [SortMethod::Auto, SortMethod::Title],
+      username
   end
 
   def sort_title_db
