@@ -91,21 +91,21 @@ def sort_titles(titles : Array(Title), opt : SortOptions, username : String)
 
   case opt.method
   when .time_modified?
-    ary.sort! { |a, b| (a.mtime <=> b.mtime).or \
-      compare_numerically a.title, b.title }
+    ary.sort { |a, b| (a.mtime <=> b.mtime).or \
+      compare_numerically a.sort_title, b.sort_title }
   when .progress?
-    ary.sort! do |a, b|
+    ary.sort do |a, b|
       (a.load_percentage(username) <=> b.load_percentage(username)).or \
-        compare_numerically a.title, b.title
+        compare_numerically a.sort_title, b.sort_title
     end
   when .title?
-    ary.sort! { |a, b| compare_numerically a.title, b.title }
+    ary.sort { |a, b| compare_numerically a.sort_title, b.sort_title }
   else
     unless opt.method.auto?
       Logger.warn "Unknown sorting method #{opt.not_nil!.method}. Using " \
                   "Auto instead"
     end
-    ary.sort! { |a, b| compare_numerically a.title, b.title }
+    ary.sort { |a, b| compare_numerically a.sort_title, b.sort_title }
   end
 
   ary.reverse! unless opt.not_nil!.ascend

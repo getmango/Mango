@@ -253,7 +253,12 @@ class Title
   end
 
   def sorted_titles(username, opt : SortOptions? = nil)
-    titles 
+    if opt.nil?
+      opt = SortOptions.from_info_json @dir, username
+    end
+
+    # Helper function from src/util/util.cr
+    sort_titles titles, opt.not_nil!, username
   end
 
   # Get all entries, including entries in nested titles
