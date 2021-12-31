@@ -1,4 +1,5 @@
 require "uuid"
+require "big"
 
 enum FilterType
   String
@@ -47,6 +48,23 @@ struct Filter
             _value.as_f32? || nil
     self.new key, value, type
   end
+
+  def match_chapter(obj : JSON::Any) : Bool
+    raw_value = obj[key]
+    case type
+    when FilterType::String
+      raw_value.as_s.lower == value.as_s.lower
+    when FilterType::NumMin
+    when FilterType::DateMin
+      BigFloat.new(raw_value) >= BigFloat.new(value)
+    when FilterType::NumMax
+    when FilterType::DateMax
+      BigFloat.new(raw_value) <= BigFloat.new(value)
+    when FilterType::Array
+      raw_value.as_s.lower.split(",")
+        .map(&.strip).include? value.as_s.lower.strip
+    end
+  end
 end
 
 struct Subscription
@@ -64,6 +82,10 @@ struct Subscription
     @id = UUID.random.to_s
     @created_at = Time.utc.to_unix
     @last_checked = Time.utc.to_unix
+  end
+
+  def match_chapter(obj : JSON::Any) : Bool
+    filters.all? &.match_chapter(obj)
   end
 end
 
