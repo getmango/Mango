@@ -122,9 +122,9 @@ const readerComponent = () => {
 			if (this.mode === 'continuous') return;
 
 			if (event.key === 'ArrowLeft' || event.key === 'k')
-				this.flipPage(false);
+				this.flipPage(false ^ this.enableRightToLeft);
 			if (event.key === 'ArrowRight' || event.key === 'j')
-				this.flipPage(true);
+				this.flipPage(true ^ this.enableRightToLeft);
 		},
 		/**
 		 * Flips to the next or the previous page
