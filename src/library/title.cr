@@ -1,13 +1,25 @@
+require "digest"
 require "../archive"
 
 class Title
+  include YAML::Serializable
+
   getter dir : String, parent_id : String, title_ids : Array(String),
     entries : Array(Entry), title : String, id : String,
-    encoded_title : String, mtime : Time, signature : UInt64
+    encoded_title : String, mtime : Time, signature : UInt64,
+    entry_cover_url_cache : Hash(String, String)?
+  setter entry_cover_url_cache : Hash(String, String)?
 
+  @[YAML::Field(ignore: true)]
   @entry_display_name_cache : Hash(String, String)?
+  @[YAML::Field(ignore: true)]
+  @entry_cover_url_cache : Hash(String, String)?
+  @[YAML::Field(ignore: true)]
+  @cached_display_name : String?
+  @[YAML::Field(ignore: true)]
+  @cached_cover_url : String?
 
-  def initialize(@dir : String, @parent_id)
+  def initialize(@dir : String, @parent_id, cache = {} of String => String)
     storage = Storage.default
     @signature = Dir.signature dir
     id = storage.get_title_id dir, signature
@@ -20,6 +32,7 @@ class Title
       })
     end
     @id = id
+    @contents_signature = Dir.contents_signature dir, cache
     @title = File.basename dir
     @encoded_title = URI.encode @title
     @title_ids = [] of String
@@ -30,7 +43,7 @@ class Title
       next if fn.starts_with? "."
       path = File.join dir, fn
       if File.directory? path
-        title = Title.new path, @id
+        title = Title.new path, @id, cache
         next if title.entries.size == 0 && title.titles.size == 0
         Library.default.title_hash[title.id] = title
         @title_ids << title.id
@@ -57,24 +70,165 @@ class Title
     end
   end
 
-  def to_slim_json : String
+  # Utility method used in library rescanning.
+  # - When the title does not exist on the file system anymore, return false
+  #     and let it be deleted from the library instance
+  # - When the title exists, but its contents signature is now different from
+  #     the cache, it means some of its content (nested titles or entries)
+  #     has been added, deleted, or renamed. In this case we update its
+  #     contents signature and instance variables
+  # - When the title exists and its contents signature is still the same, we
+  #     return true so it can be reused without rescanning
+  def examine(context : ExamineContext) : Bool
+    return false unless Dir.exists? @dir
+    contents_signature = Dir.contents_signature @dir,
+      context["cached_contents_signature"]
+    return true if @contents_signature == contents_signature
+
+    @contents_signature = contents_signature
+    @signature = Dir.signature @dir
+    storage = Storage.default
+    id = storage.get_title_id dir, signature
+    if id.nil?
+      id = random_str
+      storage.insert_title_id({
+        path:      dir,
+        id:        id,
+        signature: signature.to_s,
+      })
+    end
+    @id = id
+    @mtime = File.info(@dir).modification_time
+
+    previous_titles_size = @title_ids.size
+    @title_ids.select! do |title_id|
+      title = Library.default.get_title title_id
+      unless title # for if data consistency broken
+        context["deleted_title_ids"].concat [title_id]
+        next false
+      end
+      existence = title.examine context
+      unless existence
+        context["deleted_title_ids"].concat [title_id] +
+                                            title.deep_titles.map &.id
+        context["deleted_entry_ids"].concat title.deep_entries.map &.id
+      end
+      existence
+    end
+    remained_title_dirs = @title_ids.map do |title_id|
+      title = Library.default.get_title! title_id
+      title.dir
+    end
+
+    previous_entries_size = @entries.size
+    @entries.select! do |entry|
+      existence = File.exists? entry.zip_path
+      Fiber.yield
+      context["deleted_entry_ids"] << entry.id unless existence
+      existence
+    end
+    remained_entry_zip_paths = @entries.map &.zip_path
+
+    is_titles_added = false
+    is_entries_added = false
+    Dir.entries(dir).each do |fn|
+      next if fn.starts_with? "."
+      path = File.join dir, fn
+      if File.directory? path
+        next if remained_title_dirs.includes? path
+        title = Title.new path, @id, context["cached_contents_signature"]
+        next if title.entries.size == 0 && title.titles.size == 0
+        Library.default.title_hash[title.id] = title
+        @title_ids << title.id
+        is_titles_added = true
+
+        # We think they are removed, but they are here!
+        # Cancel reserved jobs
+        revival_title_ids = [title.id] + title.deep_titles.map &.id
+        context["deleted_title_ids"].select! do |deleted_title_id|
+          !(revival_title_ids.includes? deleted_title_id)
+        end
+        revival_entry_ids = title.deep_entries.map &.id
+        context["deleted_entry_ids"].select! do |deleted_entry_id|
+          !(revival_entry_ids.includes? deleted_entry_id)
+        end
+
+        next
+      end
+      if is_supported_file path
+        next if remained_entry_zip_paths.includes? path
+        entry = Entry.new path, self
+        if entry.pages > 0 || entry.err_msg
+          @entries << entry
+          is_entries_added = true
+          context["deleted_entry_ids"].select! do |deleted_entry_id|
+            entry.id != deleted_entry_id
+          end
+        end
+      end
+    end
+
+    mtimes = [@mtime]
+    mtimes += @title_ids.map { |e| Library.default.title_hash[e].mtime }
+    mtimes += @entries.map &.mtime
+    @mtime = mtimes.max
+
+    if is_titles_added || previous_titles_size != @title_ids.size
+      @title_ids.sort! do |a, b|
+        compare_numerically Library.default.title_hash[a].title,
+          Library.default.title_hash[b].title
+      end
+    end
+    if is_entries_added || previous_entries_size != @entries.size
+      sorter = ChapterSorter.new @entries.map &.title
+      @entries.sort! do |a, b|
+        sorter.compare a.title, b.title
+      end
+    end
+
+    if @title_ids.size > 0 || @entries.size > 0
+      true
+    else
+      context["deleted_title_ids"].concat [@id]
+      false
+    end
+  end
+
+  alias SortContext = NamedTuple(username: String, opt: SortOptions)
+
+  def build_json(*, slim = false, depth = -1,
+                 sort_context : SortContext? = nil)
     JSON.build do |json|
       json.object do
         {% for str in ["dir", "title", "id"] %}
         json.field {{str}}, @{{str.id}}
       {% end %}
         json.field "signature" { json.number @signature }
-        json.field "titles" do
-          json.array do
-            self.titles.each do |title|
-              json.raw title.to_slim_json
+        unless slim
+          json.field "display_name", display_name
+          json.field "cover_url", cover_url
+          json.field "mtime" { json.number @mtime.to_unix }
+        end
+        unless depth == 0
+          json.field "titles" do
+            json.array do
+              self.titles.each do |title|
+                json.raw title.build_json(slim: slim,
+                  depth: depth > 0 ? depth - 1 : depth)
+              end
             end
           end
-        end
-        json.field "entries" do
-          json.array do
-            @entries.each do |entry|
-              json.raw entry.to_slim_json
+          json.field "entries" do
+            json.array do
+              _entries = if sort_context
+                           sorted_entries sort_context[:username],
+                             sort_context[:opt]
+                         else
+                           @entries
+                         end
+              _entries.each do |entry|
+                json.raw entry.build_json(slim: slim)
+              end
             end
           end
         end
@@ -85,34 +239,6 @@ class Title
                 json.field "title", title.title
                 json.field "id", title.id
               end
-            end
-          end
-        end
-      end
-    end
-  end
-
-  def to_json(json : JSON::Builder)
-    json.object do
-      {% for str in ["dir", "title", "id"] %}
-        json.field {{str}}, @{{str.id}}
-      {% end %}
-      json.field "signature" { json.number @signature }
-      json.field "display_name", display_name
-      json.field "cover_url", cover_url
-      json.field "mtime" { json.number @mtime.to_unix }
-      json.field "titles" do
-        json.raw self.titles.to_json
-      end
-      json.field "entries" do
-        json.raw @entries.to_json
-      end
-      json.field "parents" do
-        json.array do
-          self.parents.each do |title|
-            json.object do
-              json.field "title", title.title
-              json.field "id", title.id
             end
           end
         end
@@ -177,11 +303,15 @@ class Title
   end
 
   def display_name
+    cached_display_name = @cached_display_name
+    return cached_display_name unless cached_display_name.nil?
+
     dn = @title
     TitleInfo.new @dir do |info|
       info_dn = info.display_name
       dn = info_dn unless info_dn.empty?
     end
+    @cached_display_name = dn
     dn
   end
 
@@ -205,6 +335,7 @@ class Title
   end
 
   def set_display_name(dn)
+    @cached_display_name = dn
     TitleInfo.new @dir do |info|
       info.display_name = dn
       info.save
@@ -214,11 +345,15 @@ class Title
   def set_display_name(entry_name : String, dn)
     TitleInfo.new @dir do |info|
       info.entry_display_name[entry_name] = dn
+      @entry_display_name_cache = info.entry_display_name
       info.save
     end
   end
 
   def cover_url
+    cached_cover_url = @cached_cover_url
+    return cached_cover_url unless cached_cover_url.nil?
+
     url = "#{Config.current.base_url}img/icon.png"
     readable_entries = @entries.select &.err_msg.nil?
     if readable_entries.size > 0
@@ -230,10 +365,12 @@ class Title
         url = File.join Config.current.base_url, info_url
       end
     end
+    @cached_cover_url = url
     url
   end
 
   def set_cover_url(url : String)
+    @cached_cover_url = url
     TitleInfo.new @dir do |info|
       info.cover_url = url
       info.save
@@ -243,6 +380,7 @@ class Title
   def set_cover_url(entry_name : String, url : String)
     TitleInfo.new @dir do |info|
       info.entry_cover_url[entry_name] = url
+      @entry_cover_url_cache = info.entry_cover_url
       info.save
     end
   end
@@ -262,8 +400,15 @@ class Title
   end
 
   def deep_read_page_count(username) : Int32
-    load_progress_for_all_entries(username).sum +
-      titles.flat_map(&.deep_read_page_count username).sum
+    key = "#{@id}:#{username}:progress_sum"
+    sig = Digest::SHA1.hexdigest (entries.map &.id).to_s
+    cached_sum = LRUCache.get key
+    return cached_sum[1] if cached_sum.is_a? Tuple(String, Int32) &&
+                            cached_sum[0] == sig
+    sum = load_progress_for_all_entries(username, nil, true).sum +
+          titles.flat_map(&.deep_read_page_count username).sum
+    LRUCache.set generate_cache_entry key, {sig, sum}
+    sum
   end
 
   def deep_total_page_count : Int32
@@ -317,13 +462,12 @@ class Title
   #   use the default (auto, ascending)
   # When `opt` is not nil, it saves the options to info.json
   def sorted_entries(username, opt : SortOptions? = nil)
+    cache_key = SortedEntriesCacheEntry.gen_key @id, username, @entries, opt
+    cached_entries = LRUCache.get cache_key
+    return cached_entries if cached_entries.is_a? Array(Entry)
+
     if opt.nil?
       opt = SortOptions.from_info_json @dir, username
-    else
-      TitleInfo.new @dir do |info|
-        info.sort_by[username] = opt.to_tuple
-        info.save
-      end
     end
 
     case opt.not_nil!.method
@@ -355,6 +499,7 @@ class Title
 
     ary.reverse! unless opt.not_nil!.ascend
 
+    LRUCache.set generate_cache_entry cache_key, ary
     ary
   end
 
@@ -416,6 +561,17 @@ class Title
   end
 
   def bulk_progress(action, ids : Array(String), username)
+    LRUCache.invalidate "#{@id}:#{username}:progress_sum"
+    parents.each do |parent|
+      LRUCache.invalidate "#{parent.id}:#{username}:progress_sum"
+    end
+    [false, true].each do |ascend|
+      sorted_entries_cache_key =
+        SortedEntriesCacheEntry.gen_key @id, username, @entries,
+          SortOptions.new(SortMethod::Progress, ascend)
+      LRUCache.invalidate sorted_entries_cache_key
+    end
+
     selected_entries = ids
       .map { |id|
         @entries.find &.id.==(id)

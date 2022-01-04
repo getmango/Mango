@@ -68,7 +68,12 @@ const buildTable = (chapters) => {
 	$('table').append(thead);
 
 	const rows = chapters.map(ch => {
-		const tds = Object.values(ch).map(v => `<td>${v}</td>`).join('');
+		const tds = Object.values(ch).map(v => {
+			const maxLength = 40;
+			const shouldShrink = v.length > maxLength;
+			const content = shouldShrink ? `<span title="${v}">${v.substring(0, maxLength)}...</span><div uk-dropdown><span>${v}</span></div>` : v;
+			return `<td>${content}</td>`
+		}).join('');
 		return `<tr data-id="${ch.id}" data-title="${ch.title}">${tds}</tr>`;
 	});
 	const tbody = `<tbody id="selectable">${rows}</tbody>`;

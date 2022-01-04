@@ -11,6 +11,8 @@ class Config
   property session_secret : String = "mango-session-secret"
   property library_path : String = File.expand_path "~/mango/library",
     home: true
+  property library_cache_path = File.expand_path "~/mango/library.yml.gz",
+    home: true
   property db_path : String = File.expand_path "~/mango/mango.db", home: true
   property scan_interval_minutes : Int32 = 5
   property thumbnail_generation_interval_hours : Int32 = 24
@@ -20,6 +22,9 @@ class Config
   property plugin_path : String = File.expand_path "~/mango/plugins",
     home: true
   property download_timeout_seconds : Int32 = 30
+  property cache_enabled = false
+  property cache_size_mbs = 50
+  property cache_log_enabled = true
   property disable_login = false
   property default_username = ""
   property auth_proxy_header_name = ""

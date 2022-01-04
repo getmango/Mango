@@ -1,12 +1,38 @@
 class Library
+  include YAML::Serializable
+
   getter dir : String, title_ids : Array(String),
     title_hash : Hash(String, Title)
 
   use_default
 
-  def initialize
-    register_mime_types
+  def save_instance
+    path = Config.current.library_cache_path
+    Logger.debug "Caching library to #{path}"
 
+    writer = Compress::Gzip::Writer.new path,
+      Compress::Gzip::BEST_COMPRESSION
+    writer.write self.to_yaml.to_slice
+    writer.close
+  end
+
+  def self.load_instance
+    path = Config.current.library_cache_path
+    return unless File.exists? path
+
+    Logger.debug "Loading cached library from #{path}"
+
+    begin
+      Compress::Gzip::Reader.open path do |content|
+        @@default = Library.from_yaml content
+      end
+      Library.default.register_jobs
+    rescue e
+      Logger.error e
+    end
+  end
+
+  def initialize
     @dir = Config.current.library_path
     # explicitly initialize @titles to bypass the compiler check. it will
     #   be filled with actual Titles in the `scan` call below
@@ -15,6 +41,12 @@ class Library
 
     @entries_count = 0
     @thumbnails_count = 0
+
+    register_jobs
+  end
+
+  protected def register_jobs
+    register_mime_types
 
     scan_interval = Config.current.scan_interval_minutes
     if scan_interval < 1
@@ -25,7 +57,7 @@ class Library
           start = Time.local
           scan
           ms = (Time.local - start).total_milliseconds
-          Logger.info "Scanned #{@title_ids.size} titles in #{ms}ms"
+          Logger.debug "Library initialized in #{ms}ms"
           sleep scan_interval.minutes
         end
       end
@@ -51,11 +83,6 @@ class Library
   def sorted_titles(username, opt : SortOptions? = nil)
     if opt.nil?
       opt = SortOptions.from_info_json @dir, username
-    else
-      TitleInfo.new @dir do |info|
-        info.sort_by[username] = opt.to_tuple
-        info.save
-      end
     end
 
     # Helper function from src/util/util.cr
@@ -66,26 +93,21 @@ class Library
     titles + titles.flat_map &.deep_titles
   end
 
-  def to_slim_json : String
+  def deep_entries
+    titles.flat_map &.deep_entries
+  end
+
+  def build_json(*, slim = false, depth = -1)
     JSON.build do |json|
       json.object do
         json.field "dir", @dir
         json.field "titles" do
           json.array do
             self.titles.each do |title|
-              json.raw title.to_slim_json
+              json.raw title.build_json(slim: slim, depth: depth)
             end
           end
         end
-      end
-    end
-  end
-
-  def to_json(json : JSON::Builder)
-    json.object do
-      json.field "dir", @dir
-      json.field "titles" do
-        json.raw self.titles.to_json
       end
     end
   end
@@ -99,6 +121,7 @@ class Library
   end
 
   def scan
+    start = Time.local
     unless Dir.exists? @dir
       Logger.info "The library directory #{@dir} does not exist. " \
                   "Attempting to create it"
@@ -107,14 +130,38 @@ class Library
 
     storage = Storage.new auto_close: false
 
-    (Dir.entries @dir)
+    examine_context : ExamineContext = {
+      cached_contents_signature: {} of String => String,
+      deleted_title_ids:         [] of String,
+      deleted_entry_ids:         [] of String,
+    }
+
+    library_paths = (Dir.entries @dir)
       .select { |fn| !fn.starts_with? "." }
       .map { |fn| File.join @dir, fn }
+    @title_ids.select! do |title_id|
+      title = @title_hash[title_id]
+      next false unless library_paths.includes? title.dir
+      existence = title.examine examine_context
+      unless existence
+        examine_context["deleted_title_ids"].concat [title_id] +
+                                                    title.deep_titles.map &.id
+        examine_context["deleted_entry_ids"].concat title.deep_entries.map &.id
+      end
+      existence
+    end
+    remained_title_dirs = @title_ids.map { |id| title_hash[id].dir }
+    examine_context["deleted_title_ids"].each do |title_id|
+      @title_hash.delete title_id
+    end
+
+    cache = examine_context["cached_contents_signature"]
+    library_paths
+      .select { |path| !(remained_title_dirs.includes? path) }
       .select { |path| File.directory? path }
-      .map { |path| Title.new path, "" }
+      .map { |path| Title.new path, "", cache }
       .select { |title| !(title.entries.empty? && title.titles.empty?) }
       .sort! { |a, b| a.title <=> b.title }
-      .tap { |_| @title_ids.clear }
       .each do |title|
         @title_hash[title.id] = title
         @title_ids << title.id
@@ -123,8 +170,15 @@ class Library
     storage.bulk_insert_ids
     storage.close
 
-    Logger.debug "Scan completed"
-    Storage.default.mark_unavailable
+    ms = (Time.local - start).total_milliseconds
+    Logger.info "Scanned #{@title_ids.size} titles in #{ms}ms"
+
+    Storage.default.mark_unavailable examine_context["deleted_entry_ids"],
+      examine_context["deleted_title_ids"]
+
+    spawn do
+      save_instance
+    end
   end
 
   def get_continue_reading_entries(username)
