@@ -70,7 +70,7 @@ const readerComponent = () => {
 					if (savedRightToLeft === null) {
 						this.enableRightToLeft = false;
 					} else {
-						this.enableRightToLeft = savedRightToLeft;
+						this.enableRightToLeft = (savedRightToLeft === 'true');
 					}
 				})
 				.catch(e => {
