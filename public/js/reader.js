@@ -13,6 +13,7 @@ const readerComponent = () => {
 		selectedIndex: 0, // 0: not selected; 1: the first page
 		margin: 30,
 		preloadLookahead: 3,
+		enableRightToLeft: false,
 
 		/**
 		 * Initialize the component by fetching the page dimensions
@@ -64,6 +65,13 @@ const readerComponent = () => {
 
 					const savedFlipAnimation = localStorage.getItem('enableFlipAnimation');
 					this.enableFlipAnimation = savedFlipAnimation === null || savedFlipAnimation === 'true';
+
+					const savedRightToLeft = localStorage.getItem('enableRightToLeft');
+					if (savedRightToLeft === null) {
+						this.enableRightToLeft = false;
+					} else {
+						this.enableRightToLeft = (savedRightToLeft === 'true');
+					}
 				})
 				.catch(e => {
 					const errMsg = `Failed to get the page dimensions. ${e}`;
@@ -114,9 +122,9 @@ const readerComponent = () => {
 			if (this.mode === 'continuous') return;
 
 			if (event.key === 'ArrowLeft' || event.key === 'k')
-				this.flipPage(false);
+				this.flipPage(false ^ this.enableRightToLeft);
 			if (event.key === 'ArrowRight' || event.key === 'j')
-				this.flipPage(true);
+				this.flipPage(true ^ this.enableRightToLeft);
 		},
 		/**
 		 * Flips to the next or the previous page
@@ -136,7 +144,7 @@ const readerComponent = () => {
 			this.toPage(newIdx);
 
 			if (this.enableFlipAnimation) {
-				if (isNext)
+				if (isNext ^ this.enableRightToLeft)
 					this.flipAnimation = 'right';
 				else
 					this.flipAnimation = 'left';
@@ -319,6 +327,10 @@ const readerComponent = () => {
 
 		enableFlipAnimationChanged() {
 			localStorage.setItem('enableFlipAnimation', this.enableFlipAnimation);
+		},
+
+		enableRightToLeftChanged() {
+			localStorage.setItem('enableRightToLeft', this.enableRightToLeft);
 		},
 	};
 }
