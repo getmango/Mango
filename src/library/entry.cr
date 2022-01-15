@@ -59,6 +59,7 @@ class Entry
         json.field {{str}}, @{{str.id}}
       {% end %}
         json.field "title_id", @book.id
+        json.field "sort_title", sort_title
         json.field "pages" { json.number @pages }
         unless slim
           json.field "display_name", @book.display_name @title

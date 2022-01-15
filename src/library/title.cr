@@ -209,6 +209,7 @@ class Title
         json.field {{str}}, @{{str.id}}
       {% end %}
         json.field "signature" { json.number @signature }
+        json.field "sort_title", sort_title
         unless slim
           json.field "display_name", display_name
           json.field "cover_url", cover_url
