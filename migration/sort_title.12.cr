@@ -61,7 +61,7 @@ class SortTitle < MG::Base
     );
 
     INSERT INTO titles
-    SELECT path, id, signature, unavailable
+    SELECT id, path, signature, unavailable
     FROM tmp;
 
     DROP TABLE tmp;
