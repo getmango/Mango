@@ -87,28 +87,47 @@ def env_is_true?(key : String) : Bool
 end
 
 def sort_titles(titles : Array(Title), opt : SortOptions, username : String)
-  ary = titles
+  cache_key = SortedTitlesCacheEntry.gen_key username, titles, opt
+  cached_titles = LRUCache.get cache_key
+  return cached_titles if cached_titles.is_a? Array(Title)
 
   case opt.method
   when .time_modified?
-    ary.sort! { |a, b| (a.mtime <=> b.mtime).or \
-      compare_numerically a.title, b.title }
+    ary = titles.sort { |a, b| (a.mtime <=> b.mtime).or \
+      compare_numerically a.sort_title, b.sort_title }
   when .progress?
-    ary.sort! do |a, b|
+    ary = titles.sort do |a, b|
       (a.load_percentage(username) <=> b.load_percentage(username)).or \
-        compare_numerically a.title, b.title
+        compare_numerically a.sort_title, b.sort_title
+    end
+  when .title?
+    ary = titles.sort do |a, b|
+      compare_numerically a.sort_title, b.sort_title
     end
   else
     unless opt.method.auto?
       Logger.warn "Unknown sorting method #{opt.not_nil!.method}. Using " \
                   "Auto instead"
     end
-    ary.sort! { |a, b| compare_numerically a.title, b.title }
+    ary = titles.sort { |a, b| compare_numerically a.sort_title, b.sort_title }
   end
 
   ary.reverse! unless opt.not_nil!.ascend
 
+  LRUCache.set generate_cache_entry cache_key, ary
   ary
+end
+
+def remove_sorted_titles_cache(titles : Array(Title),
+                               sort_methods : Array(SortMethod),
+                               username : String)
+  [false, true].each do |ascend|
+    sort_methods.each do |sort_method|
+      sorted_titles_cache_key = SortedTitlesCacheEntry.gen_key username,
+        titles, SortOptions.new(sort_method, ascend)
+      LRUCache.invalidate sorted_titles_cache_key
+    end
+  end
 end
 
 class String

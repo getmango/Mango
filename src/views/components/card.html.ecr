@@ -61,7 +61,9 @@
           <% if page == "home" && item.is_a? Entry %>
             <%= "uk-margin-remove-bottom" %>
           <% end %>
-          " data-title="<%= HTML.escape(item.display_name) %>"><%= HTML.escape(item.display_name) %>
+          " data-title="<%= HTML.escape(item.display_name) %>"
+          data-file-title="<%= HTML.escape(item.title || "") %>"
+          data-sort-title="<%= HTML.escape(item.sort_title_db || "") %>"><%= HTML.escape(item.display_name) %>
         </h3>
         <% if page == "home" && item.is_a? Entry %>
           <a class="uk-card-title break-word uk-margin-remove-top uk-text-meta uk-display-inline-block no-modal" data-title="<%= HTML.escape(item.book.display_name) %>" href="<%= base_url %>book/<%= item.book.id %>"><%= HTML.escape(item.book.display_name) %></a>

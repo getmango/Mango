@@ -161,7 +161,7 @@ class Library
       .select { |path| File.directory? path }
       .map { |path| Title.new path, "", cache }
       .select { |title| !(title.entries.empty? && title.titles.empty?) }
-      .sort! { |a, b| a.title <=> b.title }
+      .sort! { |a, b| a.sort_title <=> b.sort_title }
       .each do |title|
         @title_hash[title.id] = title
         @title_ids << title.id
