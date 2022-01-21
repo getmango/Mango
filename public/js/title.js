@@ -60,6 +60,11 @@ function showModal(encodedPath, pages, percentage, encodedeTitle, encodedEntryTi
 	UIkit.modal($('#modal')).show();
 }
 
+UIkit.util.on(document, 'hidden', '#modal', () => {
+	$('#read-btn').off('click');
+	$('#unread-btn').off('click');
+});
+
 const updateProgress = (tid, eid, page) => {
 	let url = `${base_url}api/progress/${tid}/${page}`
 	const query = $.param({
@@ -89,8 +94,6 @@ const updateProgress = (tid, eid, page) => {
 const renameSubmit = (name, eid) => {
 	const upload = $('.upload-field');
 	const titleId = upload.attr('data-title-id');
-
-	console.log(name);
 
 	if (name.length === 0) {
 		alert('danger', 'The display name should not be empty');
@@ -122,15 +125,47 @@ const renameSubmit = (name, eid) => {
 		});
 };
 
+const renameSortNameSubmit = (name, eid) => {
+	const upload = $('.upload-field');
+	const titleId = upload.attr('data-title-id');
+
+	const params = {};
+	if (eid) params.eid = eid;
+	if (name) params.name = name;
+	const query = $.param(params);
+	let url = `${base_url}api/admin/sort_title/${titleId}?${query}`;
+
+	$.ajax({
+			type: 'PUT',
+			url,
+			contentType: 'application/json',
+			dataType: 'json'
+		})
+		.done(data => {
+			if (data.error) {
+				alert('danger', `Failed to update sort title. Error: ${data.error}`);
+				return;
+			}
+			location.reload();
+		})
+		.fail((jqXHR, status) => {
+			alert('danger', `Failed to update sort title. Error: [${jqXHR.status}] ${jqXHR.statusText}`);
+		});
+};
+
 const edit = (eid) => {
 	const cover = $('#edit-modal #cover');
 	let url = cover.attr('data-title-cover');
 	let displayName = $('h2.uk-title > span').text();
+	let fileTitle = $('h2.uk-title').attr('data-file-title');
+	let sortTitle = $('h2.uk-title').attr('data-sort-title');
 
 	if (eid) {
 		const item = $(`#${eid}`);
 		url = item.find('img').attr('data-src');
 		displayName = item.find('.uk-card-title').attr('data-title');
+		fileTitle = item.find('.uk-card-title').attr('data-file-title');
+		sortTitle = item.find('.uk-card-title').attr('data-sort-title');
 		$('#title-progress-control').attr('hidden', '');
 	} else {
 		$('#title-progress-control').removeAttr('hidden');
@@ -140,20 +175,42 @@ const edit = (eid) => {
 
 	const displayNameField = $('#display-name-field');
 	displayNameField.attr('value', displayName);
-	console.log(displayNameField);
+	displayNameField.attr('placeholder', fileTitle);
 	displayNameField.keyup(event => {
 		if (event.keyCode === 13) {
-			renameSubmit(displayNameField.val(), eid);
+			renameSubmit(displayNameField.val() || fileTitle, eid);
 		}
 	});
 	displayNameField.siblings('a.uk-form-icon').click(() => {
-		renameSubmit(displayNameField.val(), eid);
+		renameSubmit(displayNameField.val() || fileTitle, eid);
+	});
+
+	const sortTitleField = $('#sort-title-field');
+	sortTitleField.val(sortTitle);
+	sortTitleField.attr('placeholder', fileTitle);
+	sortTitleField.keyup(event => {
+		if (event.keyCode === 13) {
+			renameSortNameSubmit(sortTitleField.val(), eid);
+		}
+	});
+	sortTitleField.siblings('a.uk-form-icon').click(() => {
+		renameSortNameSubmit(sortTitleField.val(), eid);
 	});
 
 	setupUpload(eid);
 
 	UIkit.modal($('#edit-modal')).show();
 };
+
+UIkit.util.on(document, 'hidden', '#edit-modal', () => {
+	const displayNameField = $('#display-name-field');
+	displayNameField.off('keyup');
+	displayNameField.off('click');
+
+	const sortTitleField = $('#sort-title-field');
+	sortTitleField.off('keyup');
+	sortTitleField.off('click');
+});
 
 const setupUpload = (eid) => {
 	const upload = $('.upload-field');
@@ -166,7 +223,6 @@ const setupUpload = (eid) => {
 		queryObj['eid'] = eid;
 	const query = $.param(queryObj);
 	const url = `${base_url}api/admin/upload/cover?${query}`;
-	console.log(url);
 	UIkit.upload('.upload-field', {
 		url: url,
 		name: 'file',

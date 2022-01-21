@@ -242,8 +242,6 @@ const component = () => {
 				if (filter.type.startsWith("number") && isNaN(filter.value))
 					continue;
 
-				console.log("applying filter:", filter);
-
 				if (filter.type === "string") {
 					ary = ary.filter((ch) =>
 						ch[filter.key]
@@ -417,7 +415,7 @@ const component = () => {
 					"MMM D, YYYY"
 				)}</span>`;
 			const maxLength = 40;
-			if (value.length > maxLength)
+			if (value && value.length > maxLength)
 				return `<span>${value.substr(
 					0,
 					maxLength

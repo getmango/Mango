@@ -8,6 +8,9 @@ class Entry
     size : String, pages : Int32, id : String, encoded_path : String,
     encoded_title : String, mtime : Time, err_msg : String?
 
+  @[YAML::Field(ignore: true)]
+  @sort_title : String?
+
   def initialize(@zip_path, @book)
     storage = Storage.default
     @encoded_path = URI.encode @zip_path
@@ -57,6 +60,7 @@ class Entry
       {% end %}
         json.field "title_id", @book.id
         json.field "title_title", @book.title
+        json.field "sort_title", sort_title
         json.field "pages" { json.number @pages }
         unless slim
           json.field "display_name", @book.display_name @title
@@ -65,6 +69,35 @@ class Entry
         end
       end
     end
+  end
+
+  def sort_title
+    sort_title_cached = @sort_title
+    return sort_title_cached if sort_title_cached
+    sort_title = @book.entry_sort_title_db id
+    if sort_title
+      @sort_title = sort_title
+      return sort_title
+    end
+    @sort_title = @title
+    @title
+  end
+
+  def set_sort_title(sort_title : String | Nil, username : String)
+    Storage.default.set_entry_sort_title id, sort_title
+    if sort_title == "" || sort_title.nil?
+      @sort_title = nil
+    else
+      @sort_title = sort_title
+    end
+
+    @book.entry_sort_title_cache = nil
+    @book.remove_sorted_entries_cache [SortMethod::Auto, SortMethod::Title],
+      username
+  end
+
+  def sort_title_db
+    @book.entry_sort_title_db @id
   end
 
   def display_name
@@ -178,11 +211,7 @@ class Entry
     @book.parents.each do |parent|
       LRUCache.invalidate "#{parent.id}:#{username}:progress_sum"
     end
-    [false, true].each do |ascend|
-      sorted_entries_cache_key = SortedEntriesCacheEntry.gen_key @book.id,
-        username, @book.entries, SortOptions.new(SortMethod::Progress, ascend)
-      LRUCache.invalidate sorted_entries_cache_key
-    end
+    @book.remove_sorted_caches [SortMethod::Progress], username
 
     TitleInfo.new @book.dir do |info|
       if info.progress[username]?.nil?

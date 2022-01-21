@@ -18,7 +18,8 @@
       </div>
     </div>
   </div>
-  <h2 class=uk-title><span><%= title.display_name %></span>
+  <h2 class=uk-title data-file-title="<%= HTML.escape(title.title) %>" data-sort-title="<%= HTML.escape(title.sort_title_db || "") %>">
+    <span><%= title.display_name %></span>
     &nbsp;
     <% if is_admin %>
       <a onclick="edit()" class="uk-icon-button" uk-icon="icon:pencil"></a>
@@ -59,8 +60,8 @@
 </div>
 
 <div class="uk-child-width-1-4@m uk-child-width-1-2" uk-grid>
-  <% title.titles.each_with_index do |item, i| %>
-    <% progress = title_percentage[i] %>
+  <% sorted_titles.each do |item| %>
+    <% progress = title_percentage_map[item.id] %>
     <%= render_component "card" %>
   <% end %>
 </div>
@@ -87,6 +88,13 @@
         <div class="uk-inline">
           <a class="uk-form-icon uk-form-icon-flip" uk-icon="icon:check"></a>
           <input class="uk-input" type="text" name="display-name" id="display-name-field">
+        </div>
+      </div>
+      <div class="uk-margin">
+        <label class="uk-form-label" for="sort-title">Sort Title</label>
+        <div class="uk-inline">
+          <a class="uk-form-icon uk-form-icon-flip" uk-icon="icon:check"></a>
+          <input class="uk-input" type="text" name="sort-title" id="sort-title-field">
         </div>
       </div>
       <div class="uk-margin">

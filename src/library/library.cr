@@ -136,8 +136,12 @@ class Library
       deleted_entry_ids:         [] of String,
     }
 
+    library_paths = (Dir.entries @dir)
+      .select { |fn| !fn.starts_with? "." }
+      .map { |fn| File.join @dir, fn }
     @title_ids.select! do |title_id|
       title = @title_hash[title_id]
+      next false unless library_paths.includes? title.dir
       existence = title.examine examine_context
       unless existence
         examine_context["deleted_title_ids"].concat [title_id] +
@@ -152,14 +156,12 @@ class Library
     end
 
     cache = examine_context["cached_contents_signature"]
-    (Dir.entries @dir)
-      .select { |fn| !fn.starts_with? "." }
-      .map { |fn| File.join @dir, fn }
+    library_paths
       .select { |path| !(remained_title_dirs.includes? path) }
       .select { |path| File.directory? path }
       .map { |path| Title.new path, "", cache }
       .select { |title| !(title.entries.empty? && title.titles.empty?) }
-      .sort! { |a, b| a.title <=> b.title }
+      .sort! { |a, b| a.sort_title <=> b.sort_title }
       .each do |title|
         @title_hash[title.id] = title
         @title_ids << title.id
