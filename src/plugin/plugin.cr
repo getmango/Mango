@@ -143,6 +143,10 @@ class Plugin
     SubscriptionList.new(info.dir).ary
   end
 
+  def list_subscriptions_raw
+    SubscriptionList.new(info.dir)
+  end
+
   def unsubscribe(id : String)
     list = SubscriptionList.new info.dir
     list.reject! &.id.== id

@@ -100,14 +100,14 @@ const component = () => {
 						this.mangaTitle = data.title;
 					}
 
-					data.chapters.forEach((c) => {
-						c.array = ["hello", "world", "haha", "wtf"]
-							.sort(() => 0.5 - Math.random())
-							.slice(0, 2);
-						c.date = [612892800000, "1625068800000"].sort(
-							() => 0.5 - Math.random()
-						)[0];
-					});
+					//data.chapters.forEach((c) => {
+						//c.array = ["hello", "world", "haha", "wtf"]
+							//.sort(() => 0.5 - Math.random())
+							//.slice(0, 2);
+						//c.date = [612892800000, "1625068800000"].sort(
+							//() => 0.5 - Math.random()
+						//)[0];
+					//});
 
 					this.allChapters = data.chapters;
 					this.chapters = data.chapters;
@@ -387,7 +387,8 @@ const component = () => {
 					filters: this.filterSettings,
 					plugin: this.pid,
 					name: this.subscriptionName.trim(),
-					manga: this.mid,
+					manga: this.mangaTitle,
+					manga_id: this.mid,
 				}),
 				headers: {
 					"Content-Type": "application/json",

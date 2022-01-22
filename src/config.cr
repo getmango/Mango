@@ -28,6 +28,7 @@ class Config
   property disable_login = false
   property default_username = ""
   property auth_proxy_header_name = ""
+  property plugin_update_interval_hours : Int32 = 24
   property mangadex = Hash(String, String | Int32).new
 
   @[YAML::Field(ignore: true)]

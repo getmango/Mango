@@ -50,35 +50,40 @@ struct Filter
   end
 
   def match_chapter(obj : JSON::Any) : Bool
+    return true if value.nil? || value.to_s.empty?
     raw_value = obj[key]
     case type
     when FilterType::String
-      raw_value.as_s.lower == value.as_s.lower
-    when FilterType::NumMin
-    when FilterType::DateMin
-      BigFloat.new(raw_value) >= BigFloat.new(value)
-    when FilterType::NumMax
-    when FilterType::DateMax
-      BigFloat.new(raw_value) <= BigFloat.new(value)
+      raw_value.as_s.downcase == value.to_s.downcase
+    when FilterType::NumMin, FilterType::DateMin
+      raw_value.as_bf >= BigFloat.new value.not_nil!.to_f32
+    when FilterType::NumMax, FilterType::DateMax
+      raw_value.as_bf <= BigFloat.new value.not_nil!.to_f32
     when FilterType::Array
-      raw_value.as_s.lower.split(",")
-        .map(&.strip).include? value.as_s.lower.strip
+      return true if value == "all"
+      raw_value.as_s.downcase.split(",")
+        .map(&.strip).includes? value.to_s.downcase.strip
+    else
+      false
     end
   end
 end
 
-struct Subscription
+# We use class instead of struct so we can update `last_checked` from
+#   `SubscriptionList`
+class Subscription
   include JSON::Serializable
 
   property id : String
   property plugin_id : String
   property manga_id : String
+  property manga_title : String
   property name : String
   property created_at : Int64
   property last_checked : Int64
   property filters = [] of Filter
 
-  def initialize(@plugin_id, @manga_id, @name)
+  def initialize(@plugin_id, @manga_id, @manga_title, @name)
     @id = UUID.random.to_s
     @created_at = Time.utc.to_unix
     @last_checked = Time.utc.to_unix
@@ -106,5 +111,16 @@ struct SubscriptionList
 
   def save
     File.write @path, @ary.to_pretty_json
+  end
+end
+
+struct JSON::Any
+  def as_bf : BigFloat
+    i64_or_f32 = begin
+      as_i64
+    rescue
+      as_f32
+    end
+    BigFloat.new i64_or_f32
   end
 end
