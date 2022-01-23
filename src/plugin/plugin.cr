@@ -300,7 +300,9 @@ class Plugin
   end
 
   def new_chapters(manga_id : String, after : Int64)
-    json = eval_json "newChapters('#{manga_id}', #{after})"
+    # Converting standard timestamp to milliseconds so plugins can easily do
+    #   `new Date(ms_timestamp)` in JS.
+    json = eval_json "newChapters('#{manga_id}', #{after * 1000})"
     begin
       json.as_a.each do |obj|
         assert_chapter_type obj
