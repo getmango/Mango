@@ -154,8 +154,10 @@ class Plugin
   end
 
   def check_subscription(id : String)
-    sub = list_subscriptions_raw.find &.id.== id
+    list = list_subscriptions_raw
+    sub = list.find &.id.== id
     Plugin::Updater.default.check_subscription self, sub.not_nil!
+    list.save
   end
 
   def initialize(id : String)
