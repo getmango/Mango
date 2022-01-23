@@ -43,6 +43,7 @@ class Plugin
       end
       if matches.empty?
         Logger.debug "No new chapters found."
+        sub.last_checked = Time.utc.to_unix
         return
       end
       Logger.debug "Found #{matches.size} new chapters. " \
