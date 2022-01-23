@@ -785,7 +785,7 @@ struct APIRouter
 
         jobs = chapters.map { |ch|
           Queue::Job.new(
-            "#{plugin.info.id}-#{ch["id"]}",
+            "#{plugin.info.id}-#{Base64.encode ch["id"].as_s}",
             "", # manga_id
             ch["title"].as_s,
             manga_title,

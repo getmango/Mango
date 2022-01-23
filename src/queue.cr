@@ -70,7 +70,13 @@ class Queue
       ary = @id.split("-")
       if ary.size == 2
         @plugin_id = ary[0]
-        @plugin_chapter_id = ary[1]
+        # This begin-rescue block is for backward compatibility. In earlier
+        #   versions we didn't encode the chapter ID
+        @plugin_chapter_id = begin
+          Base64.decode_string ary[1]
+        rescue
+          ary[1]
+        end
       end
     end
 
