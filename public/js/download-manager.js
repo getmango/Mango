@@ -55,7 +55,7 @@ const component = () => {
 		jobAction(action, event) {
 			let url = `${base_url}api/admin/mangadex/queue/${action}`;
 			if (event) {
-				const id = event.currentTarget.closest('tr').id.split('-')[1];
+				const id = event.currentTarget.closest('tr').id.split('-').slice(1).join('-');
 				url = `${url}?${$.param({
 					id: id
 				})}`;
