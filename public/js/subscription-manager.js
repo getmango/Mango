@@ -104,24 +104,26 @@ const component = () => {
 			this.loading = true;
 			const id = $(event.currentTarget).closest("tr").attr("sid");
 			fetch(
-				`${base_url}api/admin/plugin/subscriptions?${new URLSearchParams(
+				`${base_url}api/admin/plugin/subscriptions${type === 'update' ? '/update' : ''}?${new URLSearchParams(
 					{
 						plugin: this.pid,
 						subscription: id,
 					}
 				)}`,
 				{
-					method: "DELETE",
+					method: type === 'delete' ? "DELETE" : 'POST'
 				}
 			)
 				.then((response) => response.json())
 				.then((data) => {
 					if (!data.success) throw new Error(data.error);
+					if (type === 'update')
+						alert("success", `Checking updates for subscription ${id}. Check the log for the progress or come back to this page later.`);
 				})
 				.catch((e) => {
 					alert(
 						"danger",
-						`Failed to delete subscription. Error: ${e}`
+						`Failed to ${type} subscription. Error: ${e}`
 					);
 				})
 				.finally(() => {

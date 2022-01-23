@@ -1,7 +1,7 @@
-require "../config"
-
 class Plugin
   class Updater
+    use_default
+
     def initialize
       interval = Config.current.plugin_update_interval_hours
       return if interval <= 0

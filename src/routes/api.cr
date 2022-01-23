@@ -721,6 +721,23 @@ struct APIRouter
       end
     end
 
+    post "/api/admin/plugin/subscriptions/update" do |env|
+      pid = env.params.query["plugin"].as String
+      sid = env.params.query["subscription"].as String
+
+      Plugin.new(pid).check_subscription sid
+
+      send_json env, {
+        "success" => true,
+      }.to_json
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
+    end
+
     Koa.describe "Lists the chapters in a title from a plugin"
     Koa.tags ["admin", "downloader"]
     Koa.query "plugin", schema: String
