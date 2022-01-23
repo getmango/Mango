@@ -46,7 +46,7 @@
 
           <template x-for="entry, idx in Object.entries(info).filter(tp => !['id', 'settings'].includes(tp[0]))" :key="idx">
             <dl class="uk-description-list" id="toggle" hidden>
-              <dt x-text="entry[0]"></dt>
+              <dt x-text="entry[0] === 'version' ? 'Target API Version' : entry[0].replace('_', ' ')"></dt>
               <dd x-text="entry[1]"></dd>
             </dl>
           </template>
