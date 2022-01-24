@@ -24,7 +24,21 @@ class Library
 
     begin
       Compress::Gzip::Reader.open path do |content|
-        @@default = Library.from_yaml content
+        loaded = Library.from_yaml content
+        if loaded.dir != Config.current.library_path
+          # We will have to do a full restart in this case. Otherwise having
+          #   two instances of the library will cause some weirdness.
+          Logger.fatal "Cached library dir #{loaded.dir} does not match " \
+                       "current library dir #{Config.current.library_path}. " \
+                       "Deleting cache"
+          File.delete path
+          Logger.fatal "Invalid library cache deleted. Mango needs to " \
+                       "perform a full reset to recover from this. " \
+                       "Pleae restart Mango."
+          Logger.fatal "Exiting"
+          exit 1
+        end
+        @@default = loaded
       end
       Library.default.register_jobs
     rescue e
