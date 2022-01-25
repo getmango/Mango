@@ -113,6 +113,15 @@
       "contributions": [
         "infra"
       ]
+    },
+    {
+      "login": "BradleyDS2",
+      "name": "BradleyDS2",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2174921?v=4",
+      "profile": "https://github.com/BradleyDS2",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
