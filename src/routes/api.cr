@@ -240,7 +240,7 @@ struct APIRouter
     }
     get "/api/admin/thumbnail_progress" do |env|
       send_json env, {
-        "progress" => Library.default.thumbnail_generation_progress,
+        "progress" => Library.default.thumbnail_ctx.progress,
       }.to_json
     end
 
