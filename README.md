@@ -80,6 +80,7 @@ base_url: /
 session_secret: mango-session-secret
 library_path: ~/mango/library
 db_path: ~/mango/mango.db
+queue_db_path: ~/mango/queue.db
 scan_interval_minutes: 5
 thumbnail_generation_interval_hours: 24
 log_level: info
@@ -93,14 +94,6 @@ cache_log_enabled: true
 disable_login: false
 default_username: ""
 auth_proxy_header_name: ""
-mangadex:
-  base_url: https://mangadex.org
-  api_url: https://api.mangadex.org/v2
-  download_wait_seconds: 5
-  download_retries: 4
-  download_queue_db_path: ~/mango/queue.db
-  chapter_rename_rule: '[Vol.{volume} ][Ch.{chapter} ]{title|id}'
-  manga_rename_rule: '{title}'
 ```
 
 - `scan_interval_minutes`, `thumbnail_generation_interval_hours` and `db_optimization_interval_hours` can be any non-negative integer. Setting them to `0` disables the periodic tasks
