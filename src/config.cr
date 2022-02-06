@@ -12,6 +12,7 @@ class Config
   property library_path : String = "~/mango/library"
   property library_cache_path = "~/mango/library.yml.gz"
   property db_path : String = "~/mango/mango.db"
+  property queue_db_path : String = "~/mango/queue.db"
   property scan_interval_minutes : Int32 = 5
   property thumbnail_generation_interval_hours : Int32 = 24
   property log_level : String = "info"
@@ -24,19 +25,6 @@ class Config
   property disable_login = false
   property default_username = ""
   property auth_proxy_header_name = ""
-  property mangadex = Hash(String, String | Int32).new
-
-  @[YAML::Field(ignore: true)]
-  @mangadex_defaults = {
-    "base_url"               => "https://mangadex.org",
-    "api_url"                => "https://api.mangadex.org/v2",
-    "download_wait_seconds"  => 5,
-    "download_retries"       => 4,
-    "download_queue_db_path" => File.expand_path("~/mango/queue.db",
-      home: true),
-    "chapter_rename_rule" => "[Vol.{volume} ][Ch.{chapter} ]{title|id}",
-    "manga_rename_rule"   => "{title}",
-  }
 
   @@singlet : Config?
 
@@ -54,7 +42,6 @@ class Config
     if File.exists? cfg_path
       config = self.from_yaml File.read cfg_path
       config.path = path
-      config.fill_defaults
       config.expand_paths
       config.preprocess
       return config
@@ -63,7 +50,6 @@ class Config
          "Dumping the default config there."
     default = self.allocate
     default.path = path
-    default.fill_defaults
     default.expand_paths
     cfg_dir = File.dirname cfg_path
     unless Dir.exists? cfg_dir
@@ -74,18 +60,8 @@ class Config
     default
   end
 
-  def fill_defaults
-    {% for hash_name in ["mangadex"] %}
-      @{{hash_name.id}}_defaults.map do |k, v|
-        if @{{hash_name.id}}[k]?.nil?
-          @{{hash_name.id}}[k] = v
-        end
-      end
-    {% end %}
-  end
-
   def expand_paths
-    {% for p in %w(library library_cache db upload plugin) %}
+    {% for p in %w(library library_cache db queue_db upload plugin) %}
       @{{p.id}}_path = File.expand_path @{{p.id}}_path, home: true
     {% end %}
   end
@@ -101,24 +77,5 @@ class Config
       raise "Login is disabled, but default username is not set. " \
             "Please set a default username"
     end
-
-    # `Logger.default` is not available yet
-    Log.setup :debug
-    unless mangadex["api_url"] =~ /\/v2/
-      Log.warn { "It looks like you are using the deprecated MangaDex API " \
-                 "v1 in your config file. Please update it to " \
-                 "https://api.mangadex.org/v2 to suppress this warning." }
-      mangadex["api_url"] = "https://api.mangadex.org/v2"
-    end
-    if mangadex["api_url"] =~ /\/api\/v2/
-      Log.warn { "It looks like you are using the outdated MangaDex API " \
-                 "url (mangadex.org/api/v2) in your config file. Please " \
-                 "update it to https://api.mangadex.org/v2 to suppress this " \
-                 "warning." }
-      mangadex["api_url"] = "https://api.mangadex.org/v2"
-    end
-
-    mangadex["api_url"] = mangadex["api_url"].to_s.rstrip "/"
-    mangadex["base_url"] = mangadex["base_url"].to_s.rstrip "/"
   end
 end
