@@ -4,20 +4,20 @@ class Config
   include YAML::Serializable
 
   @[YAML::Field(ignore: true)]
-  property path : String = ""
-  property host : String = "0.0.0.0"
+  property path = ""
+  property host = "0.0.0.0"
   property port : Int32 = 9000
-  property base_url : String = "/"
-  property session_secret : String = "mango-session-secret"
-  property library_path : String = "~/mango/library"
+  property base_url = "/"
+  property session_secret = "mango-session-secret"
+  property library_path = "~/mango/library"
   property library_cache_path = "~/mango/library.yml.gz"
-  property db_path : String = "~/mango/mango.db"
-  property queue_db_path : String = "~/mango/queue.db"
+  property db_path = "~/mango/mango.db"
+  property queue_db_path = "~/mango/queue.db"
   property scan_interval_minutes : Int32 = 5
   property thumbnail_generation_interval_hours : Int32 = 24
-  property log_level : String = "info"
-  property upload_path : String = "~/mango/uploads"
-  property plugin_path : String = "~/mango/plugins"
+  property log_level = "info"
+  property upload_path = "~/mango/uploads"
+  property plugin_path = "~/mango/plugins"
   property download_timeout_seconds : Int32 = 30
   property cache_enabled = false
   property cache_size_mbs = 50
