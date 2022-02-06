@@ -9,18 +9,14 @@ class Config
   property port : Int32 = 9000
   property base_url : String = "/"
   property session_secret : String = "mango-session-secret"
-  property library_path : String = File.expand_path "~/mango/library",
-    home: true
-  property library_cache_path = File.expand_path "~/mango/library.yml.gz",
-    home: true
-  property db_path : String = File.expand_path "~/mango/mango.db", home: true
+  property library_path : String = "~/mango/library"
+  property library_cache_path = "~/mango/library.yml.gz"
+  property db_path : String = "~/mango/mango.db"
   property scan_interval_minutes : Int32 = 5
   property thumbnail_generation_interval_hours : Int32 = 24
   property log_level : String = "info"
-  property upload_path : String = File.expand_path "~/mango/uploads",
-    home: true
-  property plugin_path : String = File.expand_path "~/mango/plugins",
-    home: true
+  property upload_path : String = "~/mango/uploads"
+  property plugin_path : String = "~/mango/plugins"
   property download_timeout_seconds : Int32 = 30
   property cache_enabled = false
   property cache_size_mbs = 50
@@ -59,6 +55,7 @@ class Config
       config = self.from_yaml File.read cfg_path
       config.path = path
       config.fill_defaults
+      config.expand_paths
       config.preprocess
       return config
     end
@@ -67,6 +64,7 @@ class Config
     default = self.allocate
     default.path = path
     default.fill_defaults
+    default.expand_paths
     cfg_dir = File.dirname cfg_path
     unless Dir.exists? cfg_dir
       Dir.mkdir_p cfg_dir
@@ -83,6 +81,12 @@ class Config
           @{{hash_name.id}}[k] = v
         end
       end
+    {% end %}
+  end
+
+  def expand_paths
+    {% for p in %w(library library_cache db upload plugin) %}
+      @{{p.id}}_path = File.expand_path @{{p.id}}_path, home: true
     {% end %}
   end
 
