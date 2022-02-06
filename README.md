@@ -96,7 +96,7 @@ default_username: ""
 auth_proxy_header_name: ""
 ```
 
-- `scan_interval_minutes`, `thumbnail_generation_interval_hours` and `db_optimization_interval_hours` can be any non-negative integer. Setting them to `0` disables the periodic tasks
+- `scan_interval_minutes`, `thumbnail_generation_interval_hours` can be any non-negative integer. Setting them to `0` disables the periodic tasks
 - `log_level` can be `debug`, `info`, `warn`, `error`, `fatal` or `off`. Setting it to `off` disables the logging
 - You can disable authentication by setting `disable_login` to true. Note that `default_username` must be set to an existing username for this to work.
 - By setting `cache_enabled` to `true`, you can enable an experimental feature where Mango caches library metadata to improve page load time. You can further fine-tune the feature with `cache_size_mbs` and `cache_log_enabled`.
