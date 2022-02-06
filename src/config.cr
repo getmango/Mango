@@ -19,7 +19,7 @@ class Config
   property upload_path = "~/mango/uploads"
   property plugin_path = "~/mango/plugins"
   property download_timeout_seconds : Int32 = 30
-  property cache_enabled = false
+  property cache_enabled = true
   property cache_size_mbs = 50
   property cache_log_enabled = true
   property disable_login = false
