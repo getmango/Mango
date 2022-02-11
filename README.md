@@ -88,7 +88,7 @@ upload_path: ~/mango/uploads
 plugin_path: ~/mango/plugins
 download_timeout_seconds: 30
 library_cache_path: ~/mango/library.yml.gz
-cache_enabled: false
+cache_enabled: true
 cache_size_mbs: 50
 cache_log_enabled: true
 disable_login: false
