@@ -8,8 +8,13 @@ class Title
     entries : Array(Entry), title : String, id : String,
     encoded_title : String, mtime : Time, signature : UInt64,
     entry_cover_url_cache : Hash(String, String)?
-  setter entry_cover_url_cache : Hash(String, String)?
+  setter entry_cover_url_cache : Hash(String, String)?,
+    entry_sort_title_cache : Hash(String, String | Nil)?
 
+  @[YAML::Field(ignore: true)]
+  @sort_title : String?
+  @[YAML::Field(ignore: true)]
+  @entry_sort_title_cache : Hash(String, String | Nil)?
   @[YAML::Field(ignore: true)]
   @entry_display_name_cache : Hash(String, String)?
   @[YAML::Field(ignore: true)]
@@ -66,7 +71,7 @@ class Title
     end
     sorter = ChapterSorter.new @entries.map &.title
     @entries.sort! do |a, b|
-      sorter.compare a.title, b.title
+      sorter.compare a.sort_title, b.sort_title
     end
   end
 
@@ -102,7 +107,11 @@ class Title
 
     previous_titles_size = @title_ids.size
     @title_ids.select! do |title_id|
-      title = Library.default.get_title! title_id
+      title = Library.default.get_title title_id
+      unless title # for if data consistency broken
+        context["deleted_title_ids"].concat [title_id]
+        next false
+      end
       existence = title.examine context
       unless existence
         context["deleted_title_ids"].concat [title_id] +
@@ -137,6 +146,18 @@ class Title
         Library.default.title_hash[title.id] = title
         @title_ids << title.id
         is_titles_added = true
+
+        # We think they are removed, but they are here!
+        # Cancel reserved jobs
+        revival_title_ids = [title.id] + title.deep_titles.map &.id
+        context["deleted_title_ids"].select! do |deleted_title_id|
+          !(revival_title_ids.includes? deleted_title_id)
+        end
+        revival_entry_ids = title.deep_entries.map &.id
+        context["deleted_entry_ids"].select! do |deleted_entry_id|
+          !(revival_entry_ids.includes? deleted_entry_id)
+        end
+
         next
       end
       if is_supported_file path
@@ -145,6 +166,9 @@ class Title
         if entry.pages > 0 || entry.err_msg
           @entries << entry
           is_entries_added = true
+          context["deleted_entry_ids"].select! do |deleted_entry_id|
+            entry.id != deleted_entry_id
+          end
         end
       end
     end
@@ -161,13 +185,18 @@ class Title
       end
     end
     if is_entries_added || previous_entries_size != @entries.size
-      sorter = ChapterSorter.new @entries.map &.title
+      sorter = ChapterSorter.new @entries.map &.sort_title
       @entries.sort! do |a, b|
-        sorter.compare a.title, b.title
+        sorter.compare a.sort_title, b.sort_title
       end
     end
 
-    true
+    if @title_ids.size > 0 || @entries.size > 0
+      true
+    else
+      context["deleted_title_ids"].concat [@id]
+      false
+    end
   end
 
   alias SortContext = NamedTuple(username: String, opt: SortOptions)
@@ -180,6 +209,7 @@ class Title
         json.field {{str}}, @{{str.id}}
       {% end %}
         json.field "signature" { json.number @signature }
+        json.field "sort_title", sort_title
         unless slim
           json.field "display_name", display_name
           json.field "cover_url", cover_url
@@ -226,6 +256,15 @@ class Title
     @title_ids.map { |tid| Library.default.get_title! tid }
   end
 
+  def sorted_titles(username, opt : SortOptions? = nil)
+    if opt.nil?
+      opt = SortOptions.from_info_json @dir, username
+    end
+
+    # Helper function from src/util/util.cr
+    sort_titles titles, opt.not_nil!, username
+  end
+
   # Get all entries, including entries in nested titles
   def deep_entries
     return @entries if title_ids.empty?
@@ -260,6 +299,48 @@ class Title
     ary << "#{tsize} #{tsize > 1 ? "titles" : "title"}" if tsize > 0
     ary << "#{esize} #{esize > 1 ? "entries" : "entry"}" if esize > 0
     ary.join " and "
+  end
+
+  def sort_title
+    sort_title_cached = @sort_title
+    return sort_title_cached if sort_title_cached
+    sort_title = Storage.default.get_title_sort_title id
+    if sort_title
+      @sort_title = sort_title
+      return sort_title
+    end
+    @sort_title = @title
+    @title
+  end
+
+  def set_sort_title(sort_title : String | Nil, username : String)
+    Storage.default.set_title_sort_title id, sort_title
+    if sort_title == "" || sort_title.nil?
+      @sort_title = nil
+    else
+      @sort_title = sort_title
+    end
+
+    if parents.size > 0
+      target = parents[-1].titles
+    else
+      target = Library.default.titles
+    end
+    remove_sorted_titles_cache target,
+      [SortMethod::Auto, SortMethod::Title], username
+  end
+
+  def sort_title_db
+    Storage.default.get_title_sort_title id
+  end
+
+  def entry_sort_title_db(entry_id)
+    unless @entry_sort_title_cache
+      @entry_sort_title_cache =
+        Storage.default.get_entries_sort_title @entries.map &.id
+    end
+
+    @entry_sort_title_cache.not_nil![entry_id]?
   end
 
   def tags
@@ -448,28 +529,30 @@ class Title
 
     case opt.not_nil!.method
     when .title?
-      ary = @entries.sort { |a, b| compare_numerically a.title, b.title }
+      ary = @entries.sort do |a, b|
+        compare_numerically a.sort_title, b.sort_title
+      end
     when .time_modified?
       ary = @entries.sort { |a, b| (a.mtime <=> b.mtime).or \
-        compare_numerically a.title, b.title }
+        compare_numerically a.sort_title, b.sort_title }
     when .time_added?
       ary = @entries.sort { |a, b| (a.date_added <=> b.date_added).or \
-        compare_numerically a.title, b.title }
+        compare_numerically a.sort_title, b.sort_title }
     when .progress?
       percentage_ary = load_percentage_for_all_entries username, opt, true
       ary = @entries.zip(percentage_ary)
         .sort { |a_tp, b_tp| (a_tp[1] <=> b_tp[1]).or \
-          compare_numerically a_tp[0].title, b_tp[0].title }
+          compare_numerically a_tp[0].sort_title, b_tp[0].sort_title }
         .map &.[0]
     else
       unless opt.method.auto?
         Logger.warn "Unknown sorting method #{opt.not_nil!.method}. Using " \
                     "Auto instead"
       end
-      sorter = ChapterSorter.new @entries.map &.title
+      sorter = ChapterSorter.new @entries.map &.sort_title
       ary = @entries.sort do |a, b|
-        sorter.compare(a.title, b.title).or \
-          compare_numerically a.title, b.title
+        sorter.compare(a.sort_title, b.sort_title).or \
+          compare_numerically a.sort_title, b.sort_title
       end
     end
 
@@ -536,17 +619,32 @@ class Title
     zip + titles.flat_map &.deep_entries_with_date_added
   end
 
+  def remove_sorted_entries_cache(sort_methods : Array(SortMethod),
+                                  username : String)
+    [false, true].each do |ascend|
+      sort_methods.each do |sort_method|
+        sorted_entries_cache_key =
+          SortedEntriesCacheEntry.gen_key @id, username, @entries,
+            SortOptions.new(sort_method, ascend)
+        LRUCache.invalidate sorted_entries_cache_key
+      end
+    end
+  end
+
+  def remove_sorted_caches(sort_methods : Array(SortMethod), username : String)
+    remove_sorted_entries_cache sort_methods, username
+    parents.each do |parent|
+      remove_sorted_titles_cache parent.titles, sort_methods, username
+    end
+    remove_sorted_titles_cache Library.default.titles, sort_methods, username
+  end
+
   def bulk_progress(action, ids : Array(String), username)
     LRUCache.invalidate "#{@id}:#{username}:progress_sum"
     parents.each do |parent|
       LRUCache.invalidate "#{parent.id}:#{username}:progress_sum"
     end
-    [false, true].each do |ascend|
-      sorted_entries_cache_key =
-        SortedEntriesCacheEntry.gen_key @id, username, @entries,
-          SortOptions.new(SortMethod::Progress, ascend)
-      LRUCache.invalidate sorted_entries_cache_key
-    end
+    remove_sorted_caches [SortMethod::Progress], username
 
     selected_entries = ids
       .map { |id|

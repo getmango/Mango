@@ -23,7 +23,7 @@ struct APIRouter
 
     # Authentication
 
-    All endpoints require authentication. After logging in, your session ID would be stored as a cookie named `mango-sessid-#{Config.current.port}`, which can be used to authenticate the API access. Note that all admin API endpoints (`/api/admin/...`) require the logged-in user to have admin access.
+    All endpoints except `/api/login` require authentication. After logging in, your session ID would be stored as a cookie named `mango-sessid-#{Config.current.port}`, which can be used to authenticate the API access. Note that all admin API endpoints (`/api/admin/...`) require the logged-in user to have admin access.
 
     # Terminologies
 
@@ -55,6 +55,29 @@ struct APIRouter
       "success" => Bool,
       "error"   => String?,
     }
+
+    Koa.describe "Authenticates a user", <<-MD
+    After successful login, the cookie `mango-sessid-#{Config.current.port}` will contain a valid session ID that can be used for subsequent requests
+    MD
+    Koa.body schema: {
+      "username" => String,
+      "password" => String,
+    }
+    Koa.tag "users"
+    post "/api/login" do |env|
+      begin
+        username = env.params.json["username"].as String
+        password = env.params.json["password"].as String
+        token = Storage.default.verify_user(username, password).not_nil!
+
+        env.session.string "token", token
+        "Authenticated"
+      rescue e
+        Logger.error e
+        env.response.status_code = 403
+        e.message
+      end
+    end
 
     Koa.describe "Returns a page in a manga entry"
     Koa.path "tid", desc: "Title ID"
@@ -217,7 +240,7 @@ struct APIRouter
     }
     get "/api/admin/thumbnail_progress" do |env|
       send_json env, {
-        "progress" => Library.default.thumbnail_generation_progress,
+        "progress" => Library.default.thumbnail_ctx.progress,
       }.to_json
     end
 
@@ -336,6 +359,38 @@ struct APIRouter
         else
           eobj = title.get_entry entry
           title.set_display_name eobj.not_nil!.title, name
+        end
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      else
+        send_json env, {"success" => true}.to_json
+      end
+    end
+
+    Koa.describe "Sets the sort title of a title or an entry", <<-MD
+      When `eid` is provided, apply the sort title to the entry. Otherwise, apply the sort title to the title identified by `tid`.
+    MD
+    Koa.tags ["admin", "library"]
+    Koa.path "tid", desc: "Title ID"
+    Koa.query "eid", desc: "Entry ID", required: false
+    Koa.query "name", desc: "The new sort title"
+    Koa.response 200, schema: "result"
+    put "/api/admin/sort_title/:tid" do |env|
+      username = get_username env
+      begin
+        title = (Library.default.get_title env.params.url["tid"])
+          .not_nil!
+        name = env.params.query["name"]?
+        entry = env.params.query["eid"]?
+        if entry.nil?
+          title.set_sort_title name, username
+        else
+          eobj = title.get_entry entry
+          eobj.set_sort_title name, username unless eobj.nil?
         end
       rescue e
         Logger.error e
