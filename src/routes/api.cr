@@ -56,6 +56,23 @@ struct APIRouter
       "error"   => String?,
     }
 
+    Koa.schema "filter", {
+      "key"   => String,
+      "type"  => String,
+      "value" => String | Int32 | Int64 | Float32,
+    }
+
+    Koa.schema "subscription", {
+      "id"           => String,
+      "plugin_id"    => String,
+      "manga_id"     => String,
+      "manga_title"  => String,
+      "name"         => String,
+      "created_at"   => Int64,
+      "last_checked" => Int64,
+      "filters"      => ["filter"],
+    }
+
     Koa.describe "Authenticates a user", <<-MD
     After successful login, the cookie `mango-sessid-#{Config.current.port}` will contain a valid session ID that can be used for subsequent requests
     MD
@@ -658,6 +675,16 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Creates a new subscription"
+    Koa.tags ["admin", "downloader", "subscription"]
+    Koa.body schema: {
+      "plugin"   => String,
+      "manga"    => String,
+      "manga_id" => String,
+      "name"     => String,
+      "filters"  => ["filter"],
+    }
+    Koa.response 200, schema: "result"
     post "/api/admin/plugin/subscriptions" do |env|
       begin
         plugin_id = env.params.json["plugin"].as String
@@ -686,6 +713,14 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Returns the list of subscriptions for a plugin"
+    Koa.tags ["admin", "downloader", "subscription"]
+    Koa.query "plugin", desc: "The ID of the plugin"
+    Koa.response 200, schema: {
+      "success"       => Bool,
+      "error"         => String?,
+      "subscriptions" => ["subscription"],
+    }
     get "/api/admin/plugin/subscriptions" do |env|
       begin
         pid = env.params.query["plugin"].as String
@@ -702,6 +737,13 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Deletes a subscription"
+    Koa.tags ["admin", "downloader", "subscription"]
+    Koa.body schema: {
+      "plugin"       => String,
+      "subscription" => String,
+    }
+    Koa.response 200, schema: "result"
     delete "/api/admin/plugin/subscriptions" do |env|
       begin
         pid = env.params.query["plugin"].as String
@@ -721,6 +763,13 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Checks for updates for a subscription"
+    Koa.tags ["admin", "downloader", "subscription"]
+    Koa.body schema: {
+      "plugin"       => String,
+      "subscription" => String,
+    }
+    Koa.response 200, schema: "result"
     post "/api/admin/plugin/subscriptions/update" do |env|
       pid = env.params.query["plugin"].as String
       sid = env.params.query["subscription"].as String
