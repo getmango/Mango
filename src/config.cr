@@ -4,44 +4,28 @@ class Config
   include YAML::Serializable
 
   @[YAML::Field(ignore: true)]
-  property path : String = ""
-  property host : String = "0.0.0.0"
+  property path = ""
+  property host = "0.0.0.0"
   property port : Int32 = 9000
-  property base_url : String = "/"
-  property session_secret : String = "mango-session-secret"
-  property library_path : String = File.expand_path "~/mango/library",
-    home: true
-  property library_cache_path = File.expand_path "~/mango/library.yml.gz",
-    home: true
-  property db_path : String = File.expand_path "~/mango/mango.db", home: true
+  property base_url = "/"
+  property session_secret = "mango-session-secret"
+  property library_path = "~/mango/library"
+  property library_cache_path = "~/mango/library.yml.gz"
+  property db_path = "~/mango/mango.db"
+  property queue_db_path = "~/mango/queue.db"
   property scan_interval_minutes : Int32 = 5
   property thumbnail_generation_interval_hours : Int32 = 24
-  property log_level : String = "info"
-  property upload_path : String = File.expand_path "~/mango/uploads",
-    home: true
-  property plugin_path : String = File.expand_path "~/mango/plugins",
-    home: true
+  property log_level = "info"
+  property upload_path = "~/mango/uploads"
+  property plugin_path = "~/mango/plugins"
   property download_timeout_seconds : Int32 = 30
-  property cache_enabled = false
+  property cache_enabled = true
   property cache_size_mbs = 50
   property cache_log_enabled = true
   property disable_login = false
   property default_username = ""
   property auth_proxy_header_name = ""
   property plugin_update_interval_hours : Int32 = 24
-  property mangadex = Hash(String, String | Int32).new
-
-  @[YAML::Field(ignore: true)]
-  @mangadex_defaults = {
-    "base_url"               => "https://mangadex.org",
-    "api_url"                => "https://api.mangadex.org/v2",
-    "download_wait_seconds"  => 5,
-    "download_retries"       => 4,
-    "download_queue_db_path" => File.expand_path("~/mango/queue.db",
-      home: true),
-    "chapter_rename_rule" => "[Vol.{volume} ][Ch.{chapter} ]{title|id}",
-    "manga_rename_rule"   => "{title}",
-  }
 
   @@singlet : Config?
 
@@ -59,7 +43,7 @@ class Config
     if File.exists? cfg_path
       config = self.from_yaml File.read cfg_path
       config.path = path
-      config.fill_defaults
+      config.expand_paths
       config.preprocess
       return config
     end
@@ -67,7 +51,7 @@ class Config
          "Dumping the default config there."
     default = self.allocate
     default.path = path
-    default.fill_defaults
+    default.expand_paths
     cfg_dir = File.dirname cfg_path
     unless Dir.exists? cfg_dir
       Dir.mkdir_p cfg_dir
@@ -77,13 +61,9 @@ class Config
     default
   end
 
-  def fill_defaults
-    {% for hash_name in ["mangadex"] %}
-      @{{hash_name.id}}_defaults.map do |k, v|
-        if @{{hash_name.id}}[k]?.nil?
-          @{{hash_name.id}}[k] = v
-        end
-      end
+  def expand_paths
+    {% for p in %w(library library_cache db queue_db upload plugin) %}
+      @{{p.id}}_path = File.expand_path @{{p.id}}_path, home: true
     {% end %}
   end
 
@@ -98,24 +78,5 @@ class Config
       raise "Login is disabled, but default username is not set. " \
             "Please set a default username"
     end
-
-    # `Logger.default` is not available yet
-    Log.setup :debug
-    unless mangadex["api_url"] =~ /\/v2/
-      Log.warn { "It looks like you are using the deprecated MangaDex API " \
-                 "v1 in your config file. Please update it to " \
-                 "https://api.mangadex.org/v2 to suppress this warning." }
-      mangadex["api_url"] = "https://api.mangadex.org/v2"
-    end
-    if mangadex["api_url"] =~ /\/api\/v2/
-      Log.warn { "It looks like you are using the outdated MangaDex API " \
-                 "url (mangadex.org/api/v2) in your config file. Please " \
-                 "update it to https://api.mangadex.org/v2 to suppress this " \
-                 "warning." }
-      mangadex["api_url"] = "https://api.mangadex.org/v2"
-    end
-
-    mangadex["api_url"] = mangadex["api_url"].to_s.rstrip "/"
-    mangadex["base_url"] = mangadex["base_url"].to_s.rstrip "/"
   end
 end

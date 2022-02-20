@@ -66,7 +66,6 @@ struct AdminRouter
     end
 
     get "/admin/downloads" do |env|
-      mangadex_base_url = Config.current.mangadex["base_url"]
       layout "download-manager"
     end
 

@@ -1,8 +1,37 @@
 class Library
+  struct ThumbnailContext
+    property current : Int32, total : Int32
+
+    def initialize
+      @current = 0
+      @total = 0
+    end
+
+    def progress
+      if total == 0
+        0
+      else
+        current / total
+      end
+    end
+
+    def reset
+      @current = 0
+      @total = 0
+    end
+
+    def increment
+      @current += 1
+    end
+  end
+
   include YAML::Serializable
 
   getter dir : String, title_ids : Array(String),
     title_hash : Hash(String, Title)
+
+  @[YAML::Field(ignore: true)]
+  getter thumbnail_ctx = ThumbnailContext.new
 
   use_default
 
@@ -24,7 +53,23 @@ class Library
 
     begin
       Compress::Gzip::Reader.open path do |content|
-        @@default = Library.from_yaml content
+        loaded = Library.from_yaml content
+        # We will have to do a full restart in these cases. Otherwise having
+        #   two instances of the library will cause some weirdness.
+        if loaded.dir != Config.current.library_path
+          Logger.fatal "Cached library dir #{loaded.dir} does not match " \
+                       "current library dir #{Config.current.library_path}. " \
+                       "Deleting cache"
+          delete_cache_and_exit path
+        end
+        if loaded.title_ids.size > 0 &&
+           Storage.default.count_titles == 0
+          Logger.fatal "The library cache is inconsistent with the DB. " \
+                       "Deleting cache"
+          delete_cache_and_exit path
+        end
+        @@default = loaded
+        Logger.debug "Library cache loaded"
       end
       Library.default.register_jobs
     rescue e
@@ -38,9 +83,6 @@ class Library
     #   be filled with actual Titles in the `scan` call below
     @title_ids = [] of String
     @title_hash = {} of String => Title
-
-    @entries_count = 0
-    @thumbnails_count = 0
 
     register_jobs
   end
@@ -262,34 +304,29 @@ class Library
       .shuffle!
   end
 
-  def thumbnail_generation_progress
-    return 0 if @entries_count == 0
-    @thumbnails_count / @entries_count
-  end
-
   def generate_thumbnails
-    if @thumbnails_count > 0
+    if thumbnail_ctx.current > 0
       Logger.debug "Thumbnail generation in progress"
       return
     end
 
     Logger.info "Starting thumbnail generation"
     entries = deep_titles.flat_map(&.deep_entries).reject &.err_msg
-    @entries_count = entries.size
-    @thumbnails_count = 0
+    thumbnail_ctx.total = entries.size
+    thumbnail_ctx.current = 0
 
     # Report generation progress regularly
     spawn do
       loop do
-        unless @thumbnails_count == 0
+        unless thumbnail_ctx.current == 0
           Logger.debug "Thumbnail generation progress: " \
-                       "#{(thumbnail_generation_progress * 100).round 1}%"
+                       "#{(thumbnail_ctx.progress * 100).round 1}%"
         end
         # Generation is completed. We reset the count to 0 to allow subsequent
         #   calls to the function, and break from the loop to stop the progress
         #   report fiber
-        if thumbnail_generation_progress.to_i == 1
-          @thumbnails_count = 0
+        if thumbnail_ctx.progress.to_i == 1
+          thumbnail_ctx.reset
           break
         end
         sleep 10.seconds
@@ -303,7 +340,7 @@ class Library
         #   and CPU
         sleep 1.seconds
       end
-      @thumbnails_count += 1
+      thumbnail_ctx.increment
     end
     Logger.info "Thumbnail generation finished"
   end

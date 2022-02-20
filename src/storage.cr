@@ -619,6 +619,20 @@ class Storage
     {token, expires}
   end
 
+  def count_titles : Int32
+    count = 0
+    MainFiber.run do
+      get_db do |db|
+        db.query "select count(*) from titles" do |rs|
+          rs.each do
+            count = rs.read Int32
+          end
+        end
+      end
+    end
+    count
+  end
+
   def close
     MainFiber.run do
       unless @db.nil?

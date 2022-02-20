@@ -13,7 +13,7 @@ Mango is a self-hosted manga server and reader. Its features include
 - Supports nested folders in library
 - Automatically stores reading progress
 - Thumbnail generation
-- Supports [plugins](https://github.com/hkalexling/mango-plugins) to download from thrid-party sites
+- Supports [plugins](https://github.com/hkalexling/mango-plugins) to download from third-party sites
 - The web reader is responsive and works well on mobile, so there is no need for a mobile app
 - All the static files are embedded in the binary, so the deployment process is easy and painless
 
@@ -51,7 +51,7 @@ The official docker images are available on [Dockerhub](https://hub.docker.com/r
 ### CLI
 
 ```
-  Mango - Manga Server and Web Reader. Version 0.24.0
+  Mango - Manga Server and Web Reader. Version 0.25.0
 
   Usage:
 
@@ -80,6 +80,7 @@ base_url: /
 session_secret: mango-session-secret
 library_path: ~/mango/library
 db_path: ~/mango/mango.db
+queue_db_path: ~/mango/queue.db
 scan_interval_minutes: 5
 thumbnail_generation_interval_hours: 24
 log_level: info
@@ -93,17 +94,9 @@ cache_log_enabled: true
 disable_login: false
 default_username: ""
 auth_proxy_header_name: ""
-mangadex:
-  base_url: https://mangadex.org
-  api_url: https://api.mangadex.org/v2
-  download_wait_seconds: 5
-  download_retries: 4
-  download_queue_db_path: ~/mango/queue.db
-  chapter_rename_rule: '[Vol.{volume} ][Ch.{chapter} ]{title|id}'
-  manga_rename_rule: '{title}'
 ```
 
-- `scan_interval_minutes`, `thumbnail_generation_interval_hours` and `db_optimization_interval_hours` can be any non-negative integer. Setting them to `0` disables the periodic tasks
+- `scan_interval_minutes`, `thumbnail_generation_interval_hours` can be any non-negative integer. Setting them to `0` disables the periodic tasks
 - `log_level` can be `debug`, `info`, `warn`, `error`, `fatal` or `off`. Setting it to `off` disables the logging
 - You can disable authentication by setting `disable_login` to true. Note that `default_username` must be set to an existing username for this to work.
 - By setting `cache_enabled` to `true`, you can enable an experimental feature where Mango caches library metadata to improve page load time. You can further fine-tune the feature with `cache_size_mbs` and `cache_log_enabled`.
@@ -179,6 +172,8 @@ Please check the [development guideline](https://github.com/hkalexling/Mango/wik
     <td align="center"><a href="http://h45h74x.eu.org"><img src="https://avatars1.githubusercontent.com/u/27204033?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Simon</b></sub></a><br /><a href="https://github.com/hkalexling/Mango/commits?author=h45h74x" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/davidkna"><img src="https://avatars.githubusercontent.com/u/835177?v=4?s=100" width="100px;" alt=""/><br /><sub><b>David Knaack</b></sub></a><br /><a href="#infra-davidkna" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
     <td align="center"><a href="https://lncn.dev"><img src="https://avatars.githubusercontent.com/u/41193328?v=4?s=100" width="100px;" alt=""/><br /><sub><b>i use arch btw</b></sub></a><br /><a href="#infra-lincolnthedev" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+    <td align="center"><a href="https://github.com/BradleyDS2"><img src="https://avatars.githubusercontent.com/u/2174921?v=4?s=100" width="100px;" alt=""/><br /><sub><b>BradleyDS2</b></sub></a><br /><a href="https://github.com/hkalexling/Mango/commits?author=BradleyDS2" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/nduja"><img src="https://avatars.githubusercontent.com/u/69299134?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Robbo</b></sub></a><br /><a href="https://github.com/hkalexling/Mango/commits?author=nduja" title="Code">💻</a></td>
   </tr>
 </table>
 

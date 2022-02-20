@@ -118,7 +118,7 @@ class Queue
   use_default
 
   def initialize(db_path : String? = nil)
-    @path = db_path || Config.current.mangadex["download_queue_db_path"].to_s
+    @path = db_path || Config.current.queue_db_path.to_s
     dir = File.dirname @path
     unless Dir.exists? dir
       Logger.info "The queue DB directory #{dir} does not exist. " \
