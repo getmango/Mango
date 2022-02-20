@@ -19,7 +19,7 @@ const component = () => {
 					else if (this.plugins.length > 0)
 						this.pid = this.plugins[0].id;
 
-					if (this.pid) this.list(pid);
+					this.list(pid);
 				})
 				.catch((e) => {
 					alert(
@@ -33,6 +33,7 @@ const component = () => {
 			this.list(this.pid);
 		},
 		list(pid) {
+			if (!pid) return;
 			fetch(
 				`${base_url}api/admin/plugin/subscriptions?${new URLSearchParams(
 					{
