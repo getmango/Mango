@@ -100,15 +100,6 @@ const component = () => {
 						this.mangaTitle = data.title;
 					}
 
-					//data.chapters.forEach((c) => {
-						//c.array = ["hello", "world", "haha", "wtf"]
-							//.sort(() => 0.5 - Math.random())
-							//.slice(0, 2);
-						//c.date = [612892800000, "1625068800000"].sort(
-							//() => 0.5 - Math.random()
-						//)[0];
-					//});
-
 					this.allChapters = data.chapters;
 					this.chapters = data.chapters;
 				})
@@ -313,7 +304,7 @@ const component = () => {
 			return preprocessString(a) > preprocessString(b) ? 1 : -1;
 		},
 		fieldType(values) {
-			if (values.every((v) => this.numIsDate(v))) return "date"; // 328896000000 => 1 Jan, 1980
+			if (values.every((v) => this.numIsDate(v))) return "date";
 			if (values.every((v) => !isNaN(v))) return "number";
 			if (values.every((v) => Array.isArray(v))) return "array";
 			return "string";
