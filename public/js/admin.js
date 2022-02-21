@@ -31,6 +31,9 @@ const component = () => {
 					this.scanMs = data.milliseconds;
 					this.scanTitles = data.titles;
 				})
+				.catch(e => {
+					alert('danger', `Failed to trigger a scan. Error: ${e}`);
+				})
 				.always(() => {
 					this.scanning = false;
 				});
