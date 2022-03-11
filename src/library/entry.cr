@@ -108,7 +108,7 @@ class Entry
   end
 
   def cover_url
-    return "#{Config.current.base_url}img/icon.png" if @err_msg
+    return "#{Config.current.base_url}img/icons/icon.png" if @err_msg
 
     unless @book.entry_cover_url_cache
       TitleInfo.new @book.dir do |info|
