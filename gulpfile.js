@@ -55,7 +55,7 @@ gulp.task('minify-css', () => {
 gulp.task('copy-files', () => {
 	return gulp.src([
 			'public/*.*',
-			'public/img/*',
+			'public/img/**',
 			'public/webfonts/*',
 			'public/js/*.min.js'
 		], {

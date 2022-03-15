@@ -109,7 +109,7 @@ class Entry
   end
 
   def cover_url
-    return "#{Config.current.base_url}img/icon.png" if @err_msg
+    return "#{Config.current.base_url}img/icons/icon_x192.png" if @err_msg
 
     unless @book.entry_cover_url_cache
       TitleInfo.new @book.dir do |info|
@@ -145,13 +145,17 @@ class Entry
   def read_page(page_num)
     raise "Unreadble archive. #{@err_msg}" if @err_msg
     img = nil
-    sorted_archive_entries do |file, entries|
-      page = entries[page_num - 1]
-      data = file.read_entry page
-      if data
-        img = Image.new data, MIME.from_filename(page.filename), page.filename,
-          data.size
+    begin
+      sorted_archive_entries do |file, entries|
+        page = entries[page_num - 1]
+        data = file.read_entry page
+        if data
+          img = Image.new data, MIME.from_filename(page.filename),
+            page.filename, data.size
+        end
       end
+    rescue e
+      Logger.warn "Unable to read page #{page_num} of #{@zip_path}. Error: #{e}"
     end
     img
   end

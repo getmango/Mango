@@ -411,7 +411,7 @@ class Title
     cached_cover_url = @cached_cover_url
     return cached_cover_url unless cached_cover_url.nil?
 
-    url = "#{Config.current.base_url}img/icon.png"
+    url = "#{Config.current.base_url}img/icons/icon_x192.png"
     readable_entries = @entries.select &.err_msg.nil?
     if readable_entries.size > 0
       url = readable_entries[0].cover_url
