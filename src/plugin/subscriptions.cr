@@ -56,9 +56,9 @@ struct Filter
     when FilterType::String
       raw_value.as_s.downcase == value.to_s.downcase
     when FilterType::NumMin, FilterType::DateMin
-      raw_value.as_bf >= BigFloat.new value.not_nil!.to_f32
+      BigFloat.new(raw_value.as_s) >= BigFloat.new value.not_nil!.to_f32
     when FilterType::NumMax, FilterType::DateMax
-      raw_value.as_bf <= BigFloat.new value.not_nil!.to_f32
+      BigFloat.new(raw_value.as_s) <= BigFloat.new value.not_nil!.to_f32
     when FilterType::Array
       return true if value == "all"
       raw_value.as_s.downcase.split(",")
@@ -111,16 +111,5 @@ struct SubscriptionList
 
   def save
     File.write @path, @ary.to_pretty_json
-  end
-end
-
-struct JSON::Any
-  def as_bf : BigFloat
-    i64_or_f32 = begin
-      as_i64
-    rescue
-      as_f32
-    end
-    BigFloat.new i64_or_f32
   end
 end
