@@ -37,7 +37,7 @@
           <div class="uk-navbar-toggle" uk-navbar-toggle-icon="uk-navbar-toggle-icon" uk-toggle="target: #mobile-nav"></div>
         </div>
         <div class="uk-navbar-left uk-visible@m">
-          <a class="uk-navbar-item uk-logo" href="<%= base_url %>"><img src="<%= base_url %>img/icons/icon_x96.png" style="width:90px;height:90px;"></a>
+          <a class="uk-navbar-item uk-logo" href="<%= base_url %>"><img src="<%= base_url %>img/icons/icon.png" style="width:90px;height:90px;"></a>
           <ul class="uk-navbar-nav">
             <li><a href="<%= base_url %>">Home</a></li>
             <li><a href="<%= base_url %>library">Library</a></li>
@@ -80,7 +80,7 @@
     </div>
     <script>
       setTheme();
-      const base_url = "<%= base_url %>";
+            const base_url = "<%= base_url %>";
     </script>
     <%= render_component "uikit" %>
     <%= yield_content "script" %>
