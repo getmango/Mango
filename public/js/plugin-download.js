@@ -82,6 +82,7 @@ const component = () => {
 		searchChapters(query) {
 			this.searching = true;
 			this.allChapters = [];
+			this.sortOptions = [];
 			this.chapters = undefined;
 			this.listManga = false;
 			fetch(
@@ -356,6 +357,7 @@ const component = () => {
 		applyFilters() {
 			this.appliedFilters = this.filterSettings;
 			this.chapters = this.filteredChapters;
+			this.sortOptions = [];
 		},
 		clearFilters() {
 			$("#filter-form input")
@@ -364,6 +366,7 @@ const component = () => {
 			$("#filter-form select").val("all");
 			this.appliedFilters = [];
 			this.chapters = this.filteredChapters;
+			this.sortOptions = [];
 		},
 		mangaSelected(event) {
 			const mid = event.currentTarget.getAttribute("data-id");
