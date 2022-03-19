@@ -100,10 +100,21 @@ const component = () => {
 
 			return `<td>${key}</td><td>${type}</td><td>${value}</td>`;
 		},
-		action(event, type) {
+		actionHandler(event, type) {
+			const id = $(event.currentTarget).closest("tr").attr("sid");
+			if (type !== 'delete') return this.action(id, type);
+			UIkit.modal.confirm('Are you sure you want to delete the subscription? This cannot be undone.', {
+				labels: {
+					ok: 'Yes, delete it',
+					cancel: 'Cancel'
+				}
+			}).then(() => {
+				this.action(id, type);
+			});
+		},
+		action(id, type) {
 			if (this.loading) return;
 			this.loading = true;
-			const id = $(event.currentTarget).closest("tr").attr("sid");
 			fetch(
 				`${base_url}api/admin/plugin/subscriptions${type === 'update' ? '/update' : ''}?${new URLSearchParams(
 					{
