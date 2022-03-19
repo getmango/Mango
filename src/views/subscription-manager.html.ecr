@@ -27,7 +27,7 @@
             <tr>
               <th>Name</th>
               <th>Plugin ID</th>
-              <th>Manga ID</th>
+              <th>Manga Title</th>
               <th>Created At</th>
               <th>Last Checked</th>
               <th>Actions</th>
@@ -38,7 +38,7 @@
               <tr :sid="sub.id" @click="selected($event, $refs.modal)">
                 <td x-html="renderStrCell(sub.name)"></td>
                 <td x-html="renderStrCell(sub.plugin_id)"></td>
-                <td x-html="renderStrCell(sub.manga_id)"></td>
+                <td x-html="renderStrCell(sub.manga_title)"></td>
                 <td x-html="renderDateCell(sub.created_at)"></td>
                 <td x-html="renderDateCell(sub.last_checked)"></td>
                 <td>
@@ -66,6 +66,8 @@
           <dd x-html="subscription && subscription.id"></dd>
           <dt>Plugin ID</dt>
           <dd x-html="subscription && subscription.plugin_id"></dd>
+          <dt>Manga Title</dt>
+          <dd x-html="subscription && subscription.manga_title"></dd>
           <dt>Manga ID</dt>
           <dd x-html="subscription && subscription.manga_id"></dd>
           <dt>Filters</dt>
