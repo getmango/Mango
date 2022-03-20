@@ -6,6 +6,7 @@ class AuthHandler < Kemal::Handler
   # Some of the code is copied form kemalcr/kemal-basic-auth on GitHub
 
   BASIC        = "Basic"
+  BEARER       = "Bearer"
   AUTH         = "Authorization"
   AUTH_MESSAGE = "Could not verify your access level for that URL.\n" \
                  "You have to login with proper credentials"
@@ -35,12 +36,16 @@ class AuthHandler < Kemal::Handler
   def validate_auth_header(env)
     if env.request.headers[AUTH]?
       if value = env.request.headers[AUTH]
-        if value.size > 0 && value.starts_with?(BASIC)
+        if value.starts_with? BASIC
           token = verify_user value
           return false if token.nil?
 
           env.session.string "token", token
           return true
+        end
+        if value.starts_with? BEARER
+          token = value.split(" ")[1]
+          return Storage.default.verify_token token
         end
       end
     end
@@ -62,8 +67,8 @@ class AuthHandler < Kemal::Handler
     end
 
     # Check user is logged in
-    if validate_token env
-      # Skip if the request has a valid token
+    if validate_token(env) || validate_auth_header(env)
+      # Skip if the request has a valid token (either from cookies or header)
     elsif Config.current.disable_login
       # Check default username if login is disabled
       unless Storage.default.username_exists Config.current.default_username
