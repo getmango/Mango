@@ -59,6 +59,10 @@ class AuthHandler < Kemal::Handler
   end
 
   def call(env)
+    # OPTIONS requests do not require authentication
+    if env.request.method === "OPTIONS"
+      return call_next(env)
+    end
     # Skip all authentication if requesting /login, /logout, /api/login,
     #   or a static file
     if request_path_startswith(env, ["/login", "/logout", "/api/login"]) ||

@@ -23,7 +23,11 @@ class Server
     AdminRouter.new
     ReaderRouter.new
     APIRouter.new
-    OPDSRouter.new
+
+    options "/api/*" do |env|
+      cors
+      halt env
+    end
 
     Kemal.config.logging = false
     add_handler LogHandler.new

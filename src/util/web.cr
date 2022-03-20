@@ -39,6 +39,7 @@ macro send_error_page(msg)
 end
 
 macro send_img(env, img)
+  cors
   send_file {{env}}, {{img}}.data, {{img}}.mime
 end
 
@@ -57,12 +58,26 @@ macro get_username(env)
   end
 end
 
+macro cors
+  env.response.headers["Allow"] = "HEAD,GET,PUT,POST,DELETE,OPTIONS"
+  env.response.headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept, Authorization"
+  env.response.headers["Access-Control-Allow-Origin"] = "*"
+end
+
 def send_json(env, json)
+  cors
   env.response.content_type = "application/json"
   env.response.print json
 end
 
+def send_text(env, text)
+  cors
+  env.response.content_type = "text/plain"
+  env.response.print text
+end
+
 def send_attachment(env, path)
+  cors
   send_file env, path, filename: File.basename(path), disposition: "attachment"
 end
 

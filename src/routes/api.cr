@@ -63,6 +63,11 @@ struct APIRouter
       "username" => String,
       "password" => String,
     }
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "token"   => String?,
+    }
     Koa.tag "users"
     post "/api/login" do |env|
       begin
@@ -71,11 +76,17 @@ struct APIRouter
         token = Storage.default.verify_user(username, password).not_nil!
 
         env.session.string "token", token
-        "Authenticated"
+        send_json env, {
+          "success" => true,
+          "token"   => token,
+        }.to_json
       rescue e
         Logger.error e
         env.response.status_code = 403
-        e.message
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
       end
     end
 
@@ -114,7 +125,7 @@ struct APIRouter
       rescue e
         Logger.error e
         env.response.status_code = 500
-        e.message
+        send_text env, e.message
       end
     end
 
@@ -151,7 +162,7 @@ struct APIRouter
       rescue e
         Logger.error e
         env.response.status_code = 500
-        e.message
+        send_text env, e.message
       end
     end
 
@@ -191,7 +202,7 @@ struct APIRouter
       rescue e
         Logger.error e
         env.response.status_code = 404
-        e.message
+        send_text env, e.message
       end
     end
 
@@ -250,6 +261,7 @@ struct APIRouter
       spawn do
         Library.default.generate_thumbnails
       end
+      send_text env, ""
     end
 
     Koa.describe "Deletes a user with `username`"
@@ -675,7 +687,7 @@ struct APIRouter
         e_tag = "W/#{file_hash}"
         if e_tag == prev_e_tag
           env.response.status_code = 304
-          ""
+          send_text env, ""
         else
           sizes = entry.page_dimensions
           env.response.headers["ETag"] = e_tag
@@ -709,6 +721,7 @@ struct APIRouter
       rescue e
         Logger.error e
         env.response.status_code = 404
+        send_text env, e.message
       end
     end
 
