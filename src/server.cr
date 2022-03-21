@@ -24,9 +24,15 @@ class Server
     ReaderRouter.new
     APIRouter.new
 
-    options "/api/*" do |env|
-      cors
-      halt env
+    {% for path in %w(/api/* /uploads/* /img/*) %}
+      options {{path}} do |env|
+        cors
+        halt env
+      end
+    {% end %}
+
+    static_headers do |response|
+      response.headers.add("Access-Control-Allow-Origin", "*")
     end
 
     Kemal.config.logging = false

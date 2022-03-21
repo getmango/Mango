@@ -43,10 +43,24 @@ macro send_img(env, img)
   send_file {{env}}, {{img}}.data, {{img}}.mime
 end
 
+def get_token_from_auth_header(env) : String?
+  value = env.request.headers["Authorization"]
+  if value && value.starts_with? "Bearer"
+    session_id = value.split(" ")[1]
+    return Kemal::Session.get(session_id).try &.string? "token"
+  end
+end
+
 macro get_username(env)
   begin
-    token = env.session.string "token"
-    (Storage.default.verify_token token).not_nil!
+    # Check if we can get the session id from the cookie
+    token = env.session.string? "token"
+    if token.nil?
+      # If not, check if we can get the session id from the auth header
+      token = get_token_from_auth_header env
+    end
+    # If we still don't have a token, we handle it in `resuce` with `not_nil!`
+    (Storage.default.verify_token token.not_nil!).not_nil!
   rescue e
     if Config.current.disable_login
       Config.current.default_username

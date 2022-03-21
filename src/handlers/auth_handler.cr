@@ -19,8 +19,14 @@ class AuthHandler < Kemal::Handler
   end
 
   def require_auth(env)
-    env.session.string "callback", env.request.path
-    redirect env, "/login"
+    if request_path_startswith env, ["/api"]
+      # Do not redirect API requests
+      env.response.status_code = 401
+      send_text env, "Unauthorized"
+    else
+      env.session.string "callback", env.request.path
+      redirect env, "/login"
+    end
   end
 
   def validate_token(env)
@@ -44,8 +50,9 @@ class AuthHandler < Kemal::Handler
           return true
         end
         if value.starts_with? BEARER
-          token = value.split(" ")[1]
-          return Storage.default.verify_token token
+          session_id = value.split(" ")[1]
+          token = Kemal::Session.get(session_id).try &.string? "token"
+          return !token.nil? && Storage.default.verify_token token
         end
       end
     end

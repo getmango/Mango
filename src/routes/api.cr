@@ -77,8 +77,8 @@ struct APIRouter
 
         env.session.string "token", token
         send_json env, {
-          "success" => true,
-          "token"   => token,
+          "success"    => true,
+          "session_id" => env.session.id,
         }.to_json
       rescue e
         Logger.error e
