@@ -73,7 +73,8 @@ macro get_username(env)
 end
 
 macro cors
-  env.response.headers["Access-Control-Allow-Methods"] = "HEAD,GET,PUT,POST,DELETE,OPTIONS"
+  env.response.headers["Access-Control-Allow-Methods"] = "HEAD,GET,PUT,POST," \
+  "DELETE,OPTIONS"
   env.response.headers["Access-Control-Allow-Headers"] = "X-Requested-With," \
     "X-HTTP-Method-Override, Content-Type, Cache-Control, Accept," \
     "Authorization"
