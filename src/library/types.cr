@@ -55,6 +55,13 @@ class SortOptions
   def to_tuple
     {@method.to_s.underscore, ascend}
   end
+
+  def to_json
+    {
+      "method" => method.to_s.underscore,
+      "ascend" => ascend,
+    }.to_json
+  end
 end
 
 struct Image

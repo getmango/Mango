@@ -218,9 +218,16 @@ class Title
         unless depth == 0
           json.field "titles" do
             json.array do
-              self.titles.each do |title|
+              _titles = if sort_context
+                          sorted_titles sort_context[:username],
+                            sort_context[:opt]
+                        else
+                          self.titles
+                        end
+              _titles.each do |title|
                 json.raw title.build_json(slim: slim,
-                  depth: depth > 0 ? depth - 1 : depth)
+                  depth: depth > 0 ? depth - 1 : depth,
+                  sort_context: sort_context)
               end
             end
           end

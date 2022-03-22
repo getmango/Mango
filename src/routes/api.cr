@@ -167,6 +167,7 @@ struct APIRouter
     end
 
     Koa.describe "Returns the book with title `tid`", <<-MD
+    The entries and titles will be sorted by the default sorting method for the logged-in user.
     - Supply the `slim` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
     - Supply the `depth` query parameter to control the depth of nested titles to return.
       - When `depth` is 1, returns the top-level titles and sub-titles/entries one level in them
@@ -177,8 +178,6 @@ struct APIRouter
     Koa.path "tid", desc: "Title ID"
     Koa.query "slim"
     Koa.query "depth"
-    Koa.query "sort", desc: "Sorting option for entries. Can be one of 'auto', 'title', 'progress', 'time_added' and 'time_modified'"
-    Koa.query "ascend", desc: "Sorting direction for entries. Set to 0 for the descending order. Doesn't work without specifying 'sort'"
     Koa.response 200, schema: "title"
     Koa.response 404, "Title not found"
     Koa.tag "library"
@@ -186,12 +185,11 @@ struct APIRouter
       begin
         username = get_username env
 
-        sort_opt = SortOptions.new
-        get_sort_opt
-
         tid = env.params.url["tid"]
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
+
+        sort_opt = SortOptions.from_info_json title.dir, username
 
         slim = !env.params.query["slim"]?.nil?
         depth = env.params.query["depth"]?.try(&.to_i?) || -1
@@ -206,7 +204,81 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Returns the sorting option of a title or the library", <<-MD
+    - If the query parameter `tid` is supplied, returns the sorting option of the title identified by the `tid`.
+    - If the query parameter `tid` is missing, returns the sorting option of the library.
+    MD
+    Koa.query "tid"
+    Koa.response 200, schema: {
+      "method" => String?,
+      "ascend" => Bool?,
+      "error"  => String?,
+    }
+    Koa.tag "library"
+    get "/api/sort_opt" do |env|
+      username = get_username env
+
+      tid = env.params.query["tid"]?
+      dir = if tid
+              (Library.default.get_title tid).not_nil!.dir
+            else
+              Library.default.dir
+            end
+      sort_opt = SortOptions.from_info_json dir, username
+      send_json env, sort_opt.to_json
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
+    end
+
+    Koa.describe "Updates the sorting option of a title or the library", <<-MD
+    - When the `tid` field is supplied in the body, updates the sorting option of the title identified by the `tid`.
+    - When the `tid` field is missing in the body, updates the sorting option of the library.
+    MD
+    Koa.body schema: {
+      "tid"    => String?,
+      "method" => String,
+      "ascend" => Bool,
+    }
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+    }
+    Koa.tag "library"
+    put "/api/sort_opt" do |env|
+      username = get_username env
+
+      tid = env.params.json["tid"]?.try &.as String
+      dir = if tid
+              (Library.default.get_title tid).not_nil!.dir
+            else
+              Library.default.dir
+            end
+
+      method = env.params.json["sort"].as String
+      ascend = env.params.json["ascend"].as Bool
+      sort_opt = SortOptions.new method, ascend
+
+      TitleInfo.new dir do |info|
+        info.sort_by[username] = sort_opt.to_tuple
+        info.save
+      end
+      send_json env, {
+        "success" => true,
+      }.to_json
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
+    end
+
     Koa.describe "Returns the entire library with all titles and entries", <<-MD
+    The titles will be sorted by the default sorting method for the logged-in user.
     - Supply the `slim` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
     - Supply the `dpeth` query parameter to control the depth of nested titles to return.
       - When `depth` is 1, returns the requested title and sub-titles/entries one level in it
@@ -222,10 +294,22 @@ struct APIRouter
     }
     Koa.tag "library"
     get "/api/library" do |env|
+      username = get_username env
+
+      sort_opt = SortOptions.from_info_json Library.default.dir, username
+
       slim = !env.params.query["slim"]?.nil?
       depth = env.params.query["depth"]?.try(&.to_i?) || -1
 
-      send_json env, Library.default.build_json(slim: slim, depth: depth)
+      send_json env, Library.default.build_json(slim: slim, depth: depth,
+        sort_context: {username: username,
+                       opt:      sort_opt})
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
     end
 
     Koa.describe "Triggers a library scan"

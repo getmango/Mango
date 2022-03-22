@@ -139,14 +139,21 @@ class Library
     titles.flat_map &.deep_entries
   end
 
-  def build_json(*, slim = false, depth = -1)
+  def build_json(*, slim = false, depth = -1, sort_context = nil)
     JSON.build do |json|
       json.object do
         json.field "dir", @dir
         json.field "titles" do
           json.array do
-            self.titles.each do |title|
-              json.raw title.build_json(slim: slim, depth: depth)
+            _titles = if sort_context
+                        sorted_titles sort_context[:username],
+                          sort_context[:opt]
+                      else
+                        self.titles
+                      end
+            _titles.each do |title|
+              json.raw title.build_json(slim: slim, depth: depth,
+                sort_context: sort_context)
             end
           end
         end
