@@ -61,6 +61,7 @@ class CLI < Clim
       Library.load_instance
       Library.default
       Plugin::Downloader.default
+      Plugin::Updater.default
 
       spawn do
         begin

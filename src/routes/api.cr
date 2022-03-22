@@ -56,6 +56,23 @@ struct APIRouter
       "error"   => String?,
     }
 
+    Koa.schema "filter", {
+      "key"   => String,
+      "type"  => String,
+      "value" => String | Int32 | Int64 | Float32,
+    }
+
+    Koa.schema "subscription", {
+      "id"           => String,
+      "plugin_id"    => String,
+      "manga_id"     => String,
+      "manga_title"  => String,
+      "name"         => String,
+      "created_at"   => Int64,
+      "last_checked" => Int64,
+      "filters"      => ["filter"],
+    }
+
     Koa.describe "Authenticates a user", <<-MD
     After successful login, the cookie `mango-sessid-#{Config.current.port}` will contain a valid session ID that can be used for subsequent requests
     MD
@@ -567,6 +584,209 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Returns a list of available plugins"
+    Koa.tags ["admin", "downloader"]
+    Koa.query "plugin", schema: String
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "plugins" => [{
+        "id"    => String,
+        "title" => String,
+      }],
+    }
+    get "/api/admin/plugin" do |env|
+      begin
+        send_json env, {
+          "success" => true,
+          "plugins" => Plugin.list,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Returns the metadata of a plugin"
+    Koa.tags ["admin", "downloader"]
+    Koa.query "plugin", schema: String
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "info"    => {
+        "dir"          => String,
+        "id"           => String,
+        "title"        => String,
+        "placeholder"  => String,
+        "wait_seconds" => Int32,
+        "version"      => Int32,
+        "settings"     => {} of String => String,
+      },
+    }
+    get "/api/admin/plugin/info" do |env|
+      begin
+        plugin = Plugin.new env.params.query["plugin"].as String
+        send_json env, {
+          "success" => true,
+          "info"    => plugin.info,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Searches for manga matching the given query from a plugin", <<-MD
+    Only available for plugins targeting API v2 or above.
+    MD
+    Koa.tags ["admin", "downloader"]
+    Koa.query "plugin", schema: String
+    Koa.query "query", schema: String
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "manga"   => [{
+        "id"    => String,
+        "title" => String,
+      }],
+    }
+    get "/api/admin/plugin/search" do |env|
+      begin
+        query = env.params.query["query"].as String
+        plugin = Plugin.new env.params.query["plugin"].as String
+
+        manga_ary = plugin.search_manga(query).as_a
+        send_json env, {
+          "success" => true,
+          "manga"   => manga_ary,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Creates a new subscription"
+    Koa.tags ["admin", "downloader", "subscription"]
+    Koa.body schema: {
+      "plugin"   => String,
+      "manga"    => String,
+      "manga_id" => String,
+      "name"     => String,
+      "filters"  => ["filter"],
+    }
+    Koa.response 200, schema: "result"
+    post "/api/admin/plugin/subscriptions" do |env|
+      begin
+        plugin_id = env.params.json["plugin"].as String
+        manga_title = env.params.json["manga"].as String
+        manga_id = env.params.json["manga_id"].as String
+        filters = env.params.json["filters"].as(Array(JSON::Any)).map do |f|
+          Filter.from_json f.to_json
+        end
+        name = env.params.json["name"].as String
+
+        sub = Subscription.new plugin_id, manga_id, manga_title, name
+        sub.filters = filters
+
+        plugin = Plugin.new plugin_id
+        plugin.subscribe sub
+
+        send_json env, {
+          "success" => true,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Returns the list of subscriptions for a plugin"
+    Koa.tags ["admin", "downloader", "subscription"]
+    Koa.query "plugin", desc: "The ID of the plugin"
+    Koa.response 200, schema: {
+      "success"       => Bool,
+      "error"         => String?,
+      "subscriptions" => ["subscription"],
+    }
+    get "/api/admin/plugin/subscriptions" do |env|
+      begin
+        pid = env.params.query["plugin"].as String
+        send_json env, {
+          "success"       => true,
+          "subscriptions" => Plugin.new(pid).list_subscriptions,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Deletes a subscription"
+    Koa.tags ["admin", "downloader", "subscription"]
+    Koa.body schema: {
+      "plugin"       => String,
+      "subscription" => String,
+    }
+    Koa.response 200, schema: "result"
+    delete "/api/admin/plugin/subscriptions" do |env|
+      begin
+        pid = env.params.query["plugin"].as String
+        sid = env.params.query["subscription"].as String
+
+        Plugin.new(pid).unsubscribe sid
+
+        send_json env, {
+          "success" => true,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Checks for updates for a subscription"
+    Koa.tags ["admin", "downloader", "subscription"]
+    Koa.body schema: {
+      "plugin"       => String,
+      "subscription" => String,
+    }
+    Koa.response 200, schema: "result"
+    post "/api/admin/plugin/subscriptions/update" do |env|
+      pid = env.params.query["plugin"].as String
+      sid = env.params.query["subscription"].as String
+
+      Plugin.new(pid).check_subscription sid
+
+      send_json env, {
+        "success" => true,
+      }.to_json
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
+    end
+
     Koa.describe "Lists the chapters in a title from a plugin"
     Koa.tags ["admin", "downloader"]
     Koa.query "plugin", schema: String
@@ -575,8 +795,8 @@ struct APIRouter
       "success"   => Bool,
       "error"     => String?,
       "chapters?" => [{
-        "id"    => String,
-        "title" => String,
+        "id"     => String,
+        "title?" => String,
       }],
       "title" => String?,
     }
@@ -586,8 +806,14 @@ struct APIRouter
         plugin = Plugin.new env.params.query["plugin"].as String
 
         json = plugin.list_chapters query
-        chapters = json["chapters"]
-        title = json["title"]
+
+        if plugin.info.version == 1
+          chapters = json["chapters"]
+          title = json["title"]
+        else
+          chapters = json
+          title = nil
+        end
 
         send_json env, {
           "success"  => true,
@@ -625,7 +851,7 @@ struct APIRouter
 
         jobs = chapters.map { |ch|
           Queue::Job.new(
-            "#{plugin.info.id}-#{ch["id"]}",
+            "#{plugin.info.id}-#{Base64.encode ch["id"].as_s}",
             "", # manga_id
             ch["title"].as_s,
             manga_title,

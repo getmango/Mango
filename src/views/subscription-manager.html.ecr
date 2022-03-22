@@ -1,0 +1,101 @@
+<h2 class=uk-title>Subscription Manager</h2>
+<div x-data="component()" x-init="init()">
+  <div class="uk-grid-small" uk-grid style="margin-bottom:40px;">
+    <div class="uk-container uk-text-center" x-show="plugins.length === 0" style="width:100%">
+      <h2>No Plugins Found</h2>
+      <p>We could't find any plugins in the directory <code><%= Config.current.plugin_path %></code>.</p>
+      <p>You can download official plugins from the <a href="https://github.com/hkalexling/mango-plugins">Mango plugins repository</a>.</p>
+    </div>
+
+    <div x-show="plugins.length > 0" style="width:100%">
+      <div class="uk-margin">
+        <label class="uk-form-label">Choose a plugin</label>
+        <div class="uk-form-controls">
+          <select class="uk-select" x-model="pid" @change="pluginChanged()">
+            <template x-for="p in plugins" :key="p">
+              <option :value="p.id" x-text="p.title"></option>
+            </template>
+          </select>
+        </div>
+      </div>
+
+      <p x-show="subscriptions.length === 0" class="uk-text-meta">No subscriptions found.</p>
+
+      <div class="uk-overflow-auto" x-show="subscriptions.length > 0">
+        <table class="uk-table uk-table-striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Plugin ID</th>
+              <th>Manga Title</th>
+              <th>Created At</th>
+              <th>Last Checked</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="sub in subscriptions" :key="sub">
+              <tr :sid="sub.id" @click="selected($event, $refs.modal)">
+                <td x-html="renderStrCell(sub.name)"></td>
+                <td x-html="renderStrCell(sub.plugin_id)"></td>
+                <td x-html="renderStrCell(sub.manga_title)"></td>
+                <td x-html="renderDateCell(sub.created_at)"></td>
+                <td x-html="renderDateCell(sub.last_checked)"></td>
+                <td>
+                  <a @click.prevent.stop="actionHandler($event, 'delete')" uk-icon="trash" uk-tooltip="Delete" :disabled="loading"></a>
+                  <a @click.prevent.stop="actionHandler($event, 'update')" uk-icon="refresh" uk-tooltip="Check for updates" :disabled="loading"></a>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div uk-modal="container:false" x-ref="modal" class="uk-flex-top">
+    <div class="uk-modal-dialog uk-margin-auto-vertical uk-overflow-auto">
+      <div class="uk-modal-header">
+        <h2 class="uk-modal-title">Subscription Details</h2>
+      </div>
+      <div class="uk-modal-body">
+        <dl>
+          <dt>Name</dt>
+          <dd x-html="subscription && subscription.name"></dd>
+          <dt>Subscription ID</dt>
+          <dd x-html="subscription && subscription.id"></dd>
+          <dt>Plugin ID</dt>
+          <dd x-html="subscription && subscription.plugin_id"></dd>
+          <dt>Manga Title</dt>
+          <dd x-html="subscription && subscription.manga_title"></dd>
+          <dt>Manga ID</dt>
+          <dd x-html="subscription && subscription.manga_id"></dd>
+          <dt>Filters</dt>
+        </dl>
+        <table class="uk-table uk-table-striped">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Type</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="ft in (subscription && subscription.filters || [])" :key="ft">
+              <tr x-html="renderFilterRow(ft)"></tr>
+            </template>
+          </tbody>
+        </table>
+        <p class="uk-text-right">
+        <button class="uk-button uk-button-default uk-modal-close" type="button">OK</button>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% content_for "script" do %>
+  <%= render_component "moment" %>
+  <script src="<%= base_url %>js/alert.js"></script>
+  <script src="<%= base_url %>js/subscription-manager.js"></script>
+<% end %>
