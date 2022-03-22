@@ -139,7 +139,8 @@ class Library
     titles.flat_map &.deep_entries
   end
 
-  def build_json(*, slim = false, depth = -1, sort_context = nil, percentage = false)
+  def build_json(*, slim = false, depth = -1, sort_context = nil,
+                 percentage = false)
     _titles = if sort_context
                 sorted_titles sort_context[:username],
                   sort_context[:opt]

@@ -256,8 +256,11 @@ class Title
             end
             json.field "entry_percentages" do
               json.array do
-                load_percentage_for_all_entries(sort_context[:username], sort_context[:opt]).each do |percentage|
-                  json.number percentage.nan? ? 0 : percentage
+                load_percentage_for_all_entries(
+                  sort_context[:username],
+                  sort_context[:opt]
+                ).each do |p|
+                  json.number p.nan? ? 0 : p
                 end
               end
             end
