@@ -168,6 +168,7 @@ struct APIRouter
 
     Koa.describe "Returns the book with title `tid`", <<-MD
     The entries and titles will be sorted by the default sorting method for the logged-in user.
+    - Supply the `percentage` query parameter to include the reading progress
     - Supply the `slim` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
     - Supply the `depth` query parameter to control the depth of nested titles to return.
       - When `depth` is 1, returns the top-level titles and sub-titles/entries one level in them
@@ -178,6 +179,7 @@ struct APIRouter
     Koa.path "tid", desc: "Title ID"
     Koa.query "slim"
     Koa.query "depth"
+    Koa.query "percentage"
     Koa.response 200, schema: "title"
     Koa.response 404, "Title not found"
     Koa.tag "library"
@@ -193,10 +195,11 @@ struct APIRouter
 
         slim = !env.params.query["slim"]?.nil?
         depth = env.params.query["depth"]?.try(&.to_i?) || -1
+        percentage = !env.params.query["percentage"]?.nil?
 
         send_json env, title.build_json(slim: slim, depth: depth,
           sort_context: {username: username,
-                         opt:      sort_opt})
+                         opt:      sort_opt}, percentage: percentage)
       rescue e
         Logger.error e
         env.response.status_code = 404
@@ -281,6 +284,7 @@ struct APIRouter
     The titles will be sorted by the default sorting method for the logged-in user.
     - Supply the `slim` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
     - Supply the `dpeth` query parameter to control the depth of nested titles to return.
+    - Supply the `percentage` query parameter to include the reading progress
       - When `depth` is 1, returns the requested title and sub-titles/entries one level in it
       - When `depth` is 0, returns the requested title without its sub-titles/entries
       - When `depth` is N, returns the requested title and sub-titles/entries N levels in it
@@ -288,6 +292,7 @@ struct APIRouter
     MD
     Koa.query "slim"
     Koa.query "depth"
+    Koa.query "percentage"
     Koa.response 200, schema: {
       "dir"    => String,
       "titles" => ["title"],
@@ -300,10 +305,11 @@ struct APIRouter
 
       slim = !env.params.query["slim"]?.nil?
       depth = env.params.query["depth"]?.try(&.to_i?) || -1
+      percentage = !env.params.query["percentage"]?.nil?
 
       send_json env, Library.default.build_json(slim: slim, depth: depth,
         sort_context: {username: username,
-                       opt:      sort_opt})
+                       opt:      sort_opt}, percentage: percentage)
     rescue e
       Logger.error e
       send_json env, {

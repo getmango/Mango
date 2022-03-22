@@ -139,21 +139,30 @@ class Library
     titles.flat_map &.deep_entries
   end
 
-  def build_json(*, slim = false, depth = -1, sort_context = nil)
+  def build_json(*, slim = false, depth = -1, sort_context = nil, percentage = false)
+    _titles = if sort_context
+                sorted_titles sort_context[:username],
+                  sort_context[:opt]
+              else
+                self.titles
+              end
     JSON.build do |json|
       json.object do
         json.field "dir", @dir
         json.field "titles" do
           json.array do
-            _titles = if sort_context
-                        sorted_titles sort_context[:username],
-                          sort_context[:opt]
-                      else
-                        self.titles
-                      end
             _titles.each do |title|
               json.raw title.build_json(slim: slim, depth: depth,
-                sort_context: sort_context)
+                sort_context: sort_context, percentage: percentage)
+            end
+          end
+        end
+        if percentage && sort_context
+          json.field "title_percentages" do
+            json.array do
+              _titles.each do |title|
+                json.number title.load_percentage sort_context[:username]
+              end
             end
           end
         end
