@@ -55,9 +55,12 @@ class Entry
   def build_json(*, slim = false)
     JSON.build do |json|
       json.object do
-        {% for str in ["zip_path", "title", "size", "id"] %}
+        {% for str in %w(zip_path title size id) %}
         json.field {{str}}, @{{str.id}}
       {% end %}
+        if err_msg
+          json.field "err_msg", err_msg
+        end
         json.field "title_id", @book.id
         json.field "sort_title", sort_title
         json.field "pages" { json.number @pages }
