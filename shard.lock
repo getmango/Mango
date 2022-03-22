@@ -50,7 +50,7 @@ shards:
 
   koa:
     git: https://github.com/hkalexling/koa.git
-    version: 0.8.0
+    version: 0.9.0
 
   mg:
     git: https://github.com/hkalexling/mg.git
