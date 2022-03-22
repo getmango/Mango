@@ -44,10 +44,12 @@ struct APIRouter
       desc: "An entry in a book"
 
     Koa.schema "title", {
-      "mtime"   => Int64,
-      "entries" => ["entry"],
-      "titles"  => ["title"],
-      "parents" => [String],
+      "mtime"             => Int64,
+      "entries"           => ["entry"],
+      "titles"            => ["title"],
+      "parents"           => [String],
+      "title_percentages" => [Float64?],
+      "entry_percentages" => [Float64?],
     }.merge(s %w(dir title id display_name cover_url)),
       desc: "A manga title (a collection of entries and sub-titles)"
 
@@ -294,8 +296,9 @@ struct APIRouter
     Koa.query "depth"
     Koa.query "percentage"
     Koa.response 200, schema: {
-      "dir"    => String,
-      "titles" => ["title"],
+      "dir"              => String,
+      "titles"           => ["title"],
+      "title_percentage" => [Float64?],
     }
     Koa.tag "library"
     get "/api/library" do |env|
@@ -310,6 +313,137 @@ struct APIRouter
       send_json env, Library.default.build_json(slim: slim, depth: depth,
         sort_context: {username: username,
                        opt:      sort_opt}, percentage: percentage)
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
+    end
+
+    Koa.describe "Returns the continue reading entries"
+    Koa.response 200, schema: {
+      "success"           => Bool,
+      "error"             => String?,
+      "entries"           => ["entry"],
+      "entry_percentages" => [Float64],
+    }
+    Koa.tag "library"
+    get "/api/library/continue_reading" do |env|
+      username = get_username env
+      cr_entries = Library.default.get_continue_reading_entries username
+
+      json = JSON.build do |j|
+        j.object do
+          j.field "success" do
+            j.bool true
+          end
+          j.field "entries" do
+            j.array do
+              cr_entries.each do |e|
+                j.raw e[:entry].build_json
+              end
+            end
+          end
+          j.field "entry_percentages" do
+            j.array do
+              cr_entries.each do |e|
+                j.number e[:percentage]
+              end
+            end
+          end
+        end
+      end
+
+      send_json env, json
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
+    end
+
+    Koa.describe "Returns the start reading titles"
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "titles"  => ["title"],
+    }
+    Koa.tag "library"
+    get "/api/library/start_reading" do |env|
+      username = get_username env
+      titles = Library.default.get_start_reading_titles username
+
+      json = JSON.build do |j|
+        j.object do
+          j.field "success" do
+            j.bool true
+          end
+          j.field "titles" do
+            j.array do
+              titles.each do |t|
+                j.raw t.build_json depth: 1
+              end
+            end
+          end
+        end
+      end
+
+      send_json env, json
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
+    end
+
+    Koa.describe "Returns the recently added items"
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "items"   => [{
+        "item"       => "title | entry",
+        "percentage" => Float64,
+        "count"      => Int32,
+      }],
+    }
+    Koa.tag "library"
+    get "/api/library/recently_added" do |env|
+      username = get_username env
+      ra_entries = Library.default.get_recently_added_entries username
+
+      json = JSON.build do |j|
+        j.object do
+          j.field "success" do
+            j.bool true
+          end
+          j.field "items" do
+            j.array do
+              ra_entries.each do |e|
+                j.object do
+                  j.field "item" do
+                    if e[:grouped_count] === 1
+                      j.raw e[:entry].build_json
+                    else
+                      j.raw e[:entry].book.build_json depth: 0
+                    end
+                  end
+                  j.field "percentage" do
+                    j.number e[:percentage]
+                  end
+                  j.field "count" do
+                    j.number e[:grouped_count]
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+
+      send_json env, json
     rescue e
       Logger.error e
       send_json env, {
