@@ -44,10 +44,13 @@ struct APIRouter
       desc: "An entry in a book"
 
     Koa.schema "title", {
-      "mtime"             => Int64,
-      "entries"           => ["entry"],
-      "titles"            => ["title"],
-      "parents"           => [String],
+      "mtime"   => Int64,
+      "entries" => ["entry"],
+      "titles"  => ["title"],
+      "parents" => [{
+        "title" => String,
+        "id"    => String,
+      }],
       "title_percentages" => [Float64?],
       "entry_percentages" => [Float64?],
     }.merge(s %w(dir title id display_name cover_url)),
