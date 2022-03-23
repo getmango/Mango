@@ -86,9 +86,10 @@ struct APIRouter
       "password" => String,
     }
     Koa.response 200, schema: {
-      "success" => Bool,
-      "error"   => String?,
-      "token"   => String?,
+      "success"    => Bool,
+      "error"      => String?,
+      "session_id" => String?,
+      "is_admin"   => Bool?,
     }
     Koa.tag "users"
     post "/api/login" do |env|
@@ -101,6 +102,7 @@ struct APIRouter
         send_json env, {
           "success"    => true,
           "session_id" => env.session.id,
+          "is_admin"   => Storage.default.username_is_admin username,
         }.to_json
       rescue e
         Logger.error e
