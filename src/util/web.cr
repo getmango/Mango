@@ -39,13 +39,28 @@ macro send_error_page(msg)
 end
 
 macro send_img(env, img)
+  cors
   send_file {{env}}, {{img}}.data, {{img}}.mime
+end
+
+def get_token_from_auth_header(env) : String?
+  value = env.request.headers["Authorization"]
+  if value && value.starts_with? "Bearer"
+    session_id = value.split(" ")[1]
+    return Kemal::Session.get(session_id).try &.string? "token"
+  end
 end
 
 macro get_username(env)
   begin
-    token = env.session.string "token"
-    (Storage.default.verify_token token).not_nil!
+    # Check if we can get the session id from the cookie
+    token = env.session.string? "token"
+    if token.nil?
+      # If not, check if we can get the session id from the auth header
+      token = get_token_from_auth_header env
+    end
+    # If we still don't have a token, we handle it in `resuce` with `not_nil!`
+    (Storage.default.verify_token token.not_nil!).not_nil!
   rescue e
     if Config.current.disable_login
       Config.current.default_username
@@ -57,12 +72,29 @@ macro get_username(env)
   end
 end
 
+macro cors
+  env.response.headers["Access-Control-Allow-Methods"] = "HEAD,GET,PUT,POST," \
+  "DELETE,OPTIONS"
+  env.response.headers["Access-Control-Allow-Headers"] = "X-Requested-With," \
+    "X-HTTP-Method-Override, Content-Type, Cache-Control, Accept," \
+    "Authorization"
+  env.response.headers["Access-Control-Allow-Origin"] = "*"
+end
+
 def send_json(env, json)
+  cors
   env.response.content_type = "application/json"
   env.response.print json
 end
 
+def send_text(env, text)
+  cors
+  env.response.content_type = "text/plain"
+  env.response.print text
+end
+
 def send_attachment(env, path)
+  cors
   send_file env, path, filename: File.basename(path), disposition: "attachment"
 end
 

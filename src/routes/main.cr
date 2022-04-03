@@ -80,16 +80,6 @@ struct MainRouter
 
     get "/download/plugins" do |env|
       begin
-        id = env.params.query["plugin"]?
-        plugins = Plugin.list
-        plugin = nil
-
-        if id
-          plugin = Plugin.new id
-        elsif !plugins.empty?
-          plugin = Plugin.new plugins[0][:id]
-        end
-
         layout "plugin-download"
       rescue e
         Logger.error e

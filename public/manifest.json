@@ -1,0 +1,23 @@
+{
+	"name": "Mango",
+	"description": "Mango: A self-hosted manga server and web reader",
+	"icons": [
+		{
+			"src": "/img/icons/icon_x96.png",
+			"sizes": "96x96",
+			"type": "image/png"
+		},
+		{
+			"src": "/img/icons/icon_x192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "/img/icons/icon_x512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		}
+	],
+	"display": "fullscreen",
+	"start_url": "/"
+}

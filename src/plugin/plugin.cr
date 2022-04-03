@@ -2,6 +2,8 @@ require "duktape/runtime"
 require "myhtml"
 require "xml"
 
+require "./subscriptions"
+
 class Plugin
   class Error < ::Exception
   end
@@ -16,11 +18,18 @@ class Plugin
   end
 
   struct Info
+    include JSON::Serializable
+
     {% for name in ["id", "title", "placeholder"] %}
       getter {{name.id}} = ""
     {% end %}
-    getter wait_seconds : UInt64 = 0
+    getter wait_seconds = 0u64
+    getter version = 0u64
+    getter settings = {} of String => String?
     getter dir : String
+
+    @[JSON::Field(ignore: true)]
+    @json : JSON::Any
 
     def initialize(@dir)
       info_path = File.join @dir, "info.json"
@@ -37,6 +46,16 @@ class Plugin
           @{{name.id}} = @json[{{name}}].as_s
         {% end %}
         @wait_seconds = @json["wait_seconds"].as_i.to_u64
+        @version = @json["api_version"]?.try(&.as_i.to_u64) || 1u64
+
+        if @version > 1 && (settings_hash = @json["settings"]?.try &.as_h?)
+          settings_hash.each do |k, v|
+            unless str_value = v.as_s?
+              raise "The settings object can only contain strings or null"
+            end
+            @settings[k] = str_value
+          end
+        end
 
         unless @id.alphanumeric_underscore?
           raise "Plugin ID can only contain alphanumeric characters and " \
@@ -114,6 +133,33 @@ class Plugin
     @info.not_nil!
   end
 
+  def subscribe(subscription : Subscription)
+    list = SubscriptionList.new info.dir
+    list << subscription
+    list.save
+  end
+
+  def list_subscriptions
+    SubscriptionList.new(info.dir).ary
+  end
+
+  def list_subscriptions_raw
+    SubscriptionList.new(info.dir)
+  end
+
+  def unsubscribe(id : String)
+    list = SubscriptionList.new info.dir
+    list.reject! &.id.== id
+    list.save
+  end
+
+  def check_subscription(id : String)
+    list = list_subscriptions_raw
+    sub = list.find &.id.== id
+    Plugin::Updater.default.check_subscription self, sub.not_nil!
+    list.save
+  end
+
   def initialize(id : String)
     Plugin.build_info_ary
 
@@ -138,6 +184,12 @@ class Plugin
       sbx.push_string path
       sbx.put_prop_string -2, "storage_path"
 
+      sbx.push_pointer info.dir.as(Void*)
+      path = sbx.require_pointer(-1).as String
+      sbx.pop
+      sbx.push_string path
+      sbx.put_prop_string -2, "info_dir"
+
       def_helper_functions sbx
     end
 
@@ -152,23 +204,67 @@ class Plugin
     {% end %}
   end
 
+  def assert_manga_type(obj : JSON::Any)
+    obj["id"].as_s && obj["title"].as_s
+  rescue e
+    raise Error.new "Missing required fields in the Manga type"
+  end
+
+  def assert_chapter_type(obj : JSON::Any)
+    obj["id"].as_s && obj["title"].as_s && obj["pages"].as_i &&
+      obj["manga_title"].as_s
+  rescue e
+    raise Error.new "Missing required fields in the Chapter type"
+  end
+
+  def assert_page_type(obj : JSON::Any)
+    obj["url"].as_s && obj["filename"].as_s
+  rescue e
+    raise Error.new "Missing required fields in the Page type"
+  end
+
+  def search_manga(query : String)
+    if info.version == 1
+      raise Error.new "Manga searching is only available for plugins " \
+                      "targeting API v2 or above"
+    end
+    json = eval_json "searchManga('#{query}')"
+    begin
+      json.as_a.each do |obj|
+        assert_manga_type obj
+      end
+    rescue e
+      raise Error.new e.message
+    end
+    json
+  end
+
   def list_chapters(query : String)
     json = eval_json "listChapters('#{query}')"
     begin
-      check_fields ["title", "chapters"]
-
-      ary = json["chapters"].as_a
-      ary.each do |obj|
-        id = obj["id"]?
-        raise "Field `id` missing from `listChapters` outputs" if id.nil?
-
-        unless id.to_s.alphanumeric_underscore?
-          raise "The `id` field can only contain alphanumeric characters " \
-                "and underscores"
+      if info.version > 1
+        # Since v2, listChapters returns an array
+        json.as_a.each do |obj|
+          assert_chapter_type obj
         end
+      else
+        check_fields ["title", "chapters"]
 
-        title = obj["title"]?
-        raise "Field `title` missing from `listChapters` outputs" if title.nil?
+        ary = json["chapters"].as_a
+        ary.each do |obj|
+          id = obj["id"]?
+          raise "Field `id` missing from `listChapters` outputs" if id.nil?
+
+          unless id.to_s.alphanumeric_underscore?
+            raise "The `id` field can only contain alphanumeric characters " \
+                  "and underscores"
+          end
+
+          title = obj["title"]?
+          if title.nil?
+            raise "Field `title` missing from `listChapters` outputs"
+          end
+        end
       end
     rescue e
       raise Error.new e.message
@@ -179,10 +275,14 @@ class Plugin
   def select_chapter(id : String)
     json = eval_json "selectChapter('#{id}')"
     begin
-      check_fields ["title", "pages"]
+      if info.version > 1
+        assert_chapter_type json
+      else
+        check_fields ["title", "pages"]
 
-      if json["title"].to_s.empty?
-        raise "The `title` field of the chapter can not be empty"
+        if json["title"].to_s.empty?
+          raise "The `title` field of the chapter can not be empty"
+        end
       end
     rescue e
       raise Error.new e.message
@@ -194,7 +294,21 @@ class Plugin
     json = eval_json "nextPage()"
     return if json.size == 0
     begin
-      check_fields ["filename", "url"]
+      assert_page_type json
+    rescue e
+      raise Error.new e.message
+    end
+    json
+  end
+
+  def new_chapters(manga_id : String, after : Int64)
+    # Converting standard timestamp to milliseconds so plugins can easily do
+    #   `new Date(ms_timestamp)` in JS.
+    json = eval_json "newChapters('#{manga_id}', #{after * 1000})"
+    begin
+      json.as_a.each do |obj|
+        assert_chapter_type obj
+      end
     rescue e
       raise Error.new e.message
     end
@@ -378,6 +492,27 @@ class Plugin
       env.call_success
     end
     sbx.put_prop_string -2, "storage"
+
+    if info.version > 1
+      sbx.push_proc 1 do |ptr|
+        env = Duktape::Sandbox.new ptr
+        key = env.require_string 0
+
+        env.get_global_string "info_dir"
+        info_dir = env.require_string -1
+        env.pop
+        info = Info.new info_dir
+
+        if value = info.settings[key]?
+          env.push_string value
+        else
+          env.push_undefined
+        end
+
+        env.call_success
+      end
+      sbx.put_prop_string -2, "settings"
+    end
 
     sbx.put_prop_string -2, "mango"
   end

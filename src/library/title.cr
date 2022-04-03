@@ -202,7 +202,21 @@ class Title
   alias SortContext = NamedTuple(username: String, opt: SortOptions)
 
   def build_json(*, slim = false, depth = -1,
-                 sort_context : SortContext? = nil)
+                 sort_context : SortContext? = nil,
+                 percentage = false)
+    _titles = if sort_context
+                sorted_titles sort_context[:username],
+                  sort_context[:opt]
+              else
+                self.titles
+              end
+    _entries = if sort_context
+                 sorted_entries sort_context[:username],
+                   sort_context[:opt]
+               else
+                 @entries
+               end
+
     JSON.build do |json|
       json.object do
         {% for str in ["dir", "title", "id"] %}
@@ -218,22 +232,36 @@ class Title
         unless depth == 0
           json.field "titles" do
             json.array do
-              self.titles.each do |title|
+              _titles.each do |title|
                 json.raw title.build_json(slim: slim,
-                  depth: depth > 0 ? depth - 1 : depth)
+                  depth: depth > 0 ? depth - 1 : depth,
+                  sort_context: sort_context, percentage: percentage)
               end
             end
           end
           json.field "entries" do
             json.array do
-              _entries = if sort_context
-                           sorted_entries sort_context[:username],
-                             sort_context[:opt]
-                         else
-                           @entries
-                         end
               _entries.each do |entry|
                 json.raw entry.build_json(slim: slim)
+              end
+            end
+          end
+          if percentage && sort_context
+            json.field "title_percentages" do
+              json.array do
+                _titles.each do |t|
+                  json.number t.load_percentage sort_context[:username]
+                end
+              end
+            end
+            json.field "entry_percentages" do
+              json.array do
+                load_percentage_for_all_entries(
+                  sort_context[:username],
+                  sort_context[:opt]
+                ).each do |p|
+                  json.number p.nan? ? 0 : p
+                end
               end
             end
           end
@@ -411,7 +439,7 @@ class Title
     cached_cover_url = @cached_cover_url
     return cached_cover_url unless cached_cover_url.nil?
 
-    url = "#{Config.current.base_url}img/icon.png"
+    url = "#{Config.current.base_url}img/icons/icon_x192.png"
     readable_entries = @entries.select &.err_msg.nil?
     if readable_entries.size > 0
       url = readable_entries[0].cover_url

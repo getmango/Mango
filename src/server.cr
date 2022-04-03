@@ -23,7 +23,17 @@ class Server
     AdminRouter.new
     ReaderRouter.new
     APIRouter.new
-    OPDSRouter.new
+
+    {% for path in %w(/api/* /uploads/* /img/*) %}
+      options {{path}} do |env|
+        cors
+        halt env
+      end
+    {% end %}
+
+    static_headers do |response|
+      response.headers.add("Access-Control-Allow-Origin", "*")
+    end
 
     Kemal.config.logging = false
     add_handler LogHandler.new

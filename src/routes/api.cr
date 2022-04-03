@@ -47,13 +47,35 @@ struct APIRouter
       "mtime"   => Int64,
       "entries" => ["entry"],
       "titles"  => ["title"],
-      "parents" => [String],
+      "parents" => [{
+        "title" => String,
+        "id"    => String,
+      }],
+      "title_percentages" => [Float64?],
+      "entry_percentages" => [Float64?],
     }.merge(s %w(dir title id display_name cover_url)),
       desc: "A manga title (a collection of entries and sub-titles)"
 
     Koa.schema "result", {
       "success" => Bool,
       "error"   => String?,
+    }
+
+    Koa.schema "filter", {
+      "key"   => String,
+      "type"  => String,
+      "value" => String | Int32 | Int64 | Float32,
+    }
+
+    Koa.schema "subscription", {
+      "id"           => String,
+      "plugin_id"    => String,
+      "manga_id"     => String,
+      "manga_title"  => String,
+      "name"         => String,
+      "created_at"   => Int64,
+      "last_checked" => Int64,
+      "filters"      => ["filter"],
     }
 
     Koa.describe "Authenticates a user", <<-MD
@@ -63,6 +85,12 @@ struct APIRouter
       "username" => String,
       "password" => String,
     }
+    Koa.response 200, schema: {
+      "success"    => Bool,
+      "error"      => String?,
+      "session_id" => String?,
+      "is_admin"   => Bool?,
+    }
     Koa.tag "users"
     post "/api/login" do |env|
       begin
@@ -71,11 +99,18 @@ struct APIRouter
         token = Storage.default.verify_user(username, password).not_nil!
 
         env.session.string "token", token
-        "Authenticated"
+        send_json env, {
+          "success"    => true,
+          "session_id" => env.session.id,
+          "is_admin"   => Storage.default.username_is_admin username,
+        }.to_json
       rescue e
         Logger.error e
         env.response.status_code = 403
-        e.message
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
       end
     end
 
@@ -114,7 +149,7 @@ struct APIRouter
       rescue e
         Logger.error e
         env.response.status_code = 500
-        e.message
+        send_text env, e.message
       end
     end
 
@@ -151,11 +186,13 @@ struct APIRouter
       rescue e
         Logger.error e
         env.response.status_code = 500
-        e.message
+        send_text env, e.message
       end
     end
 
     Koa.describe "Returns the book with title `tid`", <<-MD
+    The entries and titles will be sorted by the default sorting method for the logged-in user.
+    - Supply the `percentage` query parameter to include the reading progress
     - Supply the `slim` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
     - Supply the `depth` query parameter to control the depth of nested titles to return.
       - When `depth` is 1, returns the top-level titles and sub-titles/entries one level in them
@@ -166,8 +203,7 @@ struct APIRouter
     Koa.path "tid", desc: "Title ID"
     Koa.query "slim"
     Koa.query "depth"
-    Koa.query "sort", desc: "Sorting option for entries. Can be one of 'auto', 'title', 'progress', 'time_added' and 'time_modified'"
-    Koa.query "ascend", desc: "Sorting direction for entries. Set to 0 for the descending order. Doesn't work without specifying 'sort'"
+    Koa.query "percentage"
     Koa.response 200, schema: "title"
     Koa.response 404, "Title not found"
     Koa.tag "library"
@@ -175,29 +211,104 @@ struct APIRouter
       begin
         username = get_username env
 
-        sort_opt = SortOptions.new
-        get_sort_opt
-
         tid = env.params.url["tid"]
         title = Library.default.get_title tid
         raise "Title ID `#{tid}` not found" if title.nil?
 
+        sort_opt = SortOptions.from_info_json title.dir, username
+
         slim = !env.params.query["slim"]?.nil?
         depth = env.params.query["depth"]?.try(&.to_i?) || -1
+        percentage = !env.params.query["percentage"]?.nil?
 
         send_json env, title.build_json(slim: slim, depth: depth,
           sort_context: {username: username,
-                         opt:      sort_opt})
+                         opt:      sort_opt}, percentage: percentage)
       rescue e
         Logger.error e
         env.response.status_code = 404
-        e.message
+        send_text env, e.message
       end
     end
 
+    Koa.describe "Returns the sorting option of a title or the library", <<-MD
+    - If the query parameter `tid` is supplied, returns the sorting option of the title identified by the `tid`.
+    - If the query parameter `tid` is missing, returns the sorting option of the library.
+    MD
+    Koa.query "tid"
+    Koa.response 200, schema: {
+      "method" => String?,
+      "ascend" => Bool?,
+      "error"  => String?,
+    }
+    Koa.tag "library"
+    get "/api/sort_opt" do |env|
+      username = get_username env
+
+      tid = env.params.query["tid"]?
+      dir = if tid
+              (Library.default.get_title tid).not_nil!.dir
+            else
+              Library.default.dir
+            end
+      sort_opt = SortOptions.from_info_json dir, username
+      send_json env, sort_opt.to_json
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
+    end
+
+    Koa.describe "Updates the sorting option of a title or the library", <<-MD
+    - When the `tid` field is supplied in the body, updates the sorting option of the title identified by the `tid`.
+    - When the `tid` field is missing in the body, updates the sorting option of the library.
+    MD
+    Koa.body schema: {
+      "tid"    => String?,
+      "method" => String,
+      "ascend" => Bool,
+    }
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+    }
+    Koa.tag "library"
+    put "/api/sort_opt" do |env|
+      username = get_username env
+
+      tid = env.params.json["tid"]?.try &.as String
+      dir = if tid
+              (Library.default.get_title tid).not_nil!.dir
+            else
+              Library.default.dir
+            end
+
+      method = env.params.json["sort"].as String
+      ascend = env.params.json["ascend"].as Bool
+      sort_opt = SortOptions.new method, ascend
+
+      TitleInfo.new dir do |info|
+        info.sort_by[username] = sort_opt.to_tuple
+        info.save
+      end
+      send_json env, {
+        "success" => true,
+      }.to_json
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
+    end
+
     Koa.describe "Returns the entire library with all titles and entries", <<-MD
+    The titles will be sorted by the default sorting method for the logged-in user.
     - Supply the `slim` query parameter to strip away "display_name", "cover_url", and "mtime" from the returned object to speed up the loading time
     - Supply the `dpeth` query parameter to control the depth of nested titles to return.
+    - Supply the `percentage` query parameter to include the reading progress
       - When `depth` is 1, returns the requested title and sub-titles/entries one level in it
       - When `depth` is 0, returns the requested title without its sub-titles/entries
       - When `depth` is N, returns the requested title and sub-titles/entries N levels in it
@@ -205,16 +316,162 @@ struct APIRouter
     MD
     Koa.query "slim"
     Koa.query "depth"
+    Koa.query "percentage"
     Koa.response 200, schema: {
-      "dir"    => String,
-      "titles" => ["title"],
+      "dir"              => String,
+      "titles"           => ["title"],
+      "title_percentage" => [Float64?],
     }
     Koa.tag "library"
     get "/api/library" do |env|
+      username = get_username env
+
+      sort_opt = SortOptions.from_info_json Library.default.dir, username
+
       slim = !env.params.query["slim"]?.nil?
       depth = env.params.query["depth"]?.try(&.to_i?) || -1
+      percentage = !env.params.query["percentage"]?.nil?
 
-      send_json env, Library.default.build_json(slim: slim, depth: depth)
+      send_json env, Library.default.build_json(slim: slim, depth: depth,
+        sort_context: {username: username,
+                       opt:      sort_opt}, percentage: percentage)
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
+    end
+
+    Koa.describe "Returns the continue reading entries"
+    Koa.response 200, schema: {
+      "success"           => Bool,
+      "error"             => String?,
+      "entries"           => ["entry"],
+      "entry_percentages" => [Float64],
+    }
+    Koa.tag "library"
+    get "/api/library/continue_reading" do |env|
+      username = get_username env
+      cr_entries = Library.default.get_continue_reading_entries username
+
+      json = JSON.build do |j|
+        j.object do
+          j.field "success" do
+            j.bool true
+          end
+          j.field "entries" do
+            j.array do
+              cr_entries.each do |e|
+                j.raw e[:entry].build_json
+              end
+            end
+          end
+          j.field "entry_percentages" do
+            j.array do
+              cr_entries.each do |e|
+                j.number e[:percentage]
+              end
+            end
+          end
+        end
+      end
+
+      send_json env, json
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
+    end
+
+    Koa.describe "Returns the start reading titles"
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "titles"  => ["title"],
+    }
+    Koa.tag "library"
+    get "/api/library/start_reading" do |env|
+      username = get_username env
+      titles = Library.default.get_start_reading_titles username
+
+      json = JSON.build do |j|
+        j.object do
+          j.field "success" do
+            j.bool true
+          end
+          j.field "titles" do
+            j.array do
+              titles.each do |t|
+                j.raw t.build_json depth: 1
+              end
+            end
+          end
+        end
+      end
+
+      send_json env, json
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
+    end
+
+    Koa.describe "Returns the recently added items"
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "items"   => [{
+        "item"       => "title | entry",
+        "percentage" => Float64,
+        "count"      => Int32,
+      }],
+    }
+    Koa.tag "library"
+    get "/api/library/recently_added" do |env|
+      username = get_username env
+      ra_entries = Library.default.get_recently_added_entries username
+
+      json = JSON.build do |j|
+        j.object do
+          j.field "success" do
+            j.bool true
+          end
+          j.field "items" do
+            j.array do
+              ra_entries.each do |e|
+                j.object do
+                  j.field "item" do
+                    if e[:grouped_count] === 1
+                      j.raw e[:entry].build_json
+                    else
+                      j.raw e[:entry].book.build_json depth: 0
+                    end
+                  end
+                  j.field "percentage" do
+                    j.number e[:percentage]
+                  end
+                  j.field "count" do
+                    j.number e[:grouped_count]
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+
+      send_json env, json
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
     end
 
     Koa.describe "Triggers a library scan"
@@ -250,6 +507,7 @@ struct APIRouter
       spawn do
         Library.default.generate_thumbnails
       end
+      send_text env, ""
     end
 
     Koa.describe "Deletes a user with `username`"
@@ -567,6 +825,209 @@ struct APIRouter
       end
     end
 
+    Koa.describe "Returns a list of available plugins"
+    Koa.tags ["admin", "downloader"]
+    Koa.query "plugin", schema: String
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "plugins" => [{
+        "id"    => String,
+        "title" => String,
+      }],
+    }
+    get "/api/admin/plugin" do |env|
+      begin
+        send_json env, {
+          "success" => true,
+          "plugins" => Plugin.list,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Returns the metadata of a plugin"
+    Koa.tags ["admin", "downloader"]
+    Koa.query "plugin", schema: String
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "info"    => {
+        "dir"          => String,
+        "id"           => String,
+        "title"        => String,
+        "placeholder"  => String,
+        "wait_seconds" => Int32,
+        "version"      => Int32,
+        "settings"     => {} of String => String,
+      },
+    }
+    get "/api/admin/plugin/info" do |env|
+      begin
+        plugin = Plugin.new env.params.query["plugin"].as String
+        send_json env, {
+          "success" => true,
+          "info"    => plugin.info,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Searches for manga matching the given query from a plugin", <<-MD
+    Only available for plugins targeting API v2 or above.
+    MD
+    Koa.tags ["admin", "downloader"]
+    Koa.query "plugin", schema: String
+    Koa.query "query", schema: String
+    Koa.response 200, schema: {
+      "success" => Bool,
+      "error"   => String?,
+      "manga"   => [{
+        "id"    => String,
+        "title" => String,
+      }],
+    }
+    get "/api/admin/plugin/search" do |env|
+      begin
+        query = env.params.query["query"].as String
+        plugin = Plugin.new env.params.query["plugin"].as String
+
+        manga_ary = plugin.search_manga(query).as_a
+        send_json env, {
+          "success" => true,
+          "manga"   => manga_ary,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Creates a new subscription"
+    Koa.tags ["admin", "downloader", "subscription"]
+    Koa.body schema: {
+      "plugin"   => String,
+      "manga"    => String,
+      "manga_id" => String,
+      "name"     => String,
+      "filters"  => ["filter"],
+    }
+    Koa.response 200, schema: "result"
+    post "/api/admin/plugin/subscriptions" do |env|
+      begin
+        plugin_id = env.params.json["plugin"].as String
+        manga_title = env.params.json["manga"].as String
+        manga_id = env.params.json["manga_id"].as String
+        filters = env.params.json["filters"].as(Array(JSON::Any)).map do |f|
+          Filter.from_json f.to_json
+        end
+        name = env.params.json["name"].as String
+
+        sub = Subscription.new plugin_id, manga_id, manga_title, name
+        sub.filters = filters
+
+        plugin = Plugin.new plugin_id
+        plugin.subscribe sub
+
+        send_json env, {
+          "success" => true,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Returns the list of subscriptions for a plugin"
+    Koa.tags ["admin", "downloader", "subscription"]
+    Koa.query "plugin", desc: "The ID of the plugin"
+    Koa.response 200, schema: {
+      "success"       => Bool,
+      "error"         => String?,
+      "subscriptions" => ["subscription"],
+    }
+    get "/api/admin/plugin/subscriptions" do |env|
+      begin
+        pid = env.params.query["plugin"].as String
+        send_json env, {
+          "success"       => true,
+          "subscriptions" => Plugin.new(pid).list_subscriptions,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Deletes a subscription"
+    Koa.tags ["admin", "downloader", "subscription"]
+    Koa.body schema: {
+      "plugin"       => String,
+      "subscription" => String,
+    }
+    Koa.response 200, schema: "result"
+    delete "/api/admin/plugin/subscriptions" do |env|
+      begin
+        pid = env.params.query["plugin"].as String
+        sid = env.params.query["subscription"].as String
+
+        Plugin.new(pid).unsubscribe sid
+
+        send_json env, {
+          "success" => true,
+        }.to_json
+      rescue e
+        Logger.error e
+        send_json env, {
+          "success" => false,
+          "error"   => e.message,
+        }.to_json
+      end
+    end
+
+    Koa.describe "Checks for updates for a subscription"
+    Koa.tags ["admin", "downloader", "subscription"]
+    Koa.body schema: {
+      "plugin"       => String,
+      "subscription" => String,
+    }
+    Koa.response 200, schema: "result"
+    post "/api/admin/plugin/subscriptions/update" do |env|
+      pid = env.params.query["plugin"].as String
+      sid = env.params.query["subscription"].as String
+
+      Plugin.new(pid).check_subscription sid
+
+      send_json env, {
+        "success" => true,
+      }.to_json
+    rescue e
+      Logger.error e
+      send_json env, {
+        "success" => false,
+        "error"   => e.message,
+      }.to_json
+    end
+
     Koa.describe "Lists the chapters in a title from a plugin"
     Koa.tags ["admin", "downloader"]
     Koa.query "plugin", schema: String
@@ -575,8 +1036,8 @@ struct APIRouter
       "success"   => Bool,
       "error"     => String?,
       "chapters?" => [{
-        "id"    => String,
-        "title" => String,
+        "id"     => String,
+        "title?" => String,
       }],
       "title" => String?,
     }
@@ -586,8 +1047,14 @@ struct APIRouter
         plugin = Plugin.new env.params.query["plugin"].as String
 
         json = plugin.list_chapters query
-        chapters = json["chapters"]
-        title = json["title"]
+
+        if plugin.info.version == 1
+          chapters = json["chapters"]
+          title = json["title"]
+        else
+          chapters = json
+          title = nil
+        end
 
         send_json env, {
           "success"  => true,
@@ -625,7 +1092,7 @@ struct APIRouter
 
         jobs = chapters.map { |ch|
           Queue::Job.new(
-            "#{plugin.info.id}-#{ch["id"]}",
+            "#{plugin.info.id}-#{Base64.encode ch["id"].as_s}",
             "", # manga_id
             ch["title"].as_s,
             manga_title,
@@ -675,7 +1142,7 @@ struct APIRouter
         e_tag = "W/#{file_hash}"
         if e_tag == prev_e_tag
           env.response.status_code = 304
-          ""
+          send_text env, ""
         else
           sizes = entry.page_dimensions
           env.response.headers["ETag"] = e_tag
@@ -709,6 +1176,7 @@ struct APIRouter
       rescue e
         Logger.error e
         env.response.status_code = 404
+        send_text env, e.message
       end
     end
 
