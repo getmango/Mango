@@ -51,7 +51,7 @@ The official docker images are available on [Dockerhub](https://hub.docker.com/r
 ### CLI
 
 ```
-  Mango - Manga Server and Web Reader. Version 0.25.0
+  Mango - Manga Server and Web Reader. Version 0.26.0
 
   Usage:
 
@@ -88,15 +88,16 @@ upload_path: ~/mango/uploads
 plugin_path: ~/mango/plugins
 download_timeout_seconds: 30
 library_cache_path: ~/mango/library.yml.gz
-cache_enabled: false
+cache_enabled: true
 cache_size_mbs: 50
 cache_log_enabled: true
 disable_login: false
 default_username: ""
 auth_proxy_header_name: ""
+plugin_update_interval_hours: 24
 ```
 
-- `scan_interval_minutes`, `thumbnail_generation_interval_hours` can be any non-negative integer. Setting them to `0` disables the periodic tasks
+- `scan_interval_minutes`, `thumbnail_generation_interval_hours`, and `plugin_update_interval_hours` can be any non-negative integer. Setting them to `0` disables the periodic tasks
 - `log_level` can be `debug`, `info`, `warn`, `error`, `fatal` or `off`. Setting it to `off` disables the logging
 - You can disable authentication by setting `disable_login` to true. Note that `default_username` must be set to an existing username for this to work.
 - By setting `cache_enabled` to `true`, you can enable an experimental feature where Mango caches library metadata to improve page load time. You can further fine-tune the feature with `cache_size_mbs` and `cache_log_enabled`.
