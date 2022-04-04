@@ -68,6 +68,10 @@ shards:
     git: https://github.com/luislavena/radix.git
     version: 0.4.1
 
+  sanitize:
+    git: https://github.com/hkalexling/sanitize.git
+    version: 0.1.0+git.commit.e09520e972d0d9b70b71bb003e6831f7c2c59dce
+
   sqlite3:
     git: https://github.com/crystal-lang/crystal-sqlite3.git
     version: 0.18.0

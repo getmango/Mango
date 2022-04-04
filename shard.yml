@@ -1,5 +1,5 @@
 name: mango
-version: 0.26.0
+version: 0.26.1
 
 authors:
   - Alex Ling <hkalexling@gmail.com>
@@ -42,3 +42,5 @@ dependencies:
     branch: master
   mg:
    github: hkalexling/mg
+  sanitize:
+    github: hkalexling/sanitize
