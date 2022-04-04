@@ -42,3 +42,5 @@ dependencies:
     branch: master
   mg:
    github: hkalexling/mg
+  sanitize:
+    github: hkalexling/sanitize
