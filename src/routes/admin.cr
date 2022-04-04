@@ -1,3 +1,5 @@
+require "sanitize"
+
 struct AdminRouter
   def initialize
     get "/admin" do |env|
@@ -14,13 +16,13 @@ struct AdminRouter
     end
 
     get "/admin/user/edit" do |env|
-      username = env.params.query["username"]?
+      sanitizer = Sanitize::Policy::Text.new
+      username = env.params.query["username"]?.try { |s| sanitizer.process s }
       admin = env.params.query["admin"]?
       if admin
         admin = admin == "true"
       end
-      error = env.params.query["error"]?
-      current_user = get_username env
+      error = env.params.query["error"]?.try { |s| sanitizer.process s }
       new_user = username.nil? && admin.nil?
       layout "user-edit"
     end
