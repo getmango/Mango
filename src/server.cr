@@ -23,6 +23,7 @@ class Server
     AdminRouter.new
     ReaderRouter.new
     APIRouter.new
+    OPDSRouter.new
 
     {% for path in %w(/api/* /uploads/* /img/*) %}
       options {{path}} do |env|
