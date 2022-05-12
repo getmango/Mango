@@ -135,7 +135,11 @@ const readerComponent = () => {
 			const idx = parseInt(this.curItem.id);
 			const newIdx = idx + (isNext ? 1 : -1);
 
-			if (newIdx <= 0 || newIdx > this.items.length) return;
+			if (newIdx <= 0) return;
+			if (newIdx > this.items.length) {
+				this.showControl(idx);
+				return;
+			}
 
 			if (newIdx + this.preloadLookahead < this.items.length + 1) {
 				this.preloadImage(this.items[newIdx + this.preloadLookahead - 1].url);
@@ -253,12 +257,20 @@ const readerComponent = () => {
 			});
 		},
 		/**
-		 * Shows the control modal
+		 * Handles clicked image
 		 *
 		 * @param {Event} event - The triggering event
 		 */
-		showControl(event) {
+		clickImage(event) {
 			const idx = event.currentTarget.id;
+			this.showControl(idx);
+		},
+		/**
+		 * Shows the control modal
+		 *
+		 * @param {number} idx - selected page index
+		 */
+		showControl(idx) {
 			this.selectedIndex = idx;
 			UIkit.modal($('#modal-sections')).show();
 		},
