@@ -30,7 +30,7 @@
               :height="item.height"
               :id="item.id"
               :style="`margin-top:${margin}px; margin-bottom:${margin}px`"
-              @click="showControl($event)"
+              @click="clickImage($event)"
               />
           </template>
           <%- if next_entry_url -%>
@@ -46,7 +46,7 @@
                                'uk-align-center': true, 
                                'uk-animation-slide-left': flipAnimation === 'left', 
                                'uk-animation-slide-right': flipAnimation === 'right'
-                               }" :data-src="curItem.url" :width="curItem.width" :height="curItem.height" :id="curItem.id" @click="showControl($event)" :style="`
+                               }" :data-src="curItem.url" :width="curItem.width" :height="curItem.height" :id="curItem.id" @click="clickImage($event)" :style="`
                                                                                                                                                                  width:${mode === 'width' ? '100vw' : 'auto'}; 
                                                                                                                                                                  height:${mode === 'height' ? '100vh' : 'auto'}; 
                                                                                                                                                                  margin-bottom:0;
