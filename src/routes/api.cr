@@ -40,7 +40,7 @@ struct APIRouter
     Koa.schema "entry", {
       "pages" => Int32,
       "mtime" => Int64,
-    }.merge(s %w(zip_path title size id title_id display_name cover_url)),
+    }.merge(s %w(path title size id title_id display_name cover_url)),
       desc: "An entry in a book"
 
     Koa.schema "title", {
@@ -1138,7 +1138,7 @@ struct APIRouter
         entry = title.get_entry eid
         raise "Entry ID `#{eid}` of `#{title.title}` not found" if entry.nil?
 
-        file_hash = Digest::SHA1.hexdigest (entry.zip_path + entry.mtime.to_s)
+        file_hash = Digest::SHA1.hexdigest (entry.path + entry.mtime.to_s)
         e_tag = "W/#{file_hash}"
         if e_tag == prev_e_tag
           env.response.status_code = 304
@@ -1172,7 +1172,7 @@ struct APIRouter
         title = (Library.default.get_title env.params.url["tid"]).not_nil!
         entry = (title.get_entry env.params.url["eid"]).not_nil!
 
-        send_attachment env, entry.zip_path
+        send_attachment env, entry.path
       rescue e
         Logger.error e
         env.response.status_code = 404

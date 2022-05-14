@@ -55,7 +55,7 @@ class Title
         next
       end
       if is_supported_file path
-        entry = Entry.new path, self
+        entry = ZippedEntry.new path, self
         @entries << entry if entry.pages > 0 || entry.err_msg
       end
     end
@@ -127,12 +127,12 @@ class Title
 
     previous_entries_size = @entries.size
     @entries.select! do |entry|
-      existence = File.exists? entry.zip_path
+      existence = entry.exists?
       Fiber.yield
       context["deleted_entry_ids"] << entry.id unless existence
       existence
     end
-    remained_entry_zip_paths = @entries.map &.zip_path
+    remained_entry_zip_paths = @entries.map &.path
 
     is_titles_added = false
     is_entries_added = false
@@ -162,7 +162,7 @@ class Title
       end
       if is_supported_file path
         next if remained_entry_zip_paths.includes? path
-        entry = Entry.new path, self
+        entry = ZippedEntry.new path, self
         if entry.pages > 0 || entry.err_msg
           @entries << entry
           is_entries_added = true
@@ -627,7 +627,7 @@ class Title
 
     @entries.each do |e|
       next if da.has_key? e.title
-      da[e.title] = ctime e.zip_path
+      da[e.title] = ctime e.path
     end
 
     TitleInfo.new @dir do |info|
