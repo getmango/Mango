@@ -65,7 +65,7 @@ class Dir
         if File.directory? path
           signatures << Dir.contents_signature path, cache
           if DirectoryEntry.validate_directory_entry path
-            signatures << Dir.directory_entry_signature path, cache
+            signatures << fn
           end
         else
           # Only add its signature value to `signatures` when it is a
