@@ -19,7 +19,7 @@ class File
   #   information as long as the above changes do not happen together with
   #   a file/folder rename, with no library scan in between.
   def self.signature(filename) : UInt64
-    if is_supported_file filename
+    if is_supported_file(filename) || is_supported_image_file(filename)
       File.info(filename).inode
     else
       0u64
@@ -64,6 +64,9 @@ class Dir
         path = File.join dirname, fn
         if File.directory? path
           signatures << Dir.contents_signature path, cache
+          if DirectoryEntry.validate_directory_entry path
+            signatures << Dir.directory_entry_signature path, cache
+          end
         else
           # Only add its signature value to `signatures` when it is a
           #   supported file
@@ -74,6 +77,21 @@ class Dir
     end
     hash = Digest::SHA1.hexdigest(signatures.join)
     cache[dirname] = hash
+    hash
+  end
+
+  def self.directory_entry_signature(dirname, cache = {} of String => String)
+    return cache[dirname + "?entry"] if cache[dirname + "?entry"]?
+    Fiber.yield
+    signatures = [] of String
+    image_files = DirectoryEntry.get_valid_files_sorted dirname
+    if image_files.size > 0
+      image_files.each do |path|
+        signatures << File.signature(path).to_s
+      end
+    end
+    hash = Digest::SHA1.hexdigest(signatures.join)
+    cache[dirname + "?entry"] = hash
     hash
   end
 end
