@@ -142,8 +142,13 @@ struct APIRouter
           env.response.status_code = 304
           ""
         else
+          if entry.is_a? DirectoryEntry
+            cache_control = "no-cache, max-age=86400"
+          else
+            cache_control = "public, max-age=86400"
+          end
           env.response.headers["ETag"] = e_tag
-          env.response.headers["Cache-Control"] = "public, max-age=86400"
+          env.response.headers["Cache-Control"] = cache_control
           send_img env, img
         end
       rescue e
@@ -1138,15 +1143,24 @@ struct APIRouter
         entry = title.get_entry eid
         raise "Entry ID `#{eid}` of `#{title.title}` not found" if entry.nil?
 
-        file_hash = Digest::SHA1.hexdigest (entry.path + entry.mtime.to_s)
+        if entry.is_a? DirectoryEntry
+          file_hash = Digest::SHA1.hexdigest (entry.path + entry.mtime.to_s + entry.size)
+        else
+          file_hash = Digest::SHA1.hexdigest (entry.path + entry.mtime.to_s)
+        end
         e_tag = "W/#{file_hash}"
         if e_tag == prev_e_tag
           env.response.status_code = 304
           send_text env, ""
         else
           sizes = entry.page_dimensions
+          if entry.is_a? DirectoryEntry
+            cache_control = "no-cache, max-age=86400"
+          else
+            cache_control = "public, max-age=86400"
+          end
           env.response.headers["ETag"] = e_tag
-          env.response.headers["Cache-Control"] = "public, max-age=86400"
+          env.response.headers["Cache-Control"] = cache_control
           send_json env, {
             "success"    => true,
             "dimensions" => sizes,
