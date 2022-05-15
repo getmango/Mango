@@ -9,7 +9,8 @@ abstract class Entry
   def initialize(
     @id, @title, @book,
     @size, @pages, @mtime,
-    @encoded_path, @encoded_title, @err_msg)
+    @encoded_path, @encoded_title, @err_msg
+  )
   end
 
   def self.new(ctx : YAML::ParseContext, node : YAML::Nodes::Node)

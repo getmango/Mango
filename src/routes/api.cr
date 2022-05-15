@@ -1144,9 +1144,9 @@ struct APIRouter
         raise "Entry ID `#{eid}` of `#{title.title}` not found" if entry.nil?
 
         if entry.is_a? DirectoryEntry
-          file_hash = Digest::SHA1.hexdigest (entry.path + entry.mtime.to_s + entry.size)
+          file_hash = Digest::SHA1.hexdigest(entry.path + entry.mtime.to_s + entry.size)
         else
-          file_hash = Digest::SHA1.hexdigest (entry.path + entry.mtime.to_s)
+          file_hash = Digest::SHA1.hexdigest(entry.path + entry.mtime.to_s)
         end
         e_tag = "W/#{file_hash}"
         if e_tag == prev_e_tag
