@@ -228,7 +228,7 @@ abstract class Entry
 
   abstract def page_dimensions
 
-  abstract def exists? : Bool?
+  abstract def examine : Bool?
 end
 
 class ZippedEntry < Entry
@@ -337,7 +337,7 @@ class ZippedEntry < Entry
     sizes
   end
 
-  def exists? : Bool
+  def examine : Bool
     File.exists? @zip_path
   end
 end
@@ -439,7 +439,7 @@ class DirectoryEntry < Entry
     sizes
   end
 
-  def exists? : Bool
+  def examine : Bool
     existence = File.exists? @dir_path
     return false unless existence
     files = DirectoryEntry.get_valid_files @dir_path
@@ -447,9 +447,8 @@ class DirectoryEntry < Entry
     existence = files.size > 0 && @signature == signature
     @sorted_files = nil unless existence
 
-    # For more efficient,
-    # Fix a directory instance with new property
-    # and return true
+    # For more efficient, update a directory entry with new property
+    # and return true like Title.examine
     existence
   end
 

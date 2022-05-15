@@ -132,7 +132,7 @@ class Title
 
     previous_entries_size = @entries.size
     @entries.select! do |entry|
-      existence = entry.exists?
+      existence = entry.examine
       Fiber.yield
       context["deleted_entry_ids"] << entry.id unless existence
       existence
