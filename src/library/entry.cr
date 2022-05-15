@@ -14,7 +14,11 @@ abstract class Entry
 
   def self.new(ctx : YAML::ParseContext, node : YAML::Nodes::Node)
     # TODO: check node? and select proper subclass
-    ZippedEntry.new ctx, node
+    begin
+      ZippedEntry.new ctx, node
+    rescue e
+      DirectoryEntry.new ctx, node
+    end
   end
 
   def build_json(*, slim = false)
