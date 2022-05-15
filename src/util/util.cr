@@ -3,6 +3,16 @@ ENTRIES_IN_HOME_SECTIONS = 8
 UPLOAD_URL_PREFIX        = "/uploads"
 STATIC_DIRS              = %w(/css /js /img /webfonts /favicon.ico /robots.txt)
 SUPPORTED_FILE_EXTNAMES  = [".zip", ".cbz", ".rar", ".cbr"]
+SUPPORTED_IMG_TYPES = %w(
+  image/jpeg
+  image/png
+  image/webp
+  image/apng
+  image/avif
+  image/gif
+  image/svg+xml
+)
+
 
 def random_str
   UUID.random.to_s.gsub "-", ""
@@ -47,6 +57,10 @@ end
 
 def is_supported_file(path)
   SUPPORTED_FILE_EXTNAMES.includes? File.extname(path).downcase
+end
+
+def is_supported_image_file(path)
+  SUPPORTED_IMG_TYPES.includes? MIME.from_filename? path
 end
 
 struct Int
