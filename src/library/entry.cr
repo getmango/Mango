@@ -15,11 +15,9 @@ abstract class Entry
 
   def self.new(ctx : YAML::ParseContext, node : YAML::Nodes::Node)
     # TODO: check node? and select proper subclass
-    begin
-      ZippedEntry.new ctx, node
-    rescue e
-      DirectoryEntry.new ctx, node
-    end
+    ZippedEntry.new ctx, node
+  rescue e
+    DirectoryEntry.new ctx, node
   end
 
   def build_json(*, slim = false)
@@ -391,9 +389,9 @@ class DirectoryEntry < Entry
     end
     @id = id
 
-    mtimes = sorted_files.map { |file_path| File.info(file_path).modification_time }
-    @mtime = mtimes.max
-
+    @mtime = sorted_files.map do |file_path|
+      File.info(file_path).modification_time
+    end.max
     @pages = sorted_files.size
   end
 
