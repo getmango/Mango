@@ -15,9 +15,9 @@ abstract class Entry
 
   def self.new(ctx : YAML::ParseContext, node : YAML::Nodes::Node)
     # TODO: check node? and select proper subclass
-    ZippedEntry.new ctx, node
+    ArchiveEntry.new ctx, node
   rescue e
-    DirectoryEntry.new ctx, node
+    DirEntry.new ctx, node
   end
 
   def build_json(*, slim = false)
@@ -230,7 +230,7 @@ abstract class Entry
   abstract def examine : Bool?
 end
 
-class ZippedEntry < Entry
+class ArchiveEntry < Entry
   include YAML::Serializable
 
   getter zip_path : String
@@ -341,7 +341,7 @@ class ZippedEntry < Entry
   end
 end
 
-class DirectoryEntry < Entry
+class DirEntry < Entry
   include YAML::Serializable
 
   getter dir_path : String
@@ -364,7 +364,7 @@ class DirectoryEntry < Entry
       return
     end
 
-    unless DirectoryEntry.validate_directory_entry @dir_path
+    unless DirEntry.validate_directory_entry @dir_path
       @err_msg = "Directory #{@dir_path} is not valid directory entry."
       Logger.warn "#{@err_msg} Please make sure the " \
                   "directory has valid images."
@@ -441,7 +441,7 @@ class DirectoryEntry < Entry
   def examine : Bool
     existence = File.exists? @dir_path
     return false unless existence
-    files = DirectoryEntry.get_valid_files @dir_path
+    files = DirEntry.get_valid_files @dir_path
     signature = Dir.directory_entry_signature @dir_path
     existence = files.size > 0 && @signature == signature
     @sorted_files = nil unless existence
@@ -454,12 +454,12 @@ class DirectoryEntry < Entry
   def sorted_files
     cached_sorted_files = @sorted_files
     return cached_sorted_files if cached_sorted_files
-    @sorted_files = DirectoryEntry.get_valid_files_sorted @dir_path
+    @sorted_files = DirEntry.get_valid_files_sorted @dir_path
     @sorted_files.not_nil!
   end
 
   def self.validate_directory_entry(dir_path)
-    files = DirectoryEntry.get_valid_files dir_path
+    files = DirEntry.get_valid_files dir_path
     files.size > 0
   end
 
@@ -477,7 +477,7 @@ class DirectoryEntry < Entry
   end
 
   def self.get_valid_files_sorted(dir_path)
-    files = DirectoryEntry.get_valid_files dir_path
+    files = DirEntry.get_valid_files dir_path
     files.sort! { |a, b| compare_numerically a, b }
   end
 end

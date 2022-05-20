@@ -64,7 +64,7 @@ class Dir
         path = File.join dirname, fn
         if File.directory? path
           signatures << Dir.contents_signature path, cache
-          if DirectoryEntry.validate_directory_entry path
+          if DirEntry.validate_directory_entry path
             signatures << fn
           end
         else
@@ -84,7 +84,7 @@ class Dir
     return cache[dirname + "?entry"] if cache[dirname + "?entry"]?
     Fiber.yield
     signatures = [] of String
-    image_files = DirectoryEntry.get_valid_files_sorted dirname
+    image_files = DirEntry.get_valid_files_sorted dirname
     if image_files.size > 0
       image_files.each do |path|
         signatures << File.signature(path).to_s
