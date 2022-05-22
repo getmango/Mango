@@ -98,7 +98,7 @@ class DirEntry < Entry
   def examine : Bool
     existence = File.exists? @dir_path
     return false unless existence
-    files = DirEntry.get_valid_files @dir_path
+    files = DirEntry.image_files @dir_path
     signature = Dir.directory_entry_signature @dir_path
     existence = files.size > 0 && @signature == signature
     @sorted_files = nil unless existence
@@ -111,30 +111,25 @@ class DirEntry < Entry
   def sorted_files
     cached_sorted_files = @sorted_files
     return cached_sorted_files if cached_sorted_files
-    @sorted_files = DirEntry.get_valid_files_sorted @dir_path
+    @sorted_files = DirEntry.sorted_image_files @dir_path
     @sorted_files.not_nil!
   end
 
+  def self.image_files(dir_path)
+    Dir.entries(dir_path)
+      .reject(&.starts_with? ".")
+      .map { |fn| File.join dir_path, fn }
+      .select { |fn| is_supported_image_file fn }
+      .reject { |fn| File.directory? fn }
+      .select { |fn| File.readable? fn }
+  end
+
+  def self.sorted_image_files(dir_path)
+    self.image_files(dir_path)
+      .sort { |a, b| compare_numerically a, b }
+  end
+
   def self.validate_directory_entry(dir_path)
-    files = DirEntry.get_valid_files dir_path
-    files.size > 0
-  end
-
-  def self.get_valid_files(dir_path)
-    files = [] of String
-    Dir.entries(dir_path).each do |fn|
-      next if fn.starts_with? "."
-      path = File.join dir_path, fn
-      next unless is_supported_image_file path
-      next if File.directory? path
-      next unless File.readable? path
-      files << path
-    end
-    files
-  end
-
-  def self.get_valid_files_sorted(dir_path)
-    files = DirEntry.get_valid_files dir_path
-    files.sort! { |a, b| compare_numerically a, b }
+    image_files(dir_path).size > 0
   end
 end

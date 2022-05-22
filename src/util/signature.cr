@@ -84,7 +84,7 @@ class Dir
     return cache[dirname + "?entry"] if cache[dirname + "?entry"]?
     Fiber.yield
     signatures = [] of String
-    image_files = DirEntry.get_valid_files_sorted dirname
+    image_files = DirEntry.sorted_image_files dirname
     if image_files.size > 0
       image_files.each do |path|
         signatures << File.signature(path).to_s
