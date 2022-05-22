@@ -25,7 +25,7 @@ class DirEntry < Entry
       return
     end
 
-    unless DirEntry.validate_directory_entry @dir_path
+    unless DirEntry.is_valid? @dir_path
       @err_msg = "Directory #{@dir_path} is not valid directory entry."
       Logger.warn "#{@err_msg} Please make sure the " \
                   "directory has valid images."
@@ -129,7 +129,7 @@ class DirEntry < Entry
       .sort { |a, b| compare_numerically a, b }
   end
 
-  def self.validate_directory_entry(dir_path)
-    image_files(dir_path).size > 0
+  def self.is_valid?(path : String) : Bool
+    image_files(path).size > 0
   end
 end

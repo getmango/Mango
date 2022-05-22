@@ -28,8 +28,7 @@ abstract class Entry
         if err_msg
           json.field "err_msg", err_msg
         end
-        # for API backward compatability
-        json.field "zip_path", path
+        json.field "zip_path", path # for API backward compatability
         json.field "title_id", @book.id
         json.field "title_title", @book.title
         json.field "sort_title", sort_title
@@ -218,6 +217,16 @@ abstract class Entry
       end
     end
     date_added.not_nil! # is it ok to set not_nil! here?
+  end
+
+  # Hack to have abstract class methods
+  # https://github.com/crystal-lang/crystal/issues/5956
+  private module ClassMethods
+    abstract def is_valid?(path : String) : Bool
+  end
+
+  macro inherited
+    extend ClassMethods
   end
 
   abstract def path : String

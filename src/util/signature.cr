@@ -64,7 +64,7 @@ class Dir
         path = File.join dirname, fn
         if File.directory? path
           signatures << Dir.contents_signature path, cache
-          if DirEntry.validate_directory_entry path
+          if DirEntry.is_valid? path
             signatures << fn
           end
         else

@@ -53,7 +53,7 @@ class Title
           Library.default.title_hash[title.id] = title
           @title_ids << title.id
         end
-        if DirEntry.validate_directory_entry path
+        if DirEntry.is_valid? path
           entry = DirEntry.new path, self
           @entries << entry if entry.pages > 0 || entry.err_msg
         end
@@ -146,7 +146,7 @@ class Title
       path = File.join dir, fn
       if File.directory? path
         unless remained_entry_paths.includes? path
-          if DirEntry.validate_directory_entry path
+          if DirEntry.is_valid? path
             entry = DirEntry.new path, self
             if entry.pages > 0 || entry.err_msg
               @entries << entry
