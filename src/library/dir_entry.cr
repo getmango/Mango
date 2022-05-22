@@ -14,6 +14,7 @@ class DirEntry < Entry
 
   def initialize(@dir_path, @book)
     storage = Storage.default
+    @path = @dir_path
     @encoded_path = URI.encode @dir_path
     @title = File.basename @dir_path
     @encoded_title = URI.encode @title
@@ -54,10 +55,6 @@ class DirEntry < Entry
       File.info(file_path).modification_time
     end.max
     @pages = sorted_files.size
-  end
-
-  def path : String
-    @dir_path
   end
 
   def read_page(page_num)

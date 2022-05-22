@@ -1,12 +1,12 @@
 require "image_size"
 
 abstract class Entry
-  getter id : String, book : Title, title : String,
+  getter id : String, book : Title, title : String, path : String,
     size : String, pages : Int32, mtime : Time,
     encoded_path : String, encoded_title : String, err_msg : String?
 
   def initialize(
-    @id, @title, @book,
+    @id, @title, @book, @path,
     @size, @pages, @mtime,
     @encoded_path, @encoded_title, @err_msg
   )
@@ -228,8 +228,6 @@ abstract class Entry
   macro inherited
     extend ClassMethods
   end
-
-  abstract def path : String
 
   abstract def read_page(page_num)
 

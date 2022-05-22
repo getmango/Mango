@@ -9,6 +9,7 @@ class ArchiveEntry < Entry
 
   def initialize(@zip_path, @book)
     storage = Storage.default
+    @path = @zip_path
     @encoded_path = URI.encode @zip_path
     @title = File.basename @zip_path, File.extname @zip_path
     @encoded_title = URI.encode @title
@@ -46,10 +47,6 @@ class ArchiveEntry < Entry
         MIME.from_filename? e.filename
     end
     file.close
-  end
-
-  def path : String
-    @zip_path
   end
 
   private def sorted_archive_entries
