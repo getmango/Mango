@@ -28,6 +28,8 @@ abstract class Entry
         if err_msg
           json.field "err_msg", err_msg
         end
+        # for API backward compatability
+        json.field "zip_path", path
         json.field "title_id", @book.id
         json.field "title_title", @book.title
         json.field "sort_title", sort_title
