@@ -52,10 +52,6 @@ class ArchiveEntry < Entry
     @zip_path
   end
 
-  def createtime : Time
-    ctime @zip_path
-  end
-
   private def sorted_archive_entries
     ArchiveFile.open @zip_path do |file|
       entries = file.entries

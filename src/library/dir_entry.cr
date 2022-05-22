@@ -60,10 +60,6 @@ class DirEntry < Entry
     @dir_path
   end
 
-  def createtime : Time
-    ctime @dir_path
-  end
-
   def read_page(page_num)
     img = nil
     begin

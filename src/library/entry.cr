@@ -211,7 +211,7 @@ abstract class Entry
     TitleInfo.new @book.dir do |info|
       info_da = info.date_added[@title]?
       if info_da.nil?
-        date_added = info.date_added[@title] = createtime
+        date_added = info.date_added[@title] = ctime path
         info.save
       else
         date_added = info_da
@@ -221,8 +221,6 @@ abstract class Entry
   end
 
   abstract def path : String
-
-  abstract def createtime : Time
 
   abstract def read_page(page_num)
 
