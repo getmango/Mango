@@ -53,7 +53,7 @@ struct ReaderRouter
         render "src/views/reader.html.ecr"
       rescue e
         Logger.error e
-        puts e.backtrace?
+        Logger.debug e.backtrace?
         env.response.status_code = 404
       end
     end
