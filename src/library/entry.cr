@@ -226,7 +226,7 @@ abstract class Entry
   end
 
   def date_added : Time
-    date_added = nil
+    date_added = Time::UNIX_EPOCH
     TitleInfo.new @book.dir do |info|
       info_da = info.date_added[@title]?
       if info_da.nil?
@@ -236,7 +236,7 @@ abstract class Entry
         date_added = info_da
       end
     end
-    date_added.not_nil! # is it ok to set not_nil! here?
+    date_added
   end
 
   # Hack to have abstract class methods
