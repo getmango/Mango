@@ -5,7 +5,7 @@ private def node_has_key(node : YAML::Nodes::Mapping, key : String)
     .map_with_index { |n, i| {n, i} }
     .select(&.[1].even?)
     .map(&.[0])
-    .select(&.is_a?(YAML::Nodes::Scalar))
+    .select(YAML::Nodes::Scalar)
     .map(&.as(YAML::Nodes::Scalar).value)
     .includes? key
 end
