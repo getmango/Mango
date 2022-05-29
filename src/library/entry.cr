@@ -1,5 +1,15 @@
 require "image_size"
 
+private def node_has_key(node : YAML::Nodes::Mapping, key : String)
+  node.nodes
+    .map_with_index { |n, i| {n, i} }
+    .select(&.[1].even?)
+    .map(&.[0])
+    .select(&.is_a?(YAML::Nodes::Scalar))
+    .map(&.as(YAML::Nodes::Scalar).value)
+    .includes? key
+end
+
 abstract class Entry
   getter id : String, book : Title, title : String, path : String,
     size : String, pages : Int32, mtime : Time,
@@ -13,10 +23,20 @@ abstract class Entry
   end
 
   def self.new(ctx : YAML::ParseContext, node : YAML::Nodes::Node)
-    # TODO: check node? and select proper subclass
-    ArchiveEntry.new ctx, node
-  rescue e
-    DirEntry.new ctx, node
+    unless node.is_a? YAML::Nodes::Mapping
+      raise "Unexpected node type in YAML"
+    end
+    # Doing YAML::Any.new(ctx, node) here causes a weird error, so
+    #   instead we are using a more hacky approach (see `node_has_key`).
+    # TODO: Use a more elegant approach
+    if node_has_key node, "zip_path"
+      ArchiveEntry.new ctx, node
+    elsif node_has_key node, "dir_path"
+      DirEntry.new ctx, node
+    else
+      raise "Unknown entry found in YAML cache. Try deleting the " \
+            "`library.yml.gz` file"
+    end
   end
 
   def build_json(*, slim = false)
