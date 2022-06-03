@@ -19,7 +19,7 @@ class File
   #   information as long as the above changes do not happen together with
   #   a file/folder rename, with no library scan in between.
   def self.signature(filename) : UInt64
-    if is_supported_file(filename) || is_supported_image_file(filename)
+    if ArchiveEntry.is_valid?(filename) || is_supported_image_file(filename)
       File.info(filename).inode
     else
       0u64
@@ -64,13 +64,11 @@ class Dir
         path = File.join dirname, fn
         if File.directory? path
           signatures << Dir.contents_signature path, cache
-          if DirEntry.is_valid? path
-            signatures << fn
-          end
+          signatures << fn if DirEntry.is_valid? path
         else
           # Only add its signature value to `signatures` when it is a
           #   supported file
-          signatures << fn if is_supported_file fn
+          signatures << fn if ArchiveEntry.is_valid? fn
         end
         Fiber.yield
       end
