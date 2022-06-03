@@ -49,6 +49,7 @@ abstract class Entry
           json.field "err_msg", err_msg
         end
         json.field "zip_path", path # for API backward compatability
+        json.field "path", path
         json.field "title_id", @book.id
         json.field "title_title", @book.title
         json.field "sort_title", sort_title

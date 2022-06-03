@@ -40,7 +40,7 @@ struct APIRouter
     Koa.schema "entry", {
       "pages" => Int32,
       "mtime" => Int64,
-    }.merge(s %w(path title size id title_id display_name cover_url)),
+    }.merge(s %w(zip_path path title size id title_id display_name cover_url)),
       desc: "An entry in a book"
 
     Koa.schema "title", {
