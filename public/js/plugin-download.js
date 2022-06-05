@@ -72,6 +72,9 @@ const component = () => {
 				});
 		},
 		pluginChanged() {
+			this.manga = undefined;
+			this.chapters = undefined;
+			this.mid = undefined;
 			this.loadPlugin(this.pid);
 			localStorage.setItem("plugin", this.pid);
 		},
