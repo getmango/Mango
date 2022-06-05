@@ -1,6 +1,7 @@
 const component = () => {
 	return {
 		plugins: [],
+		subscribable: false,
 		info: undefined,
 		pid: undefined,
 		chapters: undefined, // undefined: not searched yet, []: empty
@@ -60,6 +61,7 @@ const component = () => {
 				.then((data) => {
 					if (!data.success) throw new Error(data.error);
 					this.info = data.info;
+					this.subscribable = data.subscribable;
 					this.pid = pid;
 				})
 				.catch((e) => {
@@ -140,6 +142,7 @@ const component = () => {
 			if (!query) return;
 
 			this.manga = undefined;
+			this.mid = undefined;
 			if (this.info.version === 1) {
 				this.searchChapters(query);
 			} else {

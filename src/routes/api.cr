@@ -871,13 +871,15 @@ struct APIRouter
         "version"      => Int32,
         "settings"     => {} of String => String,
       },
+      "subscribable" => Bool,
     }
     get "/api/admin/plugin/info" do |env|
       begin
         plugin = Plugin.new env.params.query["plugin"].as String
         send_json env, {
-          "success" => true,
-          "info"    => plugin.info,
+          "success"      => true,
+          "info"         => plugin.info,
+          "subscribable" => plugin.can_subscribe?,
         }.to_json
       rescue e
         Logger.error e
