@@ -8,8 +8,12 @@ RUN make static || make static
 
 FROM library/alpine
 
-WORKDIR /
+WORKDIR /app
+
+RUN adduser -D --home /app -u 1000 mango
 
 COPY --from=builder /Mango/mango /usr/local/bin/mango
+
+USER 1000:1000
 
 CMD ["/usr/local/bin/mango"]
