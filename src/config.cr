@@ -4,28 +4,34 @@ class Config
   include YAML::Serializable
 
   @[YAML::Field(ignore: true)]
-  property path = ""
-  property host = "0.0.0.0"
-  property port : Int32 = 9000
-  property base_url = "/"
-  property session_secret = "mango-session-secret"
-  property library_path = "~/mango/library"
-  property library_cache_path = "~/mango/library.yml.gz"
-  property db_path = "~/mango/mango.db"
-  property queue_db_path = "~/mango/queue.db"
-  property scan_interval_minutes : Int32 = 5
-  property thumbnail_generation_interval_hours : Int32 = 24
-  property log_level = "info"
-  property upload_path = "~/mango/uploads"
-  property plugin_path = "~/mango/plugins"
-  property download_timeout_seconds : Int32 = 30
-  property cache_enabled = true
-  property cache_size_mbs = 50
-  property cache_log_enabled = true
-  property disable_login = false
-  property default_username = ""
-  property auth_proxy_header_name = ""
-  property plugin_update_interval_hours : Int32 = 24
+  property path : String = ""
+  property host : String = (ENV["LISTEN_HOST"]? || "0.0.0.0")
+  property port : Int32 = (ENV["LISTEN_PORT"]? || 9000).to_i
+  property base_url : String = (ENV["BASE_URL"]? || "/")
+  property session_secret : String = \
+        (ENV["SESSION_SECRET"]? || "mango-session-secret")
+  property library_path : String = (ENV["LIBRARY_PATH"]? || "~/mango/library")
+  property library_cache_path : String = \
+        (ENV["LIBRARY_CACHE_PATH"]? || "~/mango/library.yml.gz")
+  property db_path : String = (ENV["DB_PATH"]? || "~/mango/mango.db")
+  property queue_db_path : String = \
+        (ENV["QUEUE_DB_PATH"]? || "~/mango/queue.db")
+  property scan_interval_minutes : Int32 = (ENV["SCAN_INTERVAL"]? || 5).to_i
+  property thumbnail_generation_interval_hours : Int32 = \
+        (ENV["THUMBNAIL_INTERVAL"]? || 24).to_i
+  property log_level : String = (ENV["LOG_LEVEL"]? || "info")
+  property upload_path : String = (ENV["UPLOAD_PATH"]? || "~/mango/uploads")
+  property plugin_path : String = (ENV["PLUGIN_PATH"]? || "~/mango/plugins")
+  property download_timeout_seconds : Int32 = \
+        (ENV["DOWNLOAD_TIMEOUT"]? || 30).to_i
+  property cache_enabled : Bool = env_is_true?("CACHE_ENABLED", true)
+  property cache_size_mbs : Int32 = (ENV["CACHE_SIZE"]? || 50).to_i
+  property cache_log_enabled : Bool = env_is_true?("CACHE_LOG_ENABLED", true)
+  property disable_login : Bool = env_is_true?("DISABLE_LOGIN", false)
+  property default_username : String = (ENV["DEFAULT_USERNAME"]? || "")
+  property auth_proxy_header_name : String = (ENV["AUTH_PROXY_HEADER"]? || "")
+  property plugin_update_interval_hours : Int32 = \
+        (ENV["PLUGIN_UPDATE_INTERVAL"]? || 24).to_i
 
   @@singlet : Config?
 
@@ -38,7 +44,7 @@ class Config
   end
 
   def self.load(path : String?)
-    path = "~/.config/mango/config.yml" if path.nil?
+    path = (ENV["CONFIG_PATH"]? || "~/.config/mango/config.yml") if path.nil?
     cfg_path = File.expand_path path, home: true
     if File.exists? cfg_path
       config = self.from_yaml File.read cfg_path

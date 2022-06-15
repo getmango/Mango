@@ -95,9 +95,9 @@ class String
   end
 end
 
-def env_is_true?(key : String) : Bool
+def env_is_true?(key : String, default : Bool = false) : Bool
   val = ENV[key.upcase]? || ENV[key.downcase]?
-  return false unless val
+  return default unless val
   val.downcase.in? "1", "true"
 end
 
