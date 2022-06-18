@@ -34,6 +34,8 @@ const readerComponent = () => {
 						};
 					});
 
+					// Note: for image types not supported by image_size.cr, the width and height will be 0, and so `avgRatio` will be `Infinity`.
+					// TODO: support more image types in image_size.cr
 					const avgRatio = dimensions.reduce((acc, cur) => {
 						return acc + cur.height / cur.width
 					}, 0) / dimensions.length;
