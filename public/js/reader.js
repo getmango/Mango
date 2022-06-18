@@ -29,14 +29,16 @@ const readerComponent = () => {
 						return {
 							id: i + 1,
 							url: `${base_url}api/page/${tid}/${eid}/${i+1}`,
-							width: d.width,
-							height: d.height,
+							width: d.width == 0 ? "100%" : d.width,
+							height: d.height == 0 ? "100%" : d.height,
 						};
 					});
 
-					const avgRatio = this.items.reduce((acc, cur) => {
+					// Note: for image types not supported by image_size.cr, the width and height will be 0, and so `avgRatio` will be `Infinity`.
+					// TODO: support more image types in image_size.cr
+					const avgRatio = dimensions.reduce((acc, cur) => {
 						return acc + cur.height / cur.width
-					}, 0) / this.items.length;
+					}, 0) / dimensions.length;
 
 					console.log(avgRatio);
 					this.longPages = avgRatio > 2;
