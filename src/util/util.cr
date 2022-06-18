@@ -50,7 +50,7 @@ def register_mime_types
     #   defiend by Crystal in `MIME.DEFAULT_TYPES`
     ".apng" => "image/apng",
     ".avif" => "image/avif",
-    ".jxl" => "image/jxl",
+    ".jxl"  => "image/jxl",
   }.each do |k, v|
     MIME.register k, v
   end
