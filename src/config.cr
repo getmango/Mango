@@ -1,31 +1,51 @@
 require "yaml"
 
 class Config
+  private OPTIONS = {
+    "host"                                => "0.0.0.0",
+    "port"                                => 9000,
+    "base_url"                            => "/",
+    "session_secret"                      => "mango-session-secret",
+    "library_path"                        => "~/mango/library",
+    "library_cache_path"                  => "~/mango/library.yml.gz",
+    "db_path"                             => "~/mango.db",
+    "queue_db_path"                       => "~/mango/queue.db",
+    "scan_interval_minutes"               => 5,
+    "thumbnail_generation_interval_hours" => 24,
+    "log_level"                           => "info",
+    "upload_path"                         => "~/mango/uploads",
+    "plugin_path"                         => "~/mango/plugins",
+    "download_timeout_seconds"            => 30,
+    "cache_enabled"                       => true,
+    "cache_size_mbs"                      => 50,
+    "cache_log_enabled"                   => true,
+    "disable_login"                       => false,
+    "default_username"                    => "",
+    "auth_proxy_header_name"              => "",
+    "plugin_update_interval_hours"        => 24,
+  }
+
   include YAML::Serializable
 
   @[YAML::Field(ignore: true)]
-  property path = ""
-  property host = "0.0.0.0"
-  property port : Int32 = 9000
-  property base_url = "/"
-  property session_secret = "mango-session-secret"
-  property library_path = "~/mango/library"
-  property library_cache_path = "~/mango/library.yml.gz"
-  property db_path = "~/mango/mango.db"
-  property queue_db_path = "~/mango/queue.db"
-  property scan_interval_minutes : Int32 = 5
-  property thumbnail_generation_interval_hours : Int32 = 24
-  property log_level = "info"
-  property upload_path = "~/mango/uploads"
-  property plugin_path = "~/mango/plugins"
-  property download_timeout_seconds : Int32 = 30
-  property cache_enabled = true
-  property cache_size_mbs = 50
-  property cache_log_enabled = true
-  property disable_login = false
-  property default_username = ""
-  property auth_proxy_header_name = ""
-  property plugin_update_interval_hours : Int32 = 24
+  property path : String = ""
+
+  # Go through the options constant above and define them as properties.
+  #   Allow setting the default values through environment variables.
+  # Overall precedence: config file > environment variable > default value
+  {% begin %}
+    {% for k, v in OPTIONS %}
+        {% if v.is_a? StringLiteral %}
+          property {{k.id}} : String = ENV[{{k.upcase}}]? || {{ v }}
+        {% elsif v.is_a? NumberLiteral %}
+          property {{k.id}} : Int32 = (ENV[{{k.upcase}}]? || {{ v.id }}).to_i
+        {% elsif v.is_a? BoolLiteral %}
+          property {{k.id}} : Bool = env_is_true? {{ k.upcase }}, {{ v.id }}
+        {% else %}
+          raise "Unknown type in config option: {{ v.class_name.id }}"
+        {% end %}
+    {% end %}
+  {% end %}
 
   @@singlet : Config?
 
@@ -38,7 +58,7 @@ class Config
   end
 
   def self.load(path : String?)
-    path = "~/.config/mango/config.yml" if path.nil?
+    path = (ENV["CONFIG_PATH"]? || "~/.config/mango/config.yml") if path.nil?
     cfg_path = File.expand_path path, home: true
     if File.exists? cfg_path
       config = self.from_yaml File.read cfg_path
