@@ -8,16 +8,21 @@ class Config
   property host : String = (ENV["LISTEN_HOST"]? || "0.0.0.0")
   property port : Int32 = (ENV["LISTEN_PORT"]? || 9000).to_i
   property base_url : String = (ENV["BASE_URL"]? || "/")
+  # ameba:disable Layout/LineLength
   property session_secret : String = (ENV["SESSION_SECRET"]? || "mango-session-secret")
   property library_path : String = (ENV["LIBRARY_PATH"]? || "~/mango/library")
+  # ameba:disable Layout/LineLength
   property library_cache_path : String = (ENV["LIBRARY_CACHE_PATH"]? || "~/mango/library.yml.gz")
   property db_path : String = (ENV["DB_PATH"]? || "~/mango/mango.db")
+  # ameba:disable Layout/LineLength
   property queue_db_path : String = (ENV["QUEUE_DB_PATH"]? || "~/mango/queue.db")
   property scan_interval_minutes : Int32 = (ENV["SCAN_INTERVAL"]? || 5).to_i
+  # ameba:disable Layout/LineLength
   property thumbnail_generation_interval_hours : Int32 = (ENV["THUMBNAIL_INTERVAL"]? || 24).to_i
   property log_level : String = (ENV["LOG_LEVEL"]? || "info")
   property upload_path : String = (ENV["UPLOAD_PATH"]? || "~/mango/uploads")
   property plugin_path : String = (ENV["PLUGIN_PATH"]? || "~/mango/plugins")
+  # ameba:disable Layout/LineLength
   property download_timeout_seconds : Int32 = (ENV["DOWNLOAD_TIMEOUT"]? || 30).to_i
   property cache_enabled : Bool = env_is_true?("CACHE_ENABLED", true)
   property cache_size_mbs : Int32 = (ENV["CACHE_SIZE"]? || 50).to_i
@@ -25,6 +30,7 @@ class Config
   property disable_login : Bool = env_is_true?("DISABLE_LOGIN", false)
   property default_username : String = (ENV["DEFAULT_USERNAME"]? || "")
   property auth_proxy_header_name : String = (ENV["AUTH_PROXY_HEADER"]? || "")
+  # ameba:disable Layout/LineLength
   property plugin_update_interval_hours : Int32 = (ENV["PLUGIN_UPDATE_INTERVAL"]? || 24).to_i
 
   @@singlet : Config?
