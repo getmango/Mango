@@ -48,7 +48,7 @@
                                'uk-animation-slide-right': flipAnimation === 'right'
                                }" :data-src="curItem.url" :width="curItem.width" :height="curItem.height" :id="curItem.id" @click="clickImage($event)" :style="`
                                                                                                                                                                  width:${fitType === 'horz' ? '100vw' : 'auto'}; 
-                                                                                                                                                                 height:${mode === 'vert' ? '100vh' : 'auto'}; 
+                                                                                                                                                                 height:${fitType === 'vert' ? '100vh' : 'auto'}; 
                                                                                                                                                                  margin-bottom:0;
                                                                                                                                                                  max-width:${fitType === 'horz' ? '100%' : ''};
                                                                                                                                                                  max-height:${fitType === 'vert' ? '100%' : ''};
