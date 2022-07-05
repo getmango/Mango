@@ -14,6 +14,7 @@ const readerComponent = () => {
 		margin: 30,
 		preloadLookahead: 3,
 		enableRightToLeft: false,
+		fitType: 'vert',
 
 		/**
 		 * Initialize the component by fetching the page dimensions
@@ -65,6 +66,10 @@ const readerComponent = () => {
 						this.preloadImage(this.items[idx - 1].url);
 					}
 
+					const savedFitType = localStorage.getItem('fitType');
+					if(savedFitType){
+						this.fitType = savedFitType;
+					}
 					const savedFlipAnimation = localStorage.getItem('enableFlipAnimation');
 					this.enableFlipAnimation = savedFlipAnimation === null || savedFlipAnimation === 'true';
 
@@ -302,6 +307,21 @@ const readerComponent = () => {
 			});
 		},
 		/**
+		 * Changes how the view should fit to the screen or if it should use the image's real size
+		 *
+		 * @param {string} fitType - ver, horz and real for fitting to height, width,
+		 * and showing real size, respectively
+		 */
+		setFit(fitType){
+			if (fitType === 'vert'){
+				document.styleSheets[0].rules[21].style.maxWidth = '100%'; 
+			} else if(fitType === 'horz'){
+				document.styleSheets[0].rules[21].style.maxWidth = '100%';
+			} else if (fitType === 'real'){
+				document.styleSheets[0].rules[21].style.maxWidth = '';
+			}
+		},
+		/**
 		 * Marks progress as 100% and jumps to the next entry
 		 *
 		 * @param {string} nextUrl - URL of the next entry
@@ -333,6 +353,12 @@ const readerComponent = () => {
 		marginChanged() {
 			localStorage.setItem('margin', this.margin);
 			this.toPage(this.selectedIndex);
+		},
+
+		fitChanged(){
+			this.fitType = $('#fit-select').val();
+			this.setFit(this.fitType);
+			localStorage.setItem('fitType', this.fitType);
 		},
 
 		preloadLookaheadChanged() {

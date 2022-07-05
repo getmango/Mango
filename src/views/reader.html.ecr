@@ -40,18 +40,18 @@
           <%- end -%>
         </div>
 
-        <div x-cloak x-show="!loading && mode !== 'continuous'" class="uk-flex uk-flex-middle" style="height:100vh">
+        <div x-cloak x-show="!loading && mode !== 'continuous'" class="uk-flex uk-flex-middle" style="height:${fitType === 'vert' ? '100vh' : ''">
 
           <img uk-img :class="{
                                'uk-align-center': true, 
                                'uk-animation-slide-left': flipAnimation === 'left', 
                                'uk-animation-slide-right': flipAnimation === 'right'
                                }" :data-src="curItem.url" :width="curItem.width" :height="curItem.height" :id="curItem.id" @click="clickImage($event)" :style="`
-                                                                                                                                                                 width:${mode === 'width' ? '100vw' : 'auto'}; 
-                                                                                                                                                                 height:${mode === 'height' ? '100vh' : 'auto'}; 
+                                                                                                                                                                 width:${fitType === 'horz' ? '100vw' : 'auto'}; 
+                                                                                                                                                                 height:${mode === 'vert' ? '100vh' : 'auto'}; 
                                                                                                                                                                  margin-bottom:0;
-                                                                                                                                                                 max-width:100%;
-                                                                                                                                                                 max-height:100%;
+                                                                                                                                                                 max-width:${fitType === 'horz' ? '100%' : ''};
+                                                                                                                                                                 max-height:${fitType === 'vert' ? '100%' : ''};
                                                                                                                                                                  object-fit: contain;
                                                                                                                                                                  `" />
 
@@ -90,6 +90,17 @@
               <select id="mode-select" class="uk-select" @change="modeChanged($nextTick)">
                 <option value="continuous">Continuous</option>
                 <option value="paged">Paged</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="uk-margin" x-show="mode !== 'continuous'">
+            <label class="uk-form-label" for="mode-select">Page fit</label>
+            <div class="uk-form-controls">
+              <select id="fit-select" class="uk-select" @change="fitChanged()">
+                <option value="vert">Fit height</option>
+                <option value="horz">Fit width</option>
+                <option value="real">Real size</option>
               </select>
             </div>
           </div>
