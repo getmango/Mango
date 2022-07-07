@@ -307,18 +307,16 @@ const readerComponent = () => {
 			});
 		},
 		/**
-		 * Changes how the view should fit to the screen or if it should use the image's real size
+		 * Sets the image to not be restricted to the size of its container if it's not being scaled
 		 *
 		 * @param {string} fitType - ver, horz and real for fitting to height, width,
 		 * and showing real size, respectively
 		 */
 		setFit(fitType){
-			if (fitType === 'vert'){
-				document.styleSheets[0].rules[21].style.maxWidth = '100%'; 
-			} else if(fitType === 'horz'){
-				document.styleSheets[0].rules[21].style.maxWidth = '100%';
-			} else if (fitType === 'real'){
+			if (fitType === 'real'){
 				document.styleSheets[0].rules[21].style.maxWidth = '';
+			} else {
+				document.styleSheets[0].rules[21].style.maxWidth = '100%';
 			}
 		},
 		/**
