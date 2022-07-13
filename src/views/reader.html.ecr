@@ -19,7 +19,7 @@
       </div>
 
       <div
-        :class="{'uk-container': true, 'uk-container-small': mode === 'continuous', 'uk-container-expand': mode !== 'continuous'}">
+        :class="{'uk-container': true, 'uk-container-small': mode === 'continuous', 'uk-container-expand': mode !== 'continuous'}" style="width: fit-content;">
         <div x-show="!loading && mode === 'continuous'" x-cloak>
           <template x-if="!loading && mode === 'continuous'" x-for="item in items">
             <img
@@ -40,7 +40,7 @@
           <%- end -%>
         </div>
 
-        <div x-cloak x-show="!loading && mode !== 'continuous'" class="uk-flex uk-flex-middle" style="height:${fitType === 'vert' ? '100vh' : ''">
+        <div x-cloak x-show="!loading && mode !== 'continuous'" class="uk-flex uk-flex-middle" :style="`height:${fitType === 'vert' ? '100vh' : ''}; min-width: fit-content; position: relative;`">
 
           <img uk-img :class="{
                                'uk-align-center': true, 
@@ -50,8 +50,8 @@
                                                                                                                                                                  width:${fitType === 'horz' ? '100vw' : 'auto'}; 
                                                                                                                                                                  height:${fitType === 'vert' ? '100vh' : 'auto'}; 
                                                                                                                                                                  margin-bottom:0;
-                                                                                                                                                                 max-width:${fitType === 'horz' ? '100%' : ''};
-                                                                                                                                                                 max-height:${fitType === 'vert' ? '100%' : ''};
+                                                                                                                                                                 max-width:${fitType === 'horz' ? '100%' : fitType === 'vert' ? '' : 'none' };
+                                                                                                                                                                 max-height:${fitType === 'vert' ? '100%' : fitType === 'horz' ? '' : 'none'};
                                                                                                                                                                  object-fit: contain;
                                                                                                                                                                  `" />
 

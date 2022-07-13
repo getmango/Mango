@@ -67,8 +67,9 @@ const readerComponent = () => {
 					}
 
 					const savedFitType = localStorage.getItem('fitType');
-					if(savedFitType){
+					if (savedFitType) {
 						this.fitType = savedFitType;
+						$('#fit-select').val(savedFitType);
 					}
 					const savedFlipAnimation = localStorage.getItem('enableFlipAnimation');
 					this.enableFlipAnimation = savedFlipAnimation === null || savedFlipAnimation === 'true';
@@ -307,19 +308,6 @@ const readerComponent = () => {
 			});
 		},
 		/**
-		 * Sets the image to not be restricted to the size of its container if it's not being scaled
-		 *
-		 * @param {string} fitType - ver, horz and real for fitting to height, width,
-		 * and showing real size, respectively
-		 */
-		setFit(fitType){
-			if (fitType === 'real'){
-				document.styleSheets[0].rules[21].style.maxWidth = '';
-			} else {
-				document.styleSheets[0].rules[21].style.maxWidth = '100%';
-			}
-		},
-		/**
 		 * Marks progress as 100% and jumps to the next entry
 		 *
 		 * @param {string} nextUrl - URL of the next entry
@@ -355,7 +343,6 @@ const readerComponent = () => {
 
 		fitChanged(){
 			this.fitType = $('#fit-select').val();
-			this.setFit(this.fitType);
 			localStorage.setItem('fitType', this.fitType);
 		},
 
