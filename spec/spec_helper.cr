@@ -3,6 +3,7 @@ require "../src/queue"
 require "../src/server"
 require "../src/config"
 require "../src/main_fiber"
+require "../src/plugin/plugin"
 
 class State
   @@hash = {} of String => String
@@ -52,5 +53,12 @@ def with_storage
     if clear == true
       temp_db.delete
     end
+  end
+end
+
+def with_plugin
+  with_default_config do
+    plugin = Plugin.new "test", "spec/asset/plugins"
+    yield plugin
   end
 end

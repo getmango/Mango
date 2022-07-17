@@ -1,0 +1,6 @@
+{
+	"id": "test",
+	"title": "Test Plugin",
+	"placeholder": "placeholder",
+	"wait_seconds": 1
+}
