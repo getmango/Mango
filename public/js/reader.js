@@ -14,6 +14,7 @@ const readerComponent = () => {
 		margin: 30,
 		preloadLookahead: 3,
 		enableRightToLeft: false,
+		fitType: 'vert',
 
 		/**
 		 * Initialize the component by fetching the page dimensions
@@ -65,6 +66,11 @@ const readerComponent = () => {
 						this.preloadImage(this.items[idx - 1].url);
 					}
 
+					const savedFitType = localStorage.getItem('fitType');
+					if (savedFitType) {
+						this.fitType = savedFitType;
+						$('#fit-select').val(savedFitType);
+					}
 					const savedFlipAnimation = localStorage.getItem('enableFlipAnimation');
 					this.enableFlipAnimation = savedFlipAnimation === null || savedFlipAnimation === 'true';
 
@@ -333,6 +339,11 @@ const readerComponent = () => {
 		marginChanged() {
 			localStorage.setItem('margin', this.margin);
 			this.toPage(this.selectedIndex);
+		},
+
+		fitChanged(){
+			this.fitType = $('#fit-select').val();
+			localStorage.setItem('fitType', this.fitType);
 		},
 
 		preloadLookaheadChanged() {
