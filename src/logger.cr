@@ -38,6 +38,7 @@ class Logger
     Log.setup do |c|
       c.bind "*", @@severity, @backend
       c.bind "db.*", :error, @backend
+      c.bind "duktape", :none, @backend
     end
   end
 

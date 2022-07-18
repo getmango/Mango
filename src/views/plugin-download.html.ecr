@@ -133,8 +133,10 @@
           </template>
           <button class="uk-button uk-button-primary" @click.prevent="applyFilters()">Apply</button>
           <button class="uk-button uk-button-default" @click.prevent="clearFilters()">Clear</button>
-          <span class="uk-divider-vertical uk-margin-left uk-margin-right"></span>
-          <button class="uk-button uk-button-default" @click.prevent="UIkit.modal($refs.modal).show()" :disable="subscribing">Subscribe</button>
+          <span x-show="subscribable">
+            <span class="uk-divider-vertical uk-margin-left uk-margin-right"></span>
+            <button class="uk-button uk-button-default" @click.prevent="UIkit.modal($refs.modal).show()" :disable="subscribing">Subscribe</button>
+          </span>
         </form>
 
         <p class="uk-text-meta" x-show="chapters && chapters.length > chaptersLimit" x-text="`The manga has ${chapters ? chapters.length : 0} chapters, but Mango can only list up to ${chaptersLimit}. Please use the filters to narrow down your search.`"></p>

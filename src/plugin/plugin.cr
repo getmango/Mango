@@ -224,6 +224,10 @@ class Plugin
     raise Error.new "Missing required fields in the Page type"
   end
 
+  def can_subscribe? : Bool
+    info.version > 1 && eval_exists?("newChapters")
+  end
+
   def search_manga(query : String)
     if info.version == 1
       raise Error.new "Manga searching is only available for plugins " \
@@ -326,6 +330,15 @@ class Plugin
 
   private def eval_json(str)
     JSON.parse eval(str).as String
+  end
+
+  private def eval_exists?(str) : Bool
+    @rt.eval str
+    true
+  rescue e : Duktape::ReferenceError
+    false
+  rescue e : Duktape::Error
+    raise Error.new e.message
   end
 
   private def def_helper_functions(sbx)
