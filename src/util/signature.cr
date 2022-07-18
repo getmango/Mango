@@ -64,11 +64,12 @@ class Dir
         path = File.join dirname, fn
         if File.directory? path
           signatures << Dir.contents_signature path, cache
-          signatures << fn if DirEntry.is_valid? path
         else
           # Only add its signature value to `signatures` when it is a
           #   supported file
-          signatures << fn if ArchiveEntry.is_valid? fn
+          if ArchiveEntry.is_valid?(fn) || is_supported_image_file(fn)
+            signatures << fn
+          end
         end
         Fiber.yield
       end

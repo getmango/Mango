@@ -632,6 +632,16 @@ class Title
 
     if last_read_entry && last_read_entry.finished? username
       last_read_entry = last_read_entry.next_entry username
+      if last_read_entry.nil?
+        # The last entry is finished. Return the first unfinished entry
+        #   (if any)
+        sorted_entries(username).each do |e|
+          unless e.finished? username
+            last_read_entry = e
+            break
+          end
+        end
+      end
     end
 
     last_read_entry

@@ -14,6 +14,7 @@ const readerComponent = () => {
 		margin: 30,
 		preloadLookahead: 3,
 		enableRightToLeft: false,
+		fitType: 'vert',
 
 		/**
 		 * Initialize the component by fetching the page dimensions
@@ -29,14 +30,16 @@ const readerComponent = () => {
 						return {
 							id: i + 1,
 							url: `${base_url}api/page/${tid}/${eid}/${i+1}`,
-							width: d.width,
-							height: d.height,
+							width: d.width == 0 ? "100%" : d.width,
+							height: d.height == 0 ? "100%" : d.height,
 						};
 					});
 
-					const avgRatio = this.items.reduce((acc, cur) => {
+					// Note: for image types not supported by image_size.cr, the width and height will be 0, and so `avgRatio` will be `Infinity`.
+					// TODO: support more image types in image_size.cr
+					const avgRatio = dimensions.reduce((acc, cur) => {
 						return acc + cur.height / cur.width
-					}, 0) / this.items.length;
+					}, 0) / dimensions.length;
 
 					console.log(avgRatio);
 					this.longPages = avgRatio > 2;
@@ -63,6 +66,11 @@ const readerComponent = () => {
 						this.preloadImage(this.items[idx - 1].url);
 					}
 
+					const savedFitType = localStorage.getItem('fitType');
+					if (savedFitType) {
+						this.fitType = savedFitType;
+						$('#fit-select').val(savedFitType);
+					}
 					const savedFlipAnimation = localStorage.getItem('enableFlipAnimation');
 					this.enableFlipAnimation = savedFlipAnimation === null || savedFlipAnimation === 'true';
 
@@ -331,6 +339,11 @@ const readerComponent = () => {
 		marginChanged() {
 			localStorage.setItem('margin', this.margin);
 			this.toPage(this.selectedIndex);
+		},
+
+		fitChanged(){
+			this.fitType = $('#fit-select').val();
+			localStorage.setItem('fitType', this.fitType);
 		},
 
 		preloadLookaheadChanged() {

@@ -11,6 +11,7 @@ SUPPORTED_IMG_TYPES      = %w(
   image/avif
   image/gif
   image/svg+xml
+  image/jxl
 )
 
 def random_str
@@ -49,6 +50,7 @@ def register_mime_types
     #   defiend by Crystal in `MIME.DEFAULT_TYPES`
     ".apng" => "image/apng",
     ".avif" => "image/avif",
+    ".jxl"  => "image/jxl",
   }.each do |k, v|
     MIME.register k, v
   end
@@ -93,9 +95,9 @@ class String
   end
 end
 
-def env_is_true?(key : String) : Bool
+def env_is_true?(key : String, default : Bool = false) : Bool
   val = ENV[key.upcase]? || ENV[key.downcase]?
-  return false unless val
+  return default unless val
   val.downcase.in? "1", "true"
 end
 
