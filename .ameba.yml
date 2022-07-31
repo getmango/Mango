@@ -12,3 +12,4 @@ Layout/LineLength:
   MaxLength: 80
   Excluded:
     - src/routes/api.cr
+    - spec/plugin_spec.cr

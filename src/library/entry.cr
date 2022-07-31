@@ -1,66 +1,55 @@
 require "image_size"
-require "yaml"
 
-class Entry
-  include YAML::Serializable
+private def node_has_key(node : YAML::Nodes::Mapping, key : String)
+  node.nodes
+    .map_with_index { |n, i| {n, i} }
+    .select(&.[1].even?)
+    .map(&.[0])
+    .select(YAML::Nodes::Scalar)
+    .map(&.as(YAML::Nodes::Scalar).value)
+    .includes? key
+end
 
-  getter zip_path : String, book : Title, title : String,
-    size : String, pages : Int32, id : String, encoded_path : String,
-    encoded_title : String, mtime : Time, err_msg : String?
+abstract class Entry
+  getter id : String, book : Title, title : String, path : String,
+    size : String, pages : Int32, mtime : Time,
+    encoded_path : String, encoded_title : String, err_msg : String?
 
-  @[YAML::Field(ignore: true)]
-  @sort_title : String?
+  def initialize(
+    @id, @title, @book, @path,
+    @size, @pages, @mtime,
+    @encoded_path, @encoded_title, @err_msg
+  )
+  end
 
-  def initialize(@zip_path, @book)
-    storage = Storage.default
-    @encoded_path = URI.encode @zip_path
-    @title = File.basename @zip_path, File.extname @zip_path
-    @encoded_title = URI.encode @title
-    @size = (File.size @zip_path).humanize_bytes
-    id = storage.get_entry_id @zip_path, File.signature(@zip_path)
-    if id.nil?
-      id = random_str
-      storage.insert_entry_id({
-        path:      @zip_path,
-        id:        id,
-        signature: File.signature(@zip_path).to_s,
-      })
+  def self.new(ctx : YAML::ParseContext, node : YAML::Nodes::Node)
+    unless node.is_a? YAML::Nodes::Mapping
+      raise "Unexpected node type in YAML"
     end
-    @id = id
-    @mtime = File.info(@zip_path).modification_time
-
-    unless File.readable? @zip_path
-      @err_msg = "File #{@zip_path} is not readable."
-      Logger.warn "#{@err_msg} Please make sure the " \
-                  "file permission is configured correctly."
-      return
+    # Doing YAML::Any.new(ctx, node) here causes a weird error, so
+    #   instead we are using a more hacky approach (see `node_has_key`).
+    # TODO: Use a more elegant approach
+    if node_has_key node, "zip_path"
+      ArchiveEntry.new ctx, node
+    elsif node_has_key node, "dir_path"
+      DirEntry.new ctx, node
+    else
+      raise "Unknown entry found in YAML cache. Try deleting the " \
+            "`library.yml.gz` file"
     end
-
-    archive_exception = validate_archive @zip_path
-    unless archive_exception.nil?
-      @err_msg = "Archive error: #{archive_exception}"
-      Logger.warn "Unable to extract archive #{@zip_path}. " \
-                  "Ignoring it. #{@err_msg}"
-      return
-    end
-
-    file = ArchiveFile.new @zip_path
-    @pages = file.entries.count do |e|
-      SUPPORTED_IMG_TYPES.includes? \
-        MIME.from_filename? e.filename
-    end
-    file.close
   end
 
   def build_json(*, slim = false)
     JSON.build do |json|
       json.object do
-        {% for str in %w(zip_path title size id) %}
-        json.field {{str}}, @{{str.id}}
+        {% for str in %w(path title size id) %}
+        json.field {{str}}, {{str.id}}
       {% end %}
         if err_msg
           json.field "err_msg", err_msg
         end
+        json.field "zip_path", path # for API backward compatability
+        json.field "path", path
         json.field "title_id", @book.id
         json.field "title_title", @book.title
         json.field "sort_title", sort_title
@@ -73,6 +62,9 @@ class Entry
       end
     end
   end
+
+  @[YAML::Field(ignore: true)]
+  @sort_title : String?
 
   def sort_title
     sort_title_cached = @sort_title
@@ -131,58 +123,6 @@ class Entry
     url
   end
 
-  private def sorted_archive_entries
-    ArchiveFile.open @zip_path do |file|
-      entries = file.entries
-        .select { |e|
-          SUPPORTED_IMG_TYPES.includes? \
-            MIME.from_filename? e.filename
-        }
-        .sort! { |a, b|
-          compare_numerically a.filename, b.filename
-        }
-      yield file, entries
-    end
-  end
-
-  def read_page(page_num)
-    raise "Unreadble archive. #{@err_msg}" if @err_msg
-    img = nil
-    begin
-      sorted_archive_entries do |file, entries|
-        page = entries[page_num - 1]
-        data = file.read_entry page
-        if data
-          img = Image.new data, MIME.from_filename(page.filename),
-            page.filename, data.size
-        end
-      end
-    rescue e
-      Logger.warn "Unable to read page #{page_num} of #{@zip_path}. Error: #{e}"
-    end
-    img
-  end
-
-  def page_dimensions
-    sizes = [] of Hash(String, Int32)
-    sorted_archive_entries do |file, entries|
-      entries.each_with_index do |e, i|
-        begin
-          data = file.read_entry(e).not_nil!
-          size = ImageSize.get data
-          sizes << {
-            "width"  => size.width,
-            "height" => size.height,
-          }
-        rescue e
-          Logger.warn "Failed to read page #{i} of entry #{zip_path}. #{e}"
-          sizes << {"width" => 1000_i32, "height" => 1000_i32}
-        end
-      end
-    end
-    sizes
-  end
-
   def next_entry(username)
     entries = @book.sorted_entries username
     idx = entries.index self
@@ -195,20 +135,6 @@ class Entry
     idx = entries.index self
     return nil if idx.nil? || idx == 0
     entries[idx - 1]
-  end
-
-  def date_added
-    date_added = nil
-    TitleInfo.new @book.dir do |info|
-      info_da = info.date_added[@title]?
-      if info_da.nil?
-        date_added = info.date_added[@title] = ctime @zip_path
-        info.save
-      else
-        date_added = info_da
-      end
-    end
-    date_added.not_nil! # is it ok to set not_nil! here?
   end
 
   # For backward backward compatibility with v0.1.0, we save entry titles
@@ -290,7 +216,7 @@ class Entry
       end
       Storage.default.save_thumbnail @id, img
     rescue e
-      Logger.warn "Failed to generate thumbnail for file #{@zip_path}. #{e}"
+      Logger.warn "Failed to generate thumbnail for file #{path}. #{e}"
     end
 
     img
@@ -299,4 +225,34 @@ class Entry
   def get_thumbnail : Image?
     Storage.default.get_thumbnail @id
   end
+
+  def date_added : Time
+    date_added = Time::UNIX_EPOCH
+    TitleInfo.new @book.dir do |info|
+      info_da = info.date_added[@title]?
+      if info_da.nil?
+        date_added = info.date_added[@title] = ctime path
+        info.save
+      else
+        date_added = info_da
+      end
+    end
+    date_added
+  end
+
+  # Hack to have abstract class methods
+  # https://github.com/crystal-lang/crystal/issues/5956
+  private module ClassMethods
+    abstract def is_valid?(path : String) : Bool
+  end
+
+  macro inherited
+    extend ClassMethods
+  end
+
+  abstract def read_page(page_num)
+
+  abstract def page_dimensions
+
+  abstract def examine : Bool?
 end

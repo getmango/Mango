@@ -49,13 +49,18 @@ class Title
       path = File.join dir, fn
       if File.directory? path
         title = Title.new path, @id, cache
-        next if title.entries.size == 0 && title.titles.size == 0
-        Library.default.title_hash[title.id] = title
-        @title_ids << title.id
+        unless title.entries.size == 0 && title.titles.size == 0
+          Library.default.title_hash[title.id] = title
+          @title_ids << title.id
+        end
+        if DirEntry.is_valid? path
+          entry = DirEntry.new path, self
+          @entries << entry if entry.pages > 0 || entry.err_msg
+        end
         next
       end
       if is_supported_file path
-        entry = Entry.new path, self
+        entry = ArchiveEntry.new path, self
         @entries << entry if entry.pages > 0 || entry.err_msg
       end
     end
@@ -127,12 +132,12 @@ class Title
 
     previous_entries_size = @entries.size
     @entries.select! do |entry|
-      existence = File.exists? entry.zip_path
+      existence = entry.examine
       Fiber.yield
       context["deleted_entry_ids"] << entry.id unless existence
       existence
     end
-    remained_entry_zip_paths = @entries.map &.zip_path
+    remained_entry_paths = @entries.map &.path
 
     is_titles_added = false
     is_entries_added = false
@@ -140,29 +145,43 @@ class Title
       next if fn.starts_with? "."
       path = File.join dir, fn
       if File.directory? path
+        unless remained_entry_paths.includes? path
+          if DirEntry.is_valid? path
+            entry = DirEntry.new path, self
+            if entry.pages > 0 || entry.err_msg
+              @entries << entry
+              is_entries_added = true
+              context["deleted_entry_ids"].select! do |deleted_entry_id|
+                entry.id != deleted_entry_id
+              end
+            end
+          end
+        end
+
         next if remained_title_dirs.includes? path
         title = Title.new path, @id, context["cached_contents_signature"]
-        next if title.entries.size == 0 && title.titles.size == 0
-        Library.default.title_hash[title.id] = title
-        @title_ids << title.id
-        is_titles_added = true
+        unless title.entries.size == 0 && title.titles.size == 0
+          Library.default.title_hash[title.id] = title
+          @title_ids << title.id
+          is_titles_added = true
 
-        # We think they are removed, but they are here!
-        # Cancel reserved jobs
-        revival_title_ids = [title.id] + title.deep_titles.map &.id
-        context["deleted_title_ids"].select! do |deleted_title_id|
-          !(revival_title_ids.includes? deleted_title_id)
-        end
-        revival_entry_ids = title.deep_entries.map &.id
-        context["deleted_entry_ids"].select! do |deleted_entry_id|
-          !(revival_entry_ids.includes? deleted_entry_id)
+          # We think they are removed, but they are here!
+          # Cancel reserved jobs
+          revival_title_ids = [title.id] + title.deep_titles.map &.id
+          context["deleted_title_ids"].select! do |deleted_title_id|
+            !(revival_title_ids.includes? deleted_title_id)
+          end
+          revival_entry_ids = title.deep_entries.map &.id
+          context["deleted_entry_ids"].select! do |deleted_entry_id|
+            !(revival_entry_ids.includes? deleted_entry_id)
+          end
         end
 
         next
       end
       if is_supported_file path
-        next if remained_entry_zip_paths.includes? path
-        entry = Entry.new path, self
+        next if remained_entry_paths.includes? path
+        entry = ArchiveEntry.new path, self
         if entry.pages > 0 || entry.err_msg
           @entries << entry
           is_entries_added = true
@@ -613,6 +632,16 @@ class Title
 
     if last_read_entry && last_read_entry.finished? username
       last_read_entry = last_read_entry.next_entry username
+      if last_read_entry.nil?
+        # The last entry is finished. Return the first unfinished entry
+        #   (if any)
+        sorted_entries(username).each do |e|
+          unless e.finished? username
+            last_read_entry = e
+            break
+          end
+        end
+      end
     end
 
     last_read_entry
@@ -627,7 +656,7 @@ class Title
 
     @entries.each do |e|
       next if da.has_key? e.title
-      da[e.title] = ctime e.zip_path
+      da[e.title] = ctime e.path
     end
 
     TitleInfo.new @dir do |info|

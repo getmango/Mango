@@ -40,7 +40,7 @@ struct APIRouter
     Koa.schema "entry", {
       "pages" => Int32,
       "mtime" => Int64,
-    }.merge(s %w(zip_path title size id title_id display_name cover_url)),
+    }.merge(s %w(zip_path path title size id title_id display_name cover_url)),
       desc: "An entry in a book"
 
     Koa.schema "title", {
@@ -142,8 +142,13 @@ struct APIRouter
           env.response.status_code = 304
           ""
         else
+          if entry.is_a? DirEntry
+            cache_control = "no-cache, max-age=86400"
+          else
+            cache_control = "public, max-age=86400"
+          end
           env.response.headers["ETag"] = e_tag
-          env.response.headers["Cache-Control"] = "public, max-age=86400"
+          env.response.headers["Cache-Control"] = cache_control
           send_img env, img
         end
       rescue e
@@ -866,13 +871,15 @@ struct APIRouter
         "version"      => Int32,
         "settings"     => {} of String => String,
       },
+      "subscribable" => Bool,
     }
     get "/api/admin/plugin/info" do |env|
       begin
         plugin = Plugin.new env.params.query["plugin"].as String
         send_json env, {
-          "success" => true,
-          "info"    => plugin.info,
+          "success"      => true,
+          "info"         => plugin.info,
+          "subscribable" => plugin.can_subscribe?,
         }.to_json
       rescue e
         Logger.error e
@@ -1138,15 +1145,24 @@ struct APIRouter
         entry = title.get_entry eid
         raise "Entry ID `#{eid}` of `#{title.title}` not found" if entry.nil?
 
-        file_hash = Digest::SHA1.hexdigest (entry.zip_path + entry.mtime.to_s)
+        if entry.is_a? DirEntry
+          file_hash = Digest::SHA1.hexdigest(entry.path + entry.mtime.to_s + entry.size)
+        else
+          file_hash = Digest::SHA1.hexdigest(entry.path + entry.mtime.to_s)
+        end
         e_tag = "W/#{file_hash}"
         if e_tag == prev_e_tag
           env.response.status_code = 304
           send_text env, ""
         else
           sizes = entry.page_dimensions
+          if entry.is_a? DirEntry
+            cache_control = "no-cache, max-age=86400"
+          else
+            cache_control = "public, max-age=86400"
+          end
           env.response.headers["ETag"] = e_tag
-          env.response.headers["Cache-Control"] = "public, max-age=86400"
+          env.response.headers["Cache-Control"] = cache_control
           send_json env, {
             "success"    => true,
             "dimensions" => sizes,
@@ -1172,7 +1188,7 @@ struct APIRouter
         title = (Library.default.get_title env.params.url["tid"]).not_nil!
         entry = (title.get_entry env.params.url["eid"]).not_nil!
 
-        send_attachment env, entry.zip_path
+        send_attachment env, entry.path
       rescue e
         Logger.error e
         env.response.status_code = 404

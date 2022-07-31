@@ -5,7 +5,7 @@
   <%= render_component "head" %>
 
   <body style="position:relative;" x-data="readerComponent()" x-init="init($nextTick)" @resize.window="resized()">
-    <div class="uk-section uk-section-default uk-section-small reader-bg" :style="mode === 'continuous' ? '' : 'padding:0'">
+    <div class="uk-section uk-section-default uk-section-small reader-bg" :style="mode === 'continuous' ? '' : 'padding:0; position: relative;'">
 
       <div @keydown.window.debounce="keyHandler($event)"></div>
 
@@ -19,7 +19,7 @@
       </div>
 
       <div
-        :class="{'uk-container': true, 'uk-container-small': mode === 'continuous', 'uk-container-expand': mode !== 'continuous'}">
+        :class="{'uk-container': true, 'uk-container-small': mode === 'continuous', 'uk-container-expand': mode !== 'continuous'}" style="width: fit-content;">
         <div x-show="!loading && mode === 'continuous'" x-cloak>
           <template x-if="!loading && mode === 'continuous'" x-for="item in items">
             <img
@@ -30,7 +30,7 @@
               :height="item.height"
               :id="item.id"
               :style="`margin-top:${margin}px; margin-bottom:${margin}px`"
-              @click="showControl($event)"
+              @click="clickImage($event)"
               />
           </template>
           <%- if next_entry_url -%>
@@ -40,18 +40,18 @@
           <%- end -%>
         </div>
 
-        <div x-cloak x-show="!loading && mode !== 'continuous'" class="uk-flex uk-flex-middle" style="height:100vh">
+        <div x-cloak x-show="!loading && mode !== 'continuous'" class="uk-flex uk-flex-middle" :style="`height:${fitType === 'vert' ? '100vh' : ''}; min-width: fit-content;`">
 
           <img uk-img :class="{
                                'uk-align-center': true, 
                                'uk-animation-slide-left': flipAnimation === 'left', 
                                'uk-animation-slide-right': flipAnimation === 'right'
-                               }" :data-src="curItem.url" :width="curItem.width" :height="curItem.height" :id="curItem.id" @click="showControl($event)" :style="`
-                                                                                                                                                                 width:${mode === 'width' ? '100vw' : 'auto'}; 
-                                                                                                                                                                 height:${mode === 'height' ? '100vh' : 'auto'}; 
+                               }" :data-src="curItem.url" :width="curItem.width" :height="curItem.height" :id="curItem.id" @click="clickImage($event)" :style="`
+                                                                                                                                                                 width:${fitType === 'horz' ? '100vw' : 'auto'}; 
+                                                                                                                                                                 height:${fitType === 'vert' ? '100vh' : 'auto'}; 
                                                                                                                                                                  margin-bottom:0;
-                                                                                                                                                                 max-width:100%;
-                                                                                                                                                                 max-height:100%;
+                                                                                                                                                                 max-width:${fitType === 'horz' ? '100%' : fitType === 'vert' ? '' : 'none' };
+                                                                                                                                                                 max-height:${fitType === 'vert' ? '100%' : fitType === 'horz' ? '' : 'none'};
                                                                                                                                                                  object-fit: contain;
                                                                                                                                                                  `" />
 
@@ -67,7 +67,7 @@
         <button class="uk-modal-close-default" type="button" uk-close></button>
         <div class="uk-modal-header">
           <h3 class="uk-modal-title break-word"><%= entry.display_name %></h3>
-          <p class="uk-text-meta uk-margin-remove-bottom break-word"><%= entry.zip_path %></p>
+          <p class="uk-text-meta uk-margin-remove-bottom break-word"><%= entry.path %></p>
         </div>
         <div class="uk-modal-body">
           <div class="uk-margin">
@@ -90,6 +90,17 @@
               <select id="mode-select" class="uk-select" @change="modeChanged($nextTick)">
                 <option value="continuous">Continuous</option>
                 <option value="paged">Paged</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="uk-margin" x-show="mode !== 'continuous'">
+            <label class="uk-form-label" for="mode-select">Page fit</label>
+            <div class="uk-form-controls">
+              <select id="fit-select" class="uk-select" @change="fitChanged()">
+                <option value="vert">Fit height</option>
+                <option value="horz">Fit width</option>
+                <option value="real">Real size</option>
               </select>
             </div>
           </div>

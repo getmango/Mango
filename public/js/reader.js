@@ -14,6 +14,7 @@ const readerComponent = () => {
 		margin: 30,
 		preloadLookahead: 3,
 		enableRightToLeft: false,
+		fitType: 'vert',
 
 		/**
 		 * Initialize the component by fetching the page dimensions
@@ -29,14 +30,16 @@ const readerComponent = () => {
 						return {
 							id: i + 1,
 							url: `${base_url}api/page/${tid}/${eid}/${i+1}`,
-							width: d.width,
-							height: d.height,
+							width: d.width == 0 ? "100%" : d.width,
+							height: d.height == 0 ? "100%" : d.height,
 						};
 					});
 
-					const avgRatio = this.items.reduce((acc, cur) => {
+					// Note: for image types not supported by image_size.cr, the width and height will be 0, and so `avgRatio` will be `Infinity`.
+					// TODO: support more image types in image_size.cr
+					const avgRatio = dimensions.reduce((acc, cur) => {
 						return acc + cur.height / cur.width
-					}, 0) / this.items.length;
+					}, 0) / dimensions.length;
 
 					console.log(avgRatio);
 					this.longPages = avgRatio > 2;
@@ -58,11 +61,16 @@ const readerComponent = () => {
 
 					// Preload Images
 					this.preloadLookahead = +(localStorage.getItem('preloadLookahead') ?? 3);
-					const limit = Math.min(page + this.preloadLookahead, this.items.length + 1);
+					const limit = Math.min(page + this.preloadLookahead, this.items.length);
 					for (let idx = page + 1; idx <= limit; idx++) {
 						this.preloadImage(this.items[idx - 1].url);
 					}
 
+					const savedFitType = localStorage.getItem('fitType');
+					if (savedFitType) {
+						this.fitType = savedFitType;
+						$('#fit-select').val(savedFitType);
+					}
 					const savedFlipAnimation = localStorage.getItem('enableFlipAnimation');
 					this.enableFlipAnimation = savedFlipAnimation === null || savedFlipAnimation === 'true';
 
@@ -135,7 +143,11 @@ const readerComponent = () => {
 			const idx = parseInt(this.curItem.id);
 			const newIdx = idx + (isNext ? 1 : -1);
 
-			if (newIdx <= 0 || newIdx > this.items.length) return;
+			if (newIdx <= 0) return;
+			if (newIdx > this.items.length) {
+				this.showControl(idx);
+				return;
+			}
 
 			if (newIdx + this.preloadLookahead < this.items.length + 1) {
 				this.preloadImage(this.items[newIdx + this.preloadLookahead - 1].url);
@@ -253,12 +265,20 @@ const readerComponent = () => {
 			});
 		},
 		/**
-		 * Shows the control modal
+		 * Handles clicked image
 		 *
 		 * @param {Event} event - The triggering event
 		 */
-		showControl(event) {
+		clickImage(event) {
 			const idx = event.currentTarget.id;
+			this.showControl(idx);
+		},
+		/**
+		 * Shows the control modal
+		 *
+		 * @param {number} idx - selected page index
+		 */
+		showControl(idx) {
 			this.selectedIndex = idx;
 			UIkit.modal($('#modal-sections')).show();
 		},
@@ -319,6 +339,11 @@ const readerComponent = () => {
 		marginChanged() {
 			localStorage.setItem('margin', this.margin);
 			this.toPage(this.selectedIndex);
+		},
+
+		fitChanged(){
+			this.fitType = $('#fit-select').val();
+			localStorage.setItem('fitType', this.fitType);
 		},
 
 		preloadLookaheadChanged() {

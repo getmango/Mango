@@ -105,9 +105,10 @@ class Plugin
   getter js_path = ""
   getter storage_path = ""
 
-  def self.build_info_ary
+  def self.build_info_ary(dir : String? = nil)
     @@info_ary.clear
-    dir = Config.current.plugin_path
+    dir ||= Config.current.plugin_path
+
     Dir.mkdir_p dir unless Dir.exists? dir
 
     Dir.each_child dir do |f|
@@ -160,8 +161,8 @@ class Plugin
     list.save
   end
 
-  def initialize(id : String)
-    Plugin.build_info_ary
+  def initialize(id : String, dir : String? = nil)
+    Plugin.build_info_ary dir
 
     @info = @@info_ary.find &.id.== id
     if @info.nil?
@@ -221,6 +222,10 @@ class Plugin
     obj["url"].as_s && obj["filename"].as_s
   rescue e
     raise Error.new "Missing required fields in the Page type"
+  end
+
+  def can_subscribe? : Bool
+    info.version > 1 && eval_exists?("newChapters")
   end
 
   def search_manga(query : String)
@@ -315,7 +320,7 @@ class Plugin
     json
   end
 
-  private def eval(str)
+  def eval(str)
     @rt.eval str
   rescue e : Duktape::SyntaxError
     raise SyntaxError.new e.message
@@ -325,6 +330,15 @@ class Plugin
 
   private def eval_json(str)
     JSON.parse eval(str).as String
+  end
+
+  private def eval_exists?(str) : Bool
+    @rt.eval str
+    true
+  rescue e : Duktape::ReferenceError
+    false
+  rescue e : Duktape::Error
+    raise Error.new e.message
   end
 
   private def def_helper_functions(sbx)
@@ -435,9 +449,15 @@ class Plugin
       env = Duktape::Sandbox.new ptr
       html = env.require_string 0
 
-      str = XML.parse(html).inner_text
+      begin
+        parser = Myhtml::Parser.new html
+        str = parser.body!.children.first.inner_text
 
-      env.push_string str
+        env.push_string str
+      rescue
+        env.push_string ""
+      end
+
       env.call_success
     end
     sbx.put_prop_string -2, "text"
@@ -448,8 +468,9 @@ class Plugin
       name = env.require_string 1
 
       begin
-        attr = XML.parse(html).first_element_child.not_nil![name]
-        env.push_string attr
+        parser = Myhtml::Parser.new html
+        attr = parser.body!.children.first.attribute_by name
+        env.push_string attr.not_nil!
       rescue
         env.push_undefined
       end
