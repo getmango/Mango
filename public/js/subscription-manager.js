@@ -13,12 +13,12 @@ const component = () => {
 					if (!data.success) throw new Error(data.error);
 					this.plugins = data.plugins;
 
-					const pid = localStorage.getItem("plugin");
-					if (pid && this.plugins.map((p) => p.id).includes(pid))
-						this.pid = pid;
-					else if (this.plugins.length > 0)
-						this.pid = this.plugins[0].id;
+					let pid = localStorage.getItem("plugin");
+					if (!pid || !this.plugins.find((p) => p.id === pid)) {
+						pid = this.plugins[0].id;
+					}
 
+					this.pid = pid;
 					this.list(pid);
 				})
 				.catch((e) => {
