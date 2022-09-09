@@ -184,7 +184,7 @@ def delete_cache_and_exit(path : String)
   File.delete path
   Logger.fatal "Invalid library cache deleted. Mango needs to " \
                "perform a full reset to recover from this. " \
-               "Pleae restart Mango. This is NOT a bug."
+               "Please restart Mango. This is NOT a bug."
   Logger.fatal "Exiting"
   exit 1
 end

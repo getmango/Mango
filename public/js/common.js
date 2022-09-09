@@ -11,7 +11,7 @@
  * @param {string} selector - The jQuery selector to the root element
  */
 const setProp = (key, prop, selector = '#root') => {
-	$(selector).get(0).__x.$data[key] = prop;
+  $(selector).get(0).__x.$data[key] = prop;
 };
 
 /**
@@ -23,7 +23,7 @@ const setProp = (key, prop, selector = '#root') => {
  * @return {*} The data property
  */
 const getProp = (key, selector = '#root') => {
-	return $(selector).get(0).__x.$data[key];
+  return $(selector).get(0).__x.$data[key];
 };
 
 /**
@@ -41,7 +41,10 @@ const getProp = (key, selector = '#root') => {
  * @return {bool}
  */
 const preferDarkMode = () => {
-	return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return (
+    window.matchMedia &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+  );
 };
 
 /**
@@ -52,7 +55,7 @@ const preferDarkMode = () => {
  * @return {bool}
  */
 const validThemeSetting = (theme) => {
-	return ['dark', 'light', 'system'].indexOf(theme) >= 0;
+  return ['dark', 'light', 'system'].indexOf(theme) >= 0;
 };
 
 /**
@@ -62,9 +65,9 @@ const validThemeSetting = (theme) => {
  * @return {string} A theme setting ('dark', 'light', or 'system')
  */
 const loadThemeSetting = () => {
-	let str = localStorage.getItem('theme');
-	if (!str || !validThemeSetting(str)) str = 'system';
-	return str;
+  let str = localStorage.getItem('theme');
+  if (!str || !validThemeSetting(str)) str = 'system';
+  return str;
 };
 
 /**
@@ -74,11 +77,11 @@ const loadThemeSetting = () => {
  * @return {string} The current theme to use ('dark' or 'light')
  */
 const loadTheme = () => {
-	let setting = loadThemeSetting();
-	if (setting === 'system') {
-		setting = preferDarkMode() ? 'dark' : 'light';
-	}
-	return setting;
+  let setting = loadThemeSetting();
+  if (setting === 'system') {
+    setting = preferDarkMode() ? 'dark' : 'light';
+  }
+  return setting;
 };
 
 /**
@@ -87,9 +90,9 @@ const loadTheme = () => {
  * @function saveThemeSetting
  * @param {string} setting - A theme setting
  */
-const saveThemeSetting = setting => {
-	if (!validThemeSetting(setting)) setting = 'system';
-	localStorage.setItem('theme', setting);
+const saveThemeSetting = (setting) => {
+  if (!validThemeSetting(setting)) setting = 'system';
+  localStorage.setItem('theme', setting);
 };
 
 /**
@@ -99,10 +102,10 @@ const saveThemeSetting = setting => {
  * @function toggleTheme
  */
 const toggleTheme = () => {
-	const theme = loadTheme();
-	const newTheme = theme === 'dark' ? 'light' : 'dark';
-	saveThemeSetting(newTheme);
-	setTheme(newTheme);
+  const theme = loadTheme();
+  const newTheme = theme === 'dark' ? 'light' : 'dark';
+  saveThemeSetting(newTheme);
+  setTheme(newTheme);
 };
 
 /**
@@ -113,31 +116,32 @@ const toggleTheme = () => {
  * 		`loadTheme` to get a theme and apply it.
  */
 const setTheme = (theme) => {
-	if (!theme) theme = loadTheme();
-	if (theme === 'dark') {
-		$('html').css('background', 'rgb(20, 20, 20)');
-		$('body').addClass('uk-light');
-		$('.ui-widget-content').addClass('dark');
-	} else {
-		$('html').css('background', '');
-		$('body').removeClass('uk-light');
-		$('.ui-widget-content').removeClass('dark');
-	}
+  if (!theme) theme = loadTheme();
+  if (theme === 'dark') {
+    $('html').css('background', 'rgb(20, 20, 20)');
+    $('body').addClass('uk-light');
+    $('.ui-widget-content').addClass('dark');
+  } else {
+    $('html').css('background', '');
+    $('body').removeClass('uk-light');
+    $('.ui-widget-content').removeClass('dark');
+  }
 };
 
 // do it before document is ready to prevent the initial flash of white on
 // 	most pages
 setTheme();
 $(() => {
-	// hack for the reader page
-	setTheme();
+  // hack for the reader page
+  setTheme();
 
-	// on system dark mode setting change
-	if (window.matchMedia) {
-		window.matchMedia('(prefers-color-scheme: dark)')
-			.addEventListener('change', event => {
-				if (loadThemeSetting() === 'system')
-					setTheme(event.matches ? 'dark' : 'light');
-			});
-	}
+  // on system dark mode setting change
+  if (window.matchMedia) {
+    window
+      .matchMedia('(prefers-color-scheme: dark)')
+      .addEventListener('change', (event) => {
+        if (loadThemeSetting() === 'system')
+          setTheme(event.matches ? 'dark' : 'light');
+      });
+  }
 });
