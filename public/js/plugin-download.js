@@ -146,17 +146,17 @@ const component = () => {
       }
     },
     selectAll() {
-      $('tbody > tr').each((i, e) => {
+      $('tbody#selectable > tr').each((i, e) => {
         $(e).addClass('ui-selected');
       });
     },
     clearSelection() {
-      $('tbody > tr').each((i, e) => {
+      $('tbody#selectable > tr').each((i, e) => {
         $(e).removeClass('ui-selected');
       });
     },
     download() {
-      const selected = $('tbody > tr.ui-selected').get();
+      const selected = $('tbody#selectable > tr.ui-selected').get();
       if (selected.length === 0) return;
 
       UIkit.modal
