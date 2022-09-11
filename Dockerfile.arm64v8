@@ -11,4 +11,10 @@ COPY mango-arm64v8.o .
 
 RUN cc 'mango-arm64v8.o' -o '/usr/local/bin/mango' -rdynamic -lxml2 -L/image_size.cr/ext/libwebp -lwebp -L/image_size.cr/ext/stbi -lstbi /myhtml/src/ext/modest-c/lib/libmodest_static.a -L/duktape.cr/src/.build/lib -L/duktape.cr/src/.build/include -lduktape -lm `pkg-config libarchive --libs` -lz `command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libssl || printf %s '-lssl -lcrypto'` `command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libcrypto || printf %s '-lcrypto'` -lgmp -lsqlite3 -lyaml -lpcre -lm /usr/lib/aarch64-linux-gnu/libgc.so -lpthread /crystal/src/ext/libcrystal.a -levent -lrt -ldl -L/usr/bin/../lib/crystal/lib -L/usr/bin/../lib/crystal/lib
 
+RUN useradd --home-dir /app -u 1000 mango
+
+WORKDIR /app
+
+USER 1000:1000
+
 CMD ["/usr/local/bin/mango"]
