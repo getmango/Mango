@@ -33,7 +33,7 @@ shards:
     version: 0.8.0
 
   image_size:
-    git: https://github.com/hkalexling/image_size.cr.git
+    git: https://github.com/akkoyk/image_size.cr.git
     version: 0.5.0
 
   kemal:
