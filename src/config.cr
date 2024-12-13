@@ -8,7 +8,7 @@ class Config
     "session_secret"                      => "mango-session-secret",
     "library_path"                        => "~/mango/library",
     "library_cache_path"                  => "~/mango/library.yml.gz",
-    "db_path"                             => "~/mango.db",
+    "db_path"                             => "~/mango/mango.db",
     "queue_db_path"                       => "~/mango/queue.db",
     "scan_interval_minutes"               => 5,
     "thumbnail_generation_interval_hours" => 24,
