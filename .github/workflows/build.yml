@@ -1,19 +1,19 @@
 name: Build
 
 on:
-  repository_dispatch:
-  workflow_dispatch:
+ - pull_request:
+    types: ['opened', 'reopened', 'synchronize', 'ready_for_review']
+
   
 jobs:
-  build:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
-
+  build-and-test:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     container:
       image: crystallang/crystal:1.0.0-alpine
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Install dependencies
       run: apk add --no-cache yarn yaml-static sqlite-static libarchive-dev libarchive-static acl-static expat-static zstd-static lz4-static bzip2-static libjpeg-turbo-dev libpng-dev tiff-dev
     - name: Build
@@ -22,10 +22,25 @@ jobs:
       run: make check
     - name: Run tests
       run: make test
+
+  upload-artifacts:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    container:
+      image: crystallang/crystal:1.0.0-alpine
+    steps:
+    - name: Upload binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: mango
+        path: mango
+    # - name: build arm32v7 object file
+    #   run: make arm32v7 || make arm32v7
     - name: build arm64v8 object file
       run: make arm64v8 || make arm64v8
     - name: Upload object files
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: object files
         path: ./*.o
