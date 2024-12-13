@@ -34,7 +34,7 @@ dependencies:
   http_proxy:
     github: mamantoha/http_proxy
   image_size:
-   github: hkalexling/image_size.cr
+   github: akkoyk/image_size.cr
   koa:
     github: hkalexling/koa
   tallboy:
