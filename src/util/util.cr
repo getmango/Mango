@@ -1,8 +1,8 @@
 IMGS_PER_PAGE            = 5
 ENTRIES_IN_HOME_SECTIONS = 8
 UPLOAD_URL_PREFIX        = "/uploads"
-STATIC_DIRS              = %w(/css /js /img /webfonts /favicon.ico /robots.txt
-  /manifest.json)
+STATIC_DIRS              = %w(/css /ext/css /js /ext/js /img /webfonts
+  /favicon.ico /robots.txt /manifest.json)
 SUPPORTED_FILE_EXTNAMES = [".zip", ".cbz", ".rar", ".cbr"]
 SUPPORTED_IMG_TYPES     = %w(
   image/jpeg

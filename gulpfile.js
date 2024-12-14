@@ -62,7 +62,7 @@ gulp.task('minify-css', () => {
     .pipe(gulp.dest('dist/css'));
 });
 
-// Copy static files (includeing images) to dist
+// Copy static files (including images) to dist
 gulp.task('copy-files', () => {
   return gulp
     .src(
@@ -71,6 +71,8 @@ gulp.task('copy-files', () => {
         'public/img/**',
         'public/webfonts/*',
         'public/js/*.min.js',
+        'public/ext/js/*.min.js',
+        'public/ext/css/*.min.css',
       ],
       {
         base: 'public',
