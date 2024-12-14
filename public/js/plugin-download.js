@@ -325,8 +325,8 @@ const component = () => {
 
         return {
           key: k,
-          type: type,
-          values: values,
+          type,
+          values,
         };
       });
     },
@@ -340,8 +340,8 @@ const component = () => {
             value = value ? Date.parse(value).toString() : '';
           return {
             key: i.getAttribute('data-filter-key'),
-            value: value,
-            type: type,
+            value,
+            type,
           };
         });
     },

@@ -1,5 +1,11 @@
 ![banner](./public/img/banner-paddings.png)
 
+# Notes
+
+The original repo at https://github.com/getmango/Mango has stopped accepting new PRs.
+
+This repo will try to bring in some updates to keep the project alive for a little while longer.
+
 # Mango
 
 [![Patreon](https://img.shields.io/badge/support-patreon-brightgreen?link=https://www.patreon.com/hkalexling)](https://www.patreon.com/hkalexling) ![Build](https://github.com/hkalexling/Mango/workflows/Build/badge.svg) [![Gitter](https://badges.gitter.im/mango-cr/mango.svg)](https://gitter.im/mango-cr/mango?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Discord](https://img.shields.io/discord/855633663425118228?label=discord)](http://discord.com/invite/ezKtacCp9Q)
