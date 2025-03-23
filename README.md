@@ -4,6 +4,9 @@
 
 [![Patreon](https://img.shields.io/badge/support-patreon-brightgreen?link=https://www.patreon.com/hkalexling)](https://www.patreon.com/hkalexling) ![Build](https://github.com/hkalexling/Mango/workflows/Build/badge.svg) [![Gitter](https://badges.gitter.im/mango-cr/mango.svg)](https://gitter.im/mango-cr/mango?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![Discord](https://img.shields.io/discord/855633663425118228?label=discord)](http://discord.com/invite/ezKtacCp9Q)
 
+> [!CAUTION]
+> As of March 2025, Mango is no longer maintained. We are incredibly grateful to everyone who used it, contributed, or gave feedback along the way - thank you! Unfortunately, we just don't have the time to keep it going right now. That said, it's open source, so you're more than welcome to fork it, build on it, or maintain your own version. If you're looking for alternatives, check out the wiki for similar projects. We might return to it someday, but for now, we don't recommend using it as-is - running unmaintained software can introduce security risks.
+
 Mango is a self-hosted manga server and reader. Its features include
 
 - Multi-user support
