@@ -6,20 +6,25 @@
 	"author": "Alex Ling <hkalexling@gmail.com>",
 	"license": "MIT",
 	"devDependencies": {
+		"@babel/eslint-parser": "^7.18.9",
 		"@babel/preset-env": "^7.11.5",
 		"all-contributors-cli": "^6.19.0",
+		"eslint": "^8.22.0",
+		"eslint-plugin-prettier": "^4.2.1",
 		"gulp": "^4.0.2",
 		"gulp-babel": "^8.0.0",
 		"gulp-babel-minify": "^0.5.1",
 		"gulp-less": "^4.0.1",
 		"gulp-minify-css": "^1.2.4",
-		"less": "^3.11.3"
+		"less": "^3.11.3",
+		"prettier": "^2.7.1"
 	},
 	"scripts": {
-		"uglify": "gulp"
+		"uglify": "gulp",
+		"lint": "eslint public/js *.js --ext .js"
 	},
 	"dependencies": {
 		"@fortawesome/fontawesome-free": "^5.14.0",
-		"uikit": "^3.5.4"
+		"uikit": "~3.14.0"
 	}
 }
