@@ -12,4 +12,6 @@ WORKDIR /
 
 COPY --from=builder /Mango/mango /usr/local/bin/mango
 
+EXPOSE 9000
+
 CMD ["/usr/local/bin/mango"]
